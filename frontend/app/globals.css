@@ -1,0 +1,445 @@
+/* Reset default browser styling */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Main body styling */
+
+body {
+  background: #f7f2ed;
+  font-family: Arial, sans-serif;
+  color: #2b211b;
+}
+
+/* Link styling */
+
+a {
+  text-decoration: none;
+  font-weight: 700;
+  color: #a45100;
+}
+
+/* ==========================
+   SHARED AUTH PAGE STYLING
+=========================== */
+
+.login-wrapper,
+.register-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+
+  background: linear-gradient(
+    135deg,
+    #f8efe8,
+    #fff9f4
+  );
+}
+
+/* Main card container */
+
+.login-card,
+.register-card {
+  width: 100%;
+  max-width: 1300px;
+
+  min-height: 700px;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  background: #fffaf6;
+
+  overflow: hidden;
+
+  border-radius: 30px;
+
+  box-shadow:
+    0 25px 70px rgba(0,0,0,.15);
+}
+
+/* ==========================
+   IMAGE SECTION
+=========================== */
+
+.auth-image,
+.register-left {
+
+  position: relative;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  min-height: 700px;
+}
+
+/* Login image */
+
+.login-image {
+
+  background-image:
+    linear-gradient(
+      rgba(0,0,0,.2),
+      rgba(0,0,0,.75)
+    ),
+    url("/images/Login.jpg");
+
+}
+
+/* Register image */
+
+.register-left {
+
+  background-image:
+    linear-gradient(
+      rgba(45,20,4,.2),
+      rgba(72,31,0,.85)
+    ),
+    url("/images/Register.jpg");
+
+  padding: 40px;
+}
+
+/* Logo inside image */
+
+.logo-light {
+
+  font-size: 35px;
+  font-family: Georgia, serif;
+  color: white;
+
+  position: relative;
+  z-index: 10;
+}
+
+/* Image content */
+
+.image-content {
+
+  position: absolute;
+
+  top: 50%;
+  left: 50%;
+
+  transform:
+  translate(-50%, -50%);
+
+  width: 80%;
+
+  text-align: center;
+
+  color: white;
+}
+
+.image-content span {
+
+  display: inline-block;
+
+  padding: 10px 18px;
+
+  border-radius: 30px;
+
+  background:
+  rgba(255,255,255,.15);
+
+  margin-bottom: 18px;
+
+  font-size: 13px;
+}
+
+.image-content h1 {
+
+  font-family: Georgia, serif;
+
+  font-size: 56px;
+
+  line-height: 1.1;
+
+  margin-bottom: 20px;
+
+  text-shadow:
+  0 4px 18px rgba(0,0,0,.4);
+
+}
+
+.image-content p {
+
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+/* ==========================
+   FORM SECTION
+=========================== */
+
+.auth-form-section,
+.register-right {
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 60px;
+}
+
+/* Register section */
+
+.register-right {
+
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Form card */
+
+.auth-form-card {
+
+  width: 100%;
+  max-width: 430px;
+}
+
+/* Logo */
+
+.logo {
+
+  font-size: 35px;
+  font-family: Georgia, serif;
+
+  color: #a45100;
+
+  margin-bottom: 20px;
+}
+
+/* Heading */
+
+.auth-form-card h1 {
+
+  font-size: 40px;
+
+  font-family: Georgia, serif;
+
+  margin-bottom: 10px;
+}
+
+/* Paragraph */
+
+.auth-form-card p {
+
+  color: #61728a;
+
+  margin-bottom: 30px;
+
+  line-height: 1.6;
+}
+
+/* Labels */
+
+label {
+
+  display: block;
+
+  font-size: 14px;
+
+  font-weight: bold;
+
+  margin-bottom: 8px;
+
+  color: #5a473a;
+}
+
+/* Inputs */
+
+input {
+
+  width: 100%;
+
+  height: 50px;
+
+  padding: 0 16px;
+
+  margin-bottom: 18px;
+
+  border-radius: 12px;
+
+  border: 1px solid #dfbda9;
+
+  background: #fffdfb;
+
+  font-size: 15px;
+}
+
+input:focus {
+
+  outline: none;
+
+  border-color: #a45100;
+
+  box-shadow:
+  0 0 0 4px rgba(164,81,0,.1);
+}
+
+/* Password row */
+
+.label-row {
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Checkbox row */
+
+.checkbox-row {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin-bottom: 24px;
+
+  font-size: 14px;
+
+  color: #61728a;
+}
+
+.checkbox-row input {
+
+  width: 16px;
+  height: 16px;
+
+  margin: 0;
+
+  accent-color: #a45100;
+}
+
+/* Buttons */
+
+button {
+
+  width: 100%;
+  height: 56px;
+
+  border: none;
+
+  border-radius: 14px;
+
+  background: #a45100;
+
+  color: white;
+
+  font-size: 16px;
+  font-weight: bold;
+
+  cursor: pointer;
+
+  transition: .3s;
+
+  box-shadow:
+  0 12px 24px rgba(164,81,0,.25);
+
+}
+
+button:hover {
+
+  background: #8e4500;
+
+  transform:
+  translateY(-2px);
+}
+
+/* Bottom navigation text */
+
+.bottom-text {
+
+  margin-top: 25px;
+
+  margin-bottom:0;
+
+  text-align: center;
+
+  font-size:14px;
+
+  color:#61728a;
+}
+
+.bottom-text a {
+
+  color:#a45100;
+
+  font-weight:bold;
+}
+
+/* ==========================
+   MOBILE RESPONSIVE
+=========================== */
+
+@media(max-width:900px){
+
+.login-card,
+.register-card{
+
+grid-template-columns:1fr;
+
+max-width:650px;
+
+}
+
+.auth-image,
+.register-left{
+
+min-height:350px;
+
+}
+
+.auth-form-section,
+.register-right{
+
+padding:30px;
+
+}
+
+.image-content h1{
+
+font-size:40px;
+
+}
+
+}
+
+@media(max-width:480px){
+
+.login-wrapper,
+.register-wrapper{
+
+padding:15px;
+
+}
+
+.image-content{
+
+width:90%;
+
+}
+
+.image-content h1{
+
+font-size:34px;
+
+}
+
+.auth-form-card h1{
+
+font-size:30px;
+
+}
+
+}
