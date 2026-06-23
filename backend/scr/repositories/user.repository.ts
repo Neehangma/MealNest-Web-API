@@ -10,7 +10,23 @@ export const userRepository = {
     return includePassword ? query.select("+password") : query;
   },
 
-  findById: (id: string) => {
-    return UserModel.findById(id);
+  findById: (id: string, includePassword = false) => {
+    const query = UserModel.findById(id);
+    return includePassword ? query.select("+password") : query;
+  },
+
+  updateById: (
+    id: string,
+    data: Partial<{
+      name: string;
+      email: string;
+      password: string;
+      image: string;
+    }>,
+  ) => {
+    return UserModel.findByIdAndUpdate(id, data, {
+      new: true,
+      runValidators: true,
+    });
   },
 };

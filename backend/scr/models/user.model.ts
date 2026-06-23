@@ -23,6 +23,10 @@ const userSchema = new Schema<User>(
       minlength: [6, "Password must be at least 6 characters"],
       select: false,
     },
+    image: {
+      type: String,
+      default: "",
+    },
     role: {
       type: String,
       enum: ["user", "admin"],

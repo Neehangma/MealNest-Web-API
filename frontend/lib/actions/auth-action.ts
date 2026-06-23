@@ -1,7 +1,10 @@
 "use server"; // server side api call
-import { register, login } from "@/lib/api/auth";
-import { LoginFormData, RegisterFormData } from "@/app/(auth)/_components/schema";
-import { setTokenCookie, storeUserData } from "@/lib/cookies";
+import { login, register, updateUser, whoami } from "@/lib/api/auth";
+import { LoginFormData, RegisterFormData } from "@/app/(auth)/components/schema";
+import { clearAuthCookies, getTokenCookie, setTokenCookie, storeUserData } from "@/lib/cookies";
+
+const getActionErrorMessage = (error: unknown, fallback: string) =>
+    error instanceof Error ? error.message : fallback;
 
 export const handleRegisterUser = async (data: RegisterFormData) => {
     try{
@@ -12,8 +15,8 @@ export const handleRegisterUser = async (data: RegisterFormData) => {
         }else{
             return { success: false, message: result.message || 'Registration failed' };    
         }
-    }catch (error: Error | any){
-        return { success: false, message: error?.message || 'Registration failed' };    
+    }catch (error: unknown){
+        return { success: false, message: getActionErrorMessage(error, "Registration failed") };    
     }
 }
 export const handleLoginUser = async (data: LoginFormData) => {
@@ -31,7 +34,50 @@ export const handleLoginUser = async (data: LoginFormData) => {
         }else{
             return { success: false, message: result.message || 'Login failed' };    
         }
-    }catch (error: Error | any){
-        return { success: false, message: error?.message || 'Login failed' };    
+    }catch (error: unknown){
+        return { success: false, message: getActionErrorMessage(error, "Login failed") };    
     }
+}
+
+export const handleWhoami = async () => {
+    try {
+        const token = await getTokenCookie();
+        if (!token) {
+            return { success: false, message: "Authentication is required" };
+        }
+
+        const result = await whoami(token);
+        if (result.success) {
+            await storeUserData(result.data.user);
+            return { success: true, message: result.message, data: result.data };
+        }
+
+        return { success: false, message: result.message || "Failed to load user profile" };
+    } catch (error: unknown) {
+        return { success: false, message: getActionErrorMessage(error, "Failed to load user profile") };
+    }
+}
+
+export const handleUpdateUser = async (data: FormData) => {
+    try {
+        const token = await getTokenCookie();
+        if (!token) {
+            return { success: false, message: "Authentication is required" };
+        }
+
+        const result = await updateUser(data, token);
+        if (result.success) {
+            await storeUserData(result.data.user);
+            return { success: true, message: result.message, data: result.data };
+        }
+
+        return { success: false, message: result.message || "Profile update failed" };
+    } catch (error: unknown) {
+        return { success: false, message: getActionErrorMessage(error, "Profile update failed") };
+    }
+}
+
+export const handleLogoutUser = async () => {
+    await clearAuthCookies();
+    return { success: true };
 }
