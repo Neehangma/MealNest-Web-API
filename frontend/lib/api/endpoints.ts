@@ -1,9 +1,9 @@
 // centralized path definitions for API endpoints
 export const API = {
     AUTH: {
-        REGISTER: "/api/auth/register",
-        LOGIN: "/api/auth/login",
-        CURRENT: "/api/auth/current",
+        REGISTER: "/api/v1/auth/register",
+        LOGIN: "/api/v1/auth/login",
+        CURRENT: "/api/v1/auth/current",
     },
     ADMIN: {
         USERS: "/api/v1/admin/users",

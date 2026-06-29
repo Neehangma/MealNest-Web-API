@@ -53,7 +53,7 @@ const User = mongoose.models.User || mongoose.model("User", userSchema);
 
 const toSafeUser = (user) => ({
   id: user._id.toString(),
-  fullName: user.fullName,
+  fullName: user.fullName || "",
   email: user.email,
   phoneNumber: user.phoneNumber,
   profilePicture: user.profilePicture,
@@ -61,6 +61,41 @@ const toSafeUser = (user) => ({
   createdAt: user.createdAt,
   updatedAt: user.updatedAt,
 });
+
+const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+const parsePagination = (query) => {
+  const page = Math.max(parseInt(query.page, 10) || 1, 1);
+  const limit = Math.min(Math.max(parseInt(query.limit, 10) || 10, 1), 100);
+
+  return {
+    page,
+    limit,
+    skip: (page - 1) * limit,
+  };
+};
+
+const getUserOr404 = async (id, res) => {
+  if (!isValidObjectId(id)) {
+    res.status(400).json({
+      success: false,
+      message: "Invalid user id",
+    });
+    return null;
+  }
+
+  const user = await User.findById(id);
+
+  if (!user) {
+    res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+    return null;
+  }
+
+  return user;
+};
 
 const createToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -116,7 +151,7 @@ app.get("/api/health", (_req, res) => {
   res.json({ success: true, message: "MealNest Backend Running" });
 });
 
-app.post("/api/auth/register", async (req, res) => {
+const registerHandler = async (req, res) => {
   try {
     const { fullName, email, phoneNumber, password } = req.body;
 
@@ -162,9 +197,9 @@ app.post("/api/auth/register", async (req, res) => {
       message: error.message || "Signup failed",
     });
   }
-});
+};
 
-app.post("/api/auth/login", async (req, res) => {
+const loginHandler = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -203,9 +238,9 @@ app.post("/api/auth/login", async (req, res) => {
       message: error.message || "Login failed",
     });
   }
-});
+};
 
-app.get("/api/auth/current", async (req, res) => {
+const currentUserHandler = async (req, res) => {
   try {
     const authHeader = req.headers.authorization || "";
     const [scheme, token] = authHeader.split(" ");
@@ -234,18 +269,22 @@ app.get("/api/auth/current", async (req, res) => {
       message: "Invalid or expired token",
     });
   }
-});
+};
+
+app.post("/api/auth/register", registerHandler);
+app.post("/api/v1/auth/register", registerHandler);
+app.post("/api/auth/login", loginHandler);
+app.post("/api/v1/auth/login", loginHandler);
+app.get("/api/auth/current", currentUserHandler);
+app.get("/api/v1/auth/current", currentUserHandler);
 
 // Admin User Management Routes
 
 // GET /api/v1/admin/users - Paginated list with search
 app.get("/api/v1/admin/users", authenticate, requireAdmin, async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const search = req.query.search || "";
-
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = parsePagination(req.query);
+    const search = String(req.query.search || "").trim();
 
     let query = {};
     if (search) {
@@ -285,14 +324,8 @@ app.get("/api/v1/admin/users", authenticate, requireAdmin, async (req, res) => {
 // GET /api/v1/admin/users/:id - Get single user
 app.get("/api/v1/admin/users/:id", authenticate, requireAdmin, async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+    const user = await getUserOr404(req.params.id, res);
+    if (!user) return;
 
     return res.json({
       success: true,
@@ -367,13 +400,8 @@ app.put("/api/v1/admin/users/:id", authenticate, requireAdmin, async (req, res) 
   try {
     const { fullName, email, phoneNumber, password, role } = req.body;
 
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+    const user = await getUserOr404(req.params.id, res);
+    if (!user) return;
 
     if (email && email !== user.email) {
       const existingUser = await User.findOne({ email });
@@ -388,7 +416,15 @@ app.put("/api/v1/admin/users/:id", authenticate, requireAdmin, async (req, res) 
 
     if (fullName) user.fullName = fullName;
     if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
-    if (role && ["user", "admin"].includes(role)) user.role = role;
+    if (role) {
+      if (!["user", "admin"].includes(role)) {
+        return res.status(400).json({
+          success: false,
+          message: "Role must be either 'user' or 'admin'",
+        });
+      }
+      user.role = role;
+    }
     if (password) {
       if (password.length < 6) {
         return res.status(400).json({
@@ -419,13 +455,8 @@ app.patch("/api/v1/admin/users/:id", authenticate, requireAdmin, async (req, res
   try {
     const { fullName, email, phoneNumber, password, role } = req.body;
 
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+    const user = await getUserOr404(req.params.id, res);
+    if (!user) return;
 
     if (email && email !== user.email) {
       const existingUser = await User.findOne({ email });
@@ -440,7 +471,15 @@ app.patch("/api/v1/admin/users/:id", authenticate, requireAdmin, async (req, res
 
     if (fullName) user.fullName = fullName;
     if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
-    if (role && ["user", "admin"].includes(role)) user.role = role;
+    if (role) {
+      if (!["user", "admin"].includes(role)) {
+        return res.status(400).json({
+          success: false,
+          message: "Role must be either 'user' or 'admin'",
+        });
+      }
+      user.role = role;
+    }
     if (password) {
       if (password.length < 6) {
         return res.status(400).json({
@@ -469,13 +508,8 @@ app.patch("/api/v1/admin/users/:id", authenticate, requireAdmin, async (req, res
 // DELETE /api/v1/admin/users/:id - Delete user
 app.delete("/api/v1/admin/users/:id", authenticate, requireAdmin, async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+    const user = await getUserOr404(req.params.id, res);
+    if (!user) return;
 
     // Prevent deleting yourself
     if (user._id.toString() === req.user._id.toString()) {

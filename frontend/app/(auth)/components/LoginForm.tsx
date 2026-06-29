@@ -1,13 +1,40 @@
-// Import Next.js Link for page navigation
-import Link from "next/link";
+"use client";
 
-// Login component
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
+import { handleLoginUser } from "@/lib/actions/auth-action";
+
 export default function LoginForm() {
+  const router = useRouter();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setLoading(true);
+
+    const formData = new FormData(event.currentTarget);
+    const result = await handleLoginUser({
+      email: String(formData.get("email") || ""),
+      password: String(formData.get("password") || ""),
+    });
+
+    setLoading(false);
+
+    if (!result.success || !result.data) {
+      setError(result.message || "Login failed");
+      return;
+    }
+
+    router.push("/dashboard");
+    router.refresh();
+  }
+
   return (
     <main className="login-wrapper">
-      {/* Main login card container */}
       <div className="login-card">
-        {/* Left section with background image and text */}
         <section className="auth-image login-image">
           <div className="image-content">
             <h1>Savor the precision of fine dining.</h1>
@@ -18,42 +45,35 @@ export default function LoginForm() {
           </div>
         </section>
 
-        {/* Right section containing login form */}
         <section className="auth-form-section">
           <div className="auth-form-card">
             <h2 className="logo">MealNest</h2>
             <h1>Welcome Back</h1>
             <p>Please enter your details to sign in.</p>
-            <form>
-              <label>Email</label>
-              <input
-                type="email"
-                placeholder="Enter email"
-              />
+            <form onSubmit={handleSubmit}>
+              <label htmlFor="email">Email</label>
+              <input id="email" name="email" type="email" placeholder="Enter email" required />
+
               <div className="label-row">
-                <label>Password</label>
-                <a href="#">Forgot Password?</a>
+                <label htmlFor="password">Password</label>
+                <Link href="/ResetPassword">Forgot Password?</Link>
               </div>
-              <input
-                type="password"
-                placeholder="Enter password"
-              />
+              <input id="password" name="password" type="password" placeholder="Enter password" required />
 
               <div className="checkbox-row">
-                <input type="checkbox"/>
-                <span>Remember me</span>
+                <input id="remember" type="checkbox" />
+                <label htmlFor="remember">Remember me</label>
               </div>
-              <button type="submit">
-                Sign In
+
+              {error && <p className="form-error">{error}</p>}
+
+              <button type="submit" disabled={loading}>
+                {loading ? "Signing In..." : "Sign In"}
               </button>
             </form>
 
-            {/* Navigation link */}
             <p className="bottom-text">
-              Don't have an account?{" "}
-              <Link href="/auth/register">
-                Create an account
-              </Link>
+              Don&apos;t have an account? <Link href="/register">Create an account</Link>
             </p>
           </div>
         </section>

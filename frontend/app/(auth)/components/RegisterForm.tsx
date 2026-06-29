@@ -1,114 +1,96 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FormEvent, useState } from "react";
+import { handleRegisterUser } from "@/lib/actions/auth-action";
 
-// Register component
 export default function RegisterForm() {
-  // Initialize router for page redirection
   const router = useRouter();
-  // Function to handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    // Prevent page refresh after form submission
-    e.preventDefault();
-    // Redirect user to login page
-    router.push("/auth/login");
-  };
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+
+    const formData = new FormData(event.currentTarget);
+    const password = String(formData.get("password") || "");
+    const confirmPassword = String(formData.get("confirmPassword") || "");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+    const result = await handleRegisterUser({
+      fullName: String(formData.get("fullName") || ""),
+      email: String(formData.get("email") || ""),
+      phoneNumber: String(formData.get("phoneNumber") || ""),
+      password,
+    });
+    setLoading(false);
+
+    if (!result.success || !result.data) {
+      setError(result.message || "Registration failed");
+      return;
+    }
+
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <main className="register-wrapper">
-
-      {/* Main registration container */}
       <section className="register-card">
-
-        {/* Left section with image and promotional content */}
         <div className="register-left">
-          <h2 className="logo-light">
-            MealNest
-          </h2>
+          <h2 className="logo-light">MealNest</h2>
           <div className="image-content">
-            <span>
-              Premium Dining Reservations
-            </span>
-            <h1>
-              Reserve your perfect table with ease.
-            </h1>
-            <p>
-              Discover restaurants, book tables and enjoy smooth dining experiences.
-            </p>
+            <span>Premium Dining Reservations</span>
+            <h1>Reserve your perfect table with ease.</h1>
+            <p>Discover restaurants, book tables and enjoy smooth dining experiences.</p>
           </div>
         </div>
 
-        {/* Right section containing registration form */}
         <div className="register-right">
           <div className="auth-form-card">
             <h1>Create Account</h1>
-            <p>
-              Join MealNest and start booking your favorite restaurants.
-            </p>
+            <p>Join MealNest and start booking your favorite restaurants.</p>
 
-            {/* Registration form with submit event */}
             <form onSubmit={handleSubmit}>
-              <label>Full Name</label>
-              <input
-                type="text"
-                placeholder="Enter full name"
-                required
-              />
+              <label htmlFor="fullName">Full Name</label>
+              <input id="fullName" name="fullName" type="text" placeholder="Enter full name" required />
 
-              {/* Email input field */}
-              <label>Email Address</label>
-              <input
-                type="email"
-                placeholder="Enter email"
-                required
-              />
+              <label htmlFor="registerEmail">Email Address</label>
+              <input id="registerEmail" name="email" type="email" placeholder="Enter email" required />
 
-              {/* Password input field */}
-              <label>Password</label>
-              <input
-                type="password"
-                placeholder="Enter password"
-                required
-              />
+              <label htmlFor="phoneNumber">Phone Number</label>
+              <input id="phoneNumber" name="phoneNumber" type="tel" placeholder="Enter phone number" />
 
-              {/* Confirm Password input field */}
-              <label>Confirm Password</label>
-              <input
-                type="password"
-                placeholder="Confirm password"
-                required
-              />
+              <label htmlFor="registerPassword">Password</label>
+              <input id="registerPassword" name="password" type="password" placeholder="Enter password" required minLength={6} />
 
-              {/* Terms and conditions checkbox */}
+              <label htmlFor="confirmPassword">Confirm Password</label>
+              <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm password" required minLength={6} />
+
               <div className="checkbox-row">
-                <input
-                  type="checkbox"
-                  required
-                />
-                <span>
-                  I agree to Terms and Privacy Policy
-                </span>
+                <input id="terms" type="checkbox" required />
+                <label htmlFor="terms">I agree to Terms and Privacy Policy</label>
               </div>
 
-              {/* Registration button */}
-              <button type="submit">
-                Create Account
+              {error && <p className="form-error">{error}</p>}
+
+              <button type="submit" disabled={loading}>
+                {loading ? "Creating..." : "Create Account"}
               </button>
             </form>
 
-            {/* Login navigation link */}
             <p className="bottom-text">
-              Already have an account?{" "}
-              <Link href="/auth/login">
-                Sign In
-              </Link>
-
+              Already have an account? <Link href="/login">Sign In</Link>
             </p>
-
           </div>
         </div>
-
       </section>
     </main>
   );
