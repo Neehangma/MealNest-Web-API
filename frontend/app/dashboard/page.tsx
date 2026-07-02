@@ -1,8 +1,13 @@
-import { getUserData } from "@/lib/cookies";
-import DashboardClient from "./DashboardClient";
+import { getAuthenticatedUser } from "@/lib/auth-session";
+import { getDashboardPathForRole } from "@/lib/auth-routing";
+import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
-  const user = await getUserData();
+  const user = await getAuthenticatedUser();
 
-  return <DashboardClient user={user} />;
+  if (!user) {
+    redirect("/login");
+  }
+
+  redirect(getDashboardPathForRole(user.role));
 }

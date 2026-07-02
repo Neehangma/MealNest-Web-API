@@ -2,7 +2,7 @@
 
 import { LoginFormData, RegisterFormData } from "@/app/(auth)/components/schema";
 import { login, register } from "@/lib/api/auth";
-import { setTokenCookie, storeUserData } from "@/lib/cookies";
+import { clearAuthCookies, setTokenCookie, storeUserData } from "@/lib/cookies";
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
@@ -11,6 +11,9 @@ function getErrorMessage(error: unknown, fallback: string) {
 export const handleRegisterUser = async (data: RegisterFormData) => {
   try {
     const result = await register(data);
+    await clearAuthCookies();
+    await setTokenCookie(result.token);
+    await storeUserData(result.user);
 
     return {
       success: true,
@@ -28,6 +31,7 @@ export const handleRegisterUser = async (data: RegisterFormData) => {
 export const handleLoginUser = async (data: LoginFormData) => {
   try {
     const result = await login(data);
+    await clearAuthCookies();
     await setTokenCookie(result.token);
     await storeUserData(result.user);
 

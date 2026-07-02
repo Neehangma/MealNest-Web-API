@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { handleLoginUser } from "@/lib/actions/auth-action";
+import { getDashboardPathForRole } from "@/lib/auth-routing";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -28,7 +29,7 @@ export default function LoginForm() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push(getDashboardPathForRole(result.data.user.role));
     router.refresh();
   }
 

@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { getDashboardPathForRole } from "@/lib/auth-routing";
+import { getAuthenticatedUser } from "@/lib/auth-session";
 import styles from "./admin.module.css";
 
 export const metadata: Metadata = {
@@ -6,10 +9,20 @@ export const metadata: Metadata = {
   description: "MealNest system management dashboard",
 };
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  if (user.role !== "admin") {
+    redirect(getDashboardPathForRole(user.role));
+  }
+
   return <div className={styles.adminShell}>{children}</div>;
 }
