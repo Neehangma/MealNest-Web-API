@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../config/constant.ts");
-const { HttpException } = require("../exceptions/http-exception.ts");
-const userRepository = require("../repositories/user.repository.ts");
+const { JWT_SECRET } = require("../config/constant.js");
+const { HttpException } = require("../exceptions/http-exception.js");
+const userRepository = require("../repositories/user.repository.js");
 
 async function authenticate(req, _res, next) {
   try {

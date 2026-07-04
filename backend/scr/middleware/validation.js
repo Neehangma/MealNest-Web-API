@@ -1,5 +1,5 @@
-const { ALLOWED_ROLES } = require("../config/constant.ts");
-const { HttpException } = require("../exceptions/http-exception.ts");
+const { ALLOWED_ROLES } = require("../config/constant.js");
+const { HttpException } = require("../exceptions/http-exception.js");
 
 const validateRegister = (req, _res, next) => {
   const { fullName, email, password } = req.body;

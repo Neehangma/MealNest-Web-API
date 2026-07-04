@@ -1,9 +1,9 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { ALLOWED_ROLES, BCRYPT_SALT_ROUNDS, JWT_EXPIRES_IN, JWT_SECRET } = require("../config/constant.ts");
-const { HttpException } = require("../exceptions/http-exception.ts");
-const userRepository = require("../repositories/user.repository.ts");
-const { isValidObjectId, toSafeUser } = require("../utils/apihelper.utils.ts");
+const { ALLOWED_ROLES, BCRYPT_SALT_ROUNDS, JWT_EXPIRES_IN, JWT_SECRET } = require("../config/constant.js");
+const { HttpException } = require("../exceptions/http-exception.js");
+const userRepository = require("../repositories/user.repository.js");
+const { isValidObjectId, toSafeUser } = require("../utils/apihelper.utils.js");
 
 function createToken(user) {
   return jwt.sign(

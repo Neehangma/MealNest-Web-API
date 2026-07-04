@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { handleRegisterUser } from "@/lib/actions/auth-action";
-import { getDashboardPathForRole } from "@/lib/auth-routing";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -33,12 +32,12 @@ export default function RegisterForm() {
     });
     setLoading(false);
 
-    if (!result.success || !result.data) {
+    if (!result.success) {
       setError(result.message || "Registration failed");
       return;
     }
 
-    router.push(getDashboardPathForRole(result.data.user.role));
+    router.push("/login");
     router.refresh();
   }
 
