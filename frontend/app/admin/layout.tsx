@@ -21,7 +21,7 @@ export default async function AdminLayout({
   }
 
   if (user.role !== "admin") {
-    redirect(getDashboardPathForRole(user.role));
+    redirect("/login");
   }
 
   return <div className={styles.adminShell}>{children}</div>;

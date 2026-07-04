@@ -11,6 +11,15 @@ function getErrorMessage(error: unknown, fallback: string) {
 export const handleRegisterUser = async (data: RegisterFormData) => {
   try {
     const result = await register(data);
+
+    if (result.user.role !== "user") {
+      await clearAuthCookies();
+      return {
+        success: false,
+        message: "Unauthorized role",
+      };
+    }
+
     await clearAuthCookies();
     await setTokenCookie(result.token);
     await storeUserData(result.user);
@@ -31,6 +40,15 @@ export const handleRegisterUser = async (data: RegisterFormData) => {
 export const handleLoginUser = async (data: LoginFormData) => {
   try {
     const result = await login(data);
+
+    if (result.user.role !== "user" && result.user.role !== "admin") {
+      await clearAuthCookies();
+      return {
+        success: false,
+        message: "Unauthorized role",
+      };
+    }
+
     await clearAuthCookies();
     await setTokenCookie(result.token);
     await storeUserData(result.user);

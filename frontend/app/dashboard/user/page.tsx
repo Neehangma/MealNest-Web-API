@@ -162,7 +162,7 @@ export default async function UserDashboardPage() {
   }
 
   if (user.role !== "user") {
-    redirect(getDashboardPathForRole(user.role));
+    redirect("/login");
   }
 
   const displayName = user?.fullName || "Neehangma Rai";

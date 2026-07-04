@@ -27,12 +27,12 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (token && pathname.startsWith("/admin") && user?.role === "user") {
-    return NextResponse.redirect(new URL("/dashboard/user", request.url));
+  if (token && pathname.startsWith("/admin") && user?.role !== "admin") {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  if (token && pathname.startsWith("/dashboard/admin") && user?.role === "user") {
-    return NextResponse.redirect(new URL("/dashboard/user", request.url));
+  if (token && pathname.startsWith("/dashboard") && user?.role !== "user") {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();
