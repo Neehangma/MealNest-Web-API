@@ -1,5 +1,12 @@
 import type { AuthUser } from "./api/auth";
 
 export function getDashboardPathForRole(role?: AuthUser["role"]) {
-  return role === "admin" ? "/admin" : "/dashboard/user";
+  switch (role) {
+    case "admin":
+      return "/admin/dashboard";
+    case "user":
+      return "/dashboard";
+    default:
+      return "/login";
+  }
 }
