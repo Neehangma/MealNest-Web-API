@@ -1,22 +1,19 @@
 require("dotenv").config();
 
-import cors from "cors";
-import express, { json } from "express";
-import { connection } from "mongoose";
+const cors = require("cors");
+const express = require("express");
+const mongoose = require("mongoose");
 
-// The original scaffold uses .ts filenames, but the project runs directly with Node.
-require.extensions[".ts"] = require.extensions[".js"];
-
-import { PORT } from "./config/constant";
-import { connectMongo } from "./database/mongodb";
-import { HttpException } from "./exceptions/http-exception";
-import userRoutes from "./routes/user.route";
-import { sendError } from "./utils/apihelper.utils";
+const { PORT } = require("./config/constant.js");
+const { connectMongo } = require("./database/mongodb.js");
+const { HttpException } = require("./exceptions/http-exception.js");
+const userRoutes = require("./routes/user.route.js");
+const { sendError } = require("./utils/apihelper.utils.js");
 
 const app = express();
 
 app.use(cors());
-app.use(json());
+app.use(express.json());
 
 app.get("/", (_req, res) => {
   res.send("MealNest Backend Running");
@@ -27,8 +24,6 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use("/api/v1", userRoutes);
-
-// Backward-compatible auth endpoints used by earlier frontend iterations.
 app.use("/api", userRoutes);
 
 app.use((_req, _res, next) => {
@@ -50,7 +45,7 @@ connectMongo()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
-      console.log(`MongoDB connected: ${connection.name}`);
+      console.log(`MongoDB connected: ${mongoose.connection.name}`);
     });
   })
   .catch((error) => {
@@ -58,4 +53,4 @@ connectMongo()
     process.exit(1);
   });
 
-export default app;
+module.exports = app;
