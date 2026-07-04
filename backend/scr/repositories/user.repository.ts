@@ -1,5 +1,5 @@
-const User = require("../models/user.model.ts");
-const { parsePagination } = require("../utils/apihelper.utils.ts");
+const User = require("../models/user.model");
+const { parsePagination } = require("../utils/apihelper.utils");
 
 function findByEmail(email, includePassword = false) {
   const query = User.findOne({ email });

@@ -1,13 +1,13 @@
 const express = require("express");
-const userController = require("../controller/user.controller.ts");
-const { authenticate, requireAdmin } = require("../middleware/authorized.middleware.ts");
+const userController = require("../controller/user.controller");
+const { authenticate, requireAdmin } = require("../middleware/authorized.middleware");
 const {
   validateAdminCreateUser,
   validateAdminUpdateUser,
   validateLogin,
   validateRegister,
-} = require("../middleware/validation.ts");
-const { asyncHandler } = require("../utils/apihelper.utils.ts");
+} = require("../middleware/validation");
+const { asyncHandler } = require("../utils/apihelper.utils");
 
 const router = express.Router();
 

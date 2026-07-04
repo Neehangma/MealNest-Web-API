@@ -1,11 +1,9 @@
-const {
-  createAdminUserDto,
-  createLoginDto,
-  createRegisterDto,
-  createUpdateUserDto,
-} = require("../dtos/user.dtos.ts");
-const userService = require("../services/user.service.ts");
-const { sendSuccess, toSafeUser } = require("../utils/apihelper.utils.ts");
+declare const require: any;
+declare const module: any;
+
+const { createAdminUserDto, createLoginDto, createRegisterDto, createUpdateUserDto } = require("../dtos/user.dtos");
+const userService = require("../services/user.service");
+const { sendSuccess, toSafeUser } = require("../utils/apihelper.utils");
 
 async function register(req, res) {
   const result = await userService.register(createRegisterDto(req.body));
