@@ -47,6 +47,8 @@ function createProfileUpdateDto(body) {
   if (body.email !== undefined) dto.email = normalizeEmail(body.email);
   if (body.phoneNumber !== undefined) dto.phoneNumber = String(body.phoneNumber || "").trim();
   if (body.profilePicture !== undefined) dto.profilePicture = String(body.profilePicture || "");
+  if (body.location !== undefined) dto.location = String(body.location || "").trim();
+  if (body.bio !== undefined) dto.bio = String(body.bio || "").trim();
 
   return dto;
 }

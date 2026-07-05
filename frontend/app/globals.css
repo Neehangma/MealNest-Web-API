@@ -1033,6 +1033,126 @@ font-size:30px;
   padding: 24px;
 }
 
+.profile-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: rgba(35, 24, 20, 0.52);
+  padding: 24px;
+}
+
+.profile-modal {
+  background: #fffaf6;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(35, 24, 20, 0.3);
+  border: 1px solid #ead5c8;
+}
+
+.profile-modal h2 {
+  margin: 0 0 12px;
+  font-family: Georgia, serif;
+  font-size: 24px;
+  color: #231814;
+}
+
+.profile-modal p {
+  margin: 0 0 24px;
+  color: #5c6678;
+  font-size: 16px;
+}
+
+.profile-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.profile-modal-button {
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+}
+
+.profile-modal-button.primary {
+  background: #a45100;
+  color: white;
+}
+
+.profile-modal-button.primary:hover {
+  background: #8e4500;
+}
+
+.profile-modal-button.secondary {
+  background: #fffdfb;
+  color: #a45100;
+  border: 1px solid #dfbda9;
+}
+
+.profile-modal-button.secondary:hover {
+  background: #fff0e7;
+  border-color: #a45100;
+}
+
+.profile-modal-large {
+  max-width: 500px;
+}
+
+.notification-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.notification-setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: #fffdfb;
+  border-radius: 8px;
+  border: 1px solid #f0ded4;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.notification-setting-item:hover {
+  background: #fff0e7;
+  border-color: #dfbda9;
+}
+
+.notification-setting-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notification-setting-info strong {
+  color: #231814;
+  font-size: 15px;
+}
+
+.notification-setting-info small {
+  color: #61728a;
+  font-size: 13px;
+}
+
+.notification-setting-item input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+  accent-color: #a45100;
+  cursor: pointer;
+}
+
 .profile-popout {
   max-height: calc(100vh - 48px);
   overflow-y: auto;
@@ -1341,22 +1461,32 @@ font-size:30px;
   padding: 24px 28px;
 }
 
-.profile-actions-card a {
+.profile-actions-card a,
+.profile-actions-card .profile-logout-link {
   min-height: 49px;
   display: grid;
   grid-template-columns: 22px 1fr auto;
   align-items: center;
   gap: 14px;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
   color: #241a16;
   font-size: 16px;
   font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
 }
 
-.profile-actions-card a svg {
+.profile-actions-card a svg,
+.profile-actions-card .profile-logout-link svg {
   color: #526376;
 }
 
-.profile-actions-card a svg:last-child {
+.profile-actions-card a svg:last-child,
+.profile-actions-card .profile-logout-link svg:last-child {
   color: #526376;
 }
 
@@ -3307,6 +3437,535 @@ font-size:30px;
 @media(max-width:600px) {
   .favorites-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================
+   PAYMENT METHODS PAGE
+=========================== */
+
+.payment-methods-page {
+  min-height: 100vh;
+  background: #f8f1eb;
+}
+
+.payment-methods-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+  padding: 0 54px;
+  background: #fffaf6;
+  border-bottom: 1px solid #ead5c8;
+}
+
+.payment-methods-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #a45100;
+  font-family: Georgia, serif;
+  font-size: 24px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.payment-methods-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 54px;
+}
+
+.payment-methods-heading {
+  margin-bottom: 40px;
+}
+
+.payment-methods-heading h1 {
+  margin: 0 0 8px;
+  font-family: Georgia, serif;
+  font-size: 38px;
+  color: #231814;
+}
+
+.payment-methods-heading p {
+  margin: 0;
+  color: #61728a;
+  font-size: 16px;
+}
+
+.payment-methods-content {
+  background: #fffaf6;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 10px 28px rgba(63, 37, 22, 0.08);
+  border: 1px solid #ead5c8;
+}
+
+.payment-methods-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.payment-methods-header h2 {
+  margin: 0;
+  font-family: Georgia, serif;
+  font-size: 24px;
+  color: #231814;
+}
+
+.payment-methods-add-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #a45100;
+  color: white;
+  border-radius: 10px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.payment-methods-add-button:hover {
+  background: #8e4500;
+  transform: translateY(-2px);
+}
+
+.payment-methods-form-card {
+  background: #fffdfb;
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 32px;
+  border: 1px solid #f0ded4;
+}
+
+.payment-methods-form-card h3 {
+  margin: 0 0 20px;
+  font-family: Georgia, serif;
+  font-size: 20px;
+  color: #231814;
+}
+
+.payment-methods-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.payment-methods-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.payment-methods-form label span {
+  color: #6c5b50;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.payment-methods-form input {
+  padding: 12px 16px;
+  border: 1px solid #dfbda9;
+  border-radius: 8px;
+  font-size: 15px;
+  background: white;
+  transition: all 0.3s;
+}
+
+.payment-methods-form input:focus {
+  outline: none;
+  border-color: #a45100;
+  box-shadow: 0 0 0 3px rgba(164, 81, 0, 0.1);
+}
+
+.payment-methods-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.payment-methods-submit-button {
+  padding: 14px 24px;
+  background: #a45100;
+  color: white;
+  border-radius: 10px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.payment-methods-submit-button:hover {
+  background: #8e4500;
+}
+
+.payment-methods-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.payment-methods-empty {
+  text-align: center;
+  padding: 60px 24px;
+  background: #fffdfb;
+  border-radius: 10px;
+  border: 2px dashed #ead5c8;
+}
+
+.payment-methods-empty-icon {
+  color: #dfbda9;
+  margin-bottom: 16px;
+}
+
+.payment-methods-empty h3 {
+  margin: 0 0 8px;
+  font-family: Georgia, serif;
+  font-size: 22px;
+  color: #231814;
+}
+
+.payment-methods-empty p {
+  margin: 0 0 24px;
+  color: #61728a;
+  font-size: 15px;
+}
+
+.payment-method-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #ead5c8;
+  transition: all 0.3s;
+}
+
+.payment-method-card.default {
+  border-color: #a45100;
+  background: #fffdfb;
+}
+
+.payment-method-card:hover {
+  box-shadow: 0 8px 20px rgba(63, 37, 22, 0.1);
+}
+
+.payment-method-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  background: #fff4e6;
+  display: grid;
+  place-items: center;
+  color: #a45100;
+}
+
+.payment-method-info {
+  flex: 1;
+}
+
+.payment-method-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.payment-method-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #231814;
+  font-weight: 700;
+}
+
+.payment-method-badge {
+  padding: 4px 10px;
+  background: #e7f8e9;
+  color: #00862d;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.payment-method-info p {
+  margin: 0;
+  color: #61728a;
+  font-size: 14px;
+}
+
+.payment-method-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.payment-method-action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid #dfbda9;
+  background: #fffdfb;
+  color: #a45100;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.payment-method-action-button:hover {
+  background: #fff0e7;
+  border-color: #a45100;
+}
+
+.payment-method-action-button.danger {
+  color: #d01818;
+  border-color: #f2b9b7;
+}
+
+.payment-method-action-button.danger:hover {
+  background: #fee7e7;
+  border-color: #d01818;
+}
+
+.payment-methods-footer {
+  margin-top: 48px;
+}
+
+@media(max-width:900px) {
+  .payment-methods-nav {
+    padding: 0 20px;
+  }
+
+  .payment-methods-main {
+    padding: 32px 20px;
+  }
+
+  .payment-methods-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .payment-method-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .payment-method-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+@media(max-width:600px) {
+  .payment-methods-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-method-actions {
+    flex-direction: column;
+  }
+
+  .payment-method-action-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ==========================
+   CHANGE PASSWORD PAGE
+=========================== */
+
+.change-password-page {
+  min-height: 100vh;
+  background: #f8f1eb;
+}
+
+.change-password-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+  padding: 0 54px;
+  background: #fffaf6;
+  border-bottom: 1px solid #ead5c8;
+}
+
+.change-password-main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 48px 54px;
+}
+
+.change-password-heading {
+  margin-bottom: 40px;
+}
+
+.change-password-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #a45100;
+  font-weight: 700;
+  text-decoration: none;
+  margin-bottom: 16px;
+  transition: all 0.3s;
+}
+
+.change-password-back:hover {
+  color: #8e4500;
+}
+
+.change-password-heading h1 {
+  margin: 0 0 8px;
+  font-family: Georgia, serif;
+  font-size: 38px;
+  color: #231814;
+}
+
+.change-password-heading p {
+  margin: 0;
+  color: #61728a;
+  font-size: 16px;
+}
+
+.change-password-content {
+  background: #fffaf6;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 10px 28px rgba(63, 37, 22, 0.08);
+  border: 1px solid #ead5c8;
+}
+
+.change-password-card {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.change-password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.change-password-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.change-password-form label span {
+  color: #6c5b50;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.change-password-form label input {
+  padding: 14px 16px;
+  border: 1px solid #dfbda9;
+  border-radius: 10px;
+  font-size: 15px;
+  background: white;
+  transition: all 0.3s;
+}
+
+.change-password-form label input:focus {
+  outline: none;
+  border-color: #a45100;
+  box-shadow: 0 0 0 3px rgba(164, 81, 0, 0.1);
+}
+
+.change-password-form label small {
+  color: #61728a;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.change-password-message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.change-password-message.success {
+  background: #e7f8e9;
+  color: #00862d;
+  border: 1px solid #b8e6c0;
+}
+
+.change-password-message.error {
+  background: #fee7e7;
+  color: #d01818;
+  border: 1px solid #f2b9b7;
+}
+
+.change-password-submit-button {
+  padding: 16px 24px;
+  background: #a45100;
+  color: white;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.change-password-submit-button:hover {
+  background: #8e4500;
+  transform: translateY(-2px);
+}
+
+.change-password-submit-button:disabled {
+  background: #dfbda9;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.change-password-footer {
+  margin-top: 48px;
+}
+
+@media(max-width:900px) {
+  .change-password-nav {
+    padding: 0 20px;
+  }
+
+  .change-password-main {
+    padding: 32px 20px;
+  }
+
+  .change-password-content {
+    padding: 32px 24px;
+  }
+}
+
+@media(max-width:600px) {
+  .change-password-heading h1 {
+    font-size: 28px;
+  }
+
+  .change-password-content {
+    padding: 24px;
   }
 }
 

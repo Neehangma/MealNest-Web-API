@@ -6,6 +6,8 @@ export type AuthUser = {
   email: string;
   phoneNumber?: string;
   profilePicture?: string;
+  location?: string;
+  bio?: string;
   role: "user" | "admin";
   createdAt?: string;
   updatedAt?: string;
