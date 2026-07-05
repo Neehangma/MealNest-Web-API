@@ -1,13 +1,14 @@
-const User = require("../models/user.model.ts");
-const { parsePagination } = require("../utils/apihelper.utils.ts");
+const User = require("../models/user.model");
+const { parsePagination } = require("../utils/apihelper.utils");
 
 function findByEmail(email, includePassword = false) {
   const query = User.findOne({ email });
   return includePassword ? query.select("+password") : query;
 }
 
-function findById(id) {
-  return User.findById(id);
+function findById(id, includePassword = false) {
+  const query = User.findById(id);
+  return includePassword ? query.select("+password") : query;
 }
 
 function createUser(payload) {

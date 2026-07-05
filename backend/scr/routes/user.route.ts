@@ -1,19 +1,28 @@
 const express = require("express");
-const userController = require("../controller/user.controller.ts");
-const { authenticate, requireAdmin } = require("../middleware/authorized.middleware.ts");
+const userController = require("../controller/user.controller");
+const { authenticate, requireAdmin } = require("../middleware/authorized.middleware");
 const {
   validateAdminCreateUser,
   validateAdminUpdateUser,
   validateLogin,
+  validatePasswordChange,
+  validateProfileUpdate,
   validateRegister,
-} = require("../middleware/validation.ts");
-const { asyncHandler } = require("../utils/apihelper.utils.ts");
+} = require("../middleware/validation");
+const { asyncHandler } = require("../utils/apihelper.utils");
 
 const router = express.Router();
 
 router.post("/auth/register", validateRegister, asyncHandler(userController.register));
 router.post("/auth/login", validateLogin, asyncHandler(userController.login));
 router.get("/auth/current", authenticate, asyncHandler(userController.current));
+router.patch("/profile", authenticate, validateProfileUpdate, asyncHandler(userController.updateProfile));
+router.patch(
+  "/profile/password",
+  authenticate,
+  validatePasswordChange,
+  asyncHandler(userController.changePassword)
+);
 
 router.get("/admin/users", authenticate, requireAdmin, asyncHandler(userController.listUsers));
 router.get("/admin/users/:id", authenticate, requireAdmin, asyncHandler(userController.getUser));

@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { MONGO_URI } = require("../config/constant.ts");
+const { MONGO_URI } = require("../config/constant");
 
 async function connectMongo() {
   mongoose.set("strictQuery", true);

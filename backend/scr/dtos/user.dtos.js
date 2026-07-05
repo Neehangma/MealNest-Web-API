@@ -40,9 +40,29 @@ function createUpdateUserDto(body) {
   return dto;
 }
 
+function createProfileUpdateDto(body) {
+  const dto = {};
+
+  if (body.fullName !== undefined) dto.fullName = String(body.fullName || "").trim();
+  if (body.email !== undefined) dto.email = normalizeEmail(body.email);
+  if (body.phoneNumber !== undefined) dto.phoneNumber = String(body.phoneNumber || "").trim();
+  if (body.profilePicture !== undefined) dto.profilePicture = String(body.profilePicture || "");
+
+  return dto;
+}
+
+function createPasswordChangeDto(body) {
+  return {
+    currentPassword: String(body.currentPassword || ""),
+    newPassword: String(body.newPassword || ""),
+  };
+}
+
 module.exports = {
   createRegisterDto,
   createLoginDto,
   createAdminUserDto,
   createUpdateUserDto,
+  createProfileUpdateDto,
+  createPasswordChangeDto,
 };

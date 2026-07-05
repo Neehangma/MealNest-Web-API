@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { ALLOWED_ROLES } = require("../config/constant.ts");
+const { ALLOWED_ROLES } = require("../config/constant");
 
 const userSchema = new mongoose.Schema(
   {
@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: String,
-      default: "",
+      minlength: 10,
       trim: true,
     },
     password: {

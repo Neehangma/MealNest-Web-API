@@ -1,46 +1,29 @@
-import Image from "next/image";
-import Link from "next/link";
-import { getUserData } from "@/lib/cookies";
+import { getAuthenticatedUser } from "@/lib/auth-session";
+import { redirect } from "next/navigation";
+import ProfileSettingsClient from "./ProfileSettingsClient";
+
+const fallbackAvatar =
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=320&q=80";
 
 export default async function ProfilePage() {
-  const user = await getUserData();
-  const name = user?.fullName || "MealNest User";
-  const email = user?.email || "user@example.com";
-  const phone = user?.phoneNumber || "Not added";
+  const user = await getAuthenticatedUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  if (user.role !== "user") {
+    redirect("/login");
+  }
 
   return (
-    <main className="profile-page">
-      <section className="profile-card">
-        <div className="profile-header">
-          <Link href="/dashboard" className="profile-back">
-            Back to Dashboard
-          </Link>
-          <Image src="/images/Logo.png" alt="MealNest logo" width={62} height={62} priority />
-        </div>
-
-        <div className="profile-avatar">{name.slice(0, 2).toUpperCase()}</div>
-        <h1>{name}</h1>
-        <p>{email}</p>
-
-        <div className="profile-details">
-          <div>
-            <span>Full Name</span>
-            <strong>{name}</strong>
-          </div>
-          <div>
-            <span>Email</span>
-            <strong>{email}</strong>
-          </div>
-          <div>
-            <span>Phone</span>
-            <strong>{phone}</strong>
-          </div>
-          <div>
-            <span>Role</span>
-            <strong>{user?.role || "user"}</strong>
-          </div>
-        </div>
-      </section>
-    </main>
+    <ProfileSettingsClient
+      user={{
+        fullName: user.fullName || "MealNest User",
+        email: user.email,
+        phoneNumber: user.phoneNumber || "",
+        profilePicture: user.profilePicture || fallbackAvatar,
+      }}
+    />
   );
 }
