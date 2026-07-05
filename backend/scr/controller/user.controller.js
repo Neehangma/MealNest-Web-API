@@ -9,6 +9,10 @@ const {
 const userService = require("../services/user.service.js");
 const { sendSuccess, toSafeUser } = require("../utils/apihelper.utils.js");
 
+const {
+    sendBookingConfirmationEmail
+} = require("../services/emailService");
+
 async function register(req, res) {
   const result = await userService.register(createRegisterDto(req.body));
   return sendSuccess(res, 201, {
