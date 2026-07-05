@@ -123,6 +123,41 @@ async function updateAdminUser(id, payload) {
   return toSafeUser(user);
 }
 
+async function updateProfile(userId, payload) {
+  const user = await getUserByIdOrThrow(userId);
+
+  if (payload.email && payload.email !== user.email) {
+    const existingUser = await userRepository.findByEmail(payload.email);
+    if (existingUser && existingUser._id.toString() !== user._id.toString()) {
+      throw new HttpException(409, "Email already exists");
+    }
+    user.email = payload.email;
+  }
+
+  if (payload.fullName !== undefined && payload.fullName) user.fullName = payload.fullName;
+  if (payload.phoneNumber !== undefined) user.phoneNumber = payload.phoneNumber;
+  if (payload.profilePicture !== undefined) user.profilePicture = payload.profilePicture;
+
+  await user.save();
+  return toSafeUser(user);
+}
+
+async function changePassword(userId, payload) {
+  const user = await userRepository.findById(userId, true);
+
+  if (!user) {
+    throw new HttpException(404, "User not found");
+  }
+
+  const passwordMatches = await bcrypt.compare(payload.currentPassword, user.password);
+  if (!passwordMatches) {
+    throw new HttpException(401, "Current password is incorrect");
+  }
+
+  user.password = await bcrypt.hash(payload.newPassword, BCRYPT_SALT_ROUNDS);
+  await user.save();
+}
+
 async function deleteAdminUser(id, currentUserId) {
   const user = await getUserByIdOrThrow(id);
 
@@ -134,6 +169,7 @@ async function deleteAdminUser(id, currentUserId) {
 }
 
 module.exports = {
+  changePassword,
   createAdminUser,
   createToken,
   deleteAdminUser,
@@ -143,4 +179,5 @@ module.exports = {
   login,
   register,
   updateAdminUser,
+  updateProfile,
 };

@@ -1,7 +1,14 @@
 declare const require: any;
 declare const module: any;
 
-const { createAdminUserDto, createLoginDto, createRegisterDto, createUpdateUserDto } = require("../dtos/user.dtos");
+const {
+  createAdminUserDto,
+  createLoginDto,
+  createPasswordChangeDto,
+  createProfileUpdateDto,
+  createRegisterDto,
+  createUpdateUserDto,
+} = require("../dtos/user.dtos");
 const userService = require("../services/user.service");
 const { sendSuccess, toSafeUser } = require("../utils/apihelper.utils");
 
@@ -60,6 +67,21 @@ async function updateUser(req, res) {
   });
 }
 
+async function updateProfile(req, res) {
+  const user = await userService.updateProfile(req.user._id, createProfileUpdateDto(req.body));
+  return sendSuccess(res, 200, {
+    message: "Profile updated successfully",
+    user,
+  });
+}
+
+async function changePassword(req, res) {
+  await userService.changePassword(req.user._id, createPasswordChangeDto(req.body));
+  return sendSuccess(res, 200, {
+    message: "Password changed successfully",
+  });
+}
+
 async function deleteUser(req, res) {
   await userService.deleteAdminUser(req.params.id, req.user._id);
   return sendSuccess(res, 200, {
@@ -68,6 +90,7 @@ async function deleteUser(req, res) {
 }
 
 module.exports = {
+  changePassword,
   createUser,
   current,
   deleteUser,
@@ -75,5 +98,6 @@ module.exports = {
   listUsers,
   login,
   register,
+  updateProfile,
   updateUser,
 };
