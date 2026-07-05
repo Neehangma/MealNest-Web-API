@@ -1862,6 +1862,29 @@ font-size:30px;
 .favorite-image img {
   width: 100%;
   height: 100%;
+  object-fit: cover;
+}
+
+.status-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.status-badge.open {
+  background: #ecfdf3;
+  color: #147d3b;
+}
+
+.status-badge.closed {
+  background: #fff2f2;
+  color: #b42318;
 }
 
 .favorite-image button {
@@ -1882,7 +1905,7 @@ font-size:30px;
 }
 
 .favorite-body {
-  padding: 26px 24px 24px;
+  padding: 22px 24px 24px;
 }
 
 .favorite-title {
@@ -1913,19 +1936,29 @@ font-size:30px;
   fill: currentColor;
 }
 
-.favorite-body p {
-  margin-top: 7px;
+.favorite-cuisine,
+.favorite-location {
+  margin: 6px 0 0;
+  color: #526376;
 }
 
-.favorite-body strong {
-  display: inline-flex;
-  margin-top: 30px;
-  border-radius: 999px;
-  background: #fbf1ea;
+.favorite-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.favorite-price {
   color: #a14b00;
-  padding: 6px 13px;
-  font-size: 12px;
-  letter-spacing: 0.04em;
+  font-weight: 900;
+}
+
+.favorite-book-link {
+  color: #9b4800;
+  font-size: 14px;
+  font-weight: 900;
 }
 
 .customer-sidebar {

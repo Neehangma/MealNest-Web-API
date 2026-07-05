@@ -90,15 +90,75 @@ async function deleteUser(req, res) {
   });
 }
 
+async function getDashboard(req, res) {
+  const data = await userService.getDashboard(req.user._id);
+  return sendSuccess(res, 200, {
+    data,
+  });
+}
+
+async function listRestaurants(req, res) {
+  const restaurants = await userService.listRestaurants();
+  return sendSuccess(res, 200, {
+    data: restaurants,
+  });
+}
+
+async function getRestaurant(req, res) {
+  const restaurant = await userService.getRestaurant(req.params.id);
+  return sendSuccess(res, 200, {
+    data: restaurant,
+  });
+}
+
+async function toggleFavorite(req, res) {
+  const result = await userService.toggleFavorite(req.user._id, req.params.restaurantId);
+  return sendSuccess(res, 200, {
+    message: result.action === "added" ? "Restaurant added to favorites" : "Restaurant removed from favorites",
+    data: result,
+  });
+}
+
+async function createReservation(req, res) {
+  const reservation = await userService.createReservation(req.user._id, req.body);
+  return sendSuccess(res, 201, {
+    message: "Reservation created successfully",
+    data: reservation,
+  });
+}
+
+async function updateReservation(req, res) {
+  const reservation = await userService.updateReservation(req.user._id, req.params.reservationId, req.body);
+  return sendSuccess(res, 200, {
+    message: "Reservation updated successfully",
+    data: reservation,
+  });
+}
+
+async function cancelReservation(req, res) {
+  const reservation = await userService.cancelReservation(req.user._id, req.params.reservationId);
+  return sendSuccess(res, 200, {
+    message: "Reservation cancelled successfully",
+    data: reservation,
+  });
+}
+
 module.exports = {
+  cancelReservation,
   changePassword,
+  createReservation,
   createUser,
   current,
   deleteUser,
+  getDashboard,
+  getRestaurant,
   getUser,
+  listRestaurants,
   listUsers,
   login,
   register,
+  toggleFavorite,
   updateProfile,
+  updateReservation,
   updateUser,
 };
