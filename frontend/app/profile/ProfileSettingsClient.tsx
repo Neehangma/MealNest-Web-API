@@ -147,6 +147,10 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
 
       <main className="profile-settings-main">
         <section className="profile-settings-heading">
+          <a href="/dashboard/user" className="profile-settings-back">
+            <Icon name="chevron" size={20} />
+            Back to Dashboard
+          </a>
           <h1>Profile Settings</h1>
           <p>Manage your personal information and account settings.</p>
         </section>
@@ -242,11 +246,7 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
                 <span>Change Password</span>
                 <Icon name="chevron" size={18} />
               </a>
-              <a href="/payment-methods">
-                <Icon name="card" />
-                <span>Payment Methods</span>
-                <Icon name="chevron" size={18} />
-              </a>
+              
               <button
                 className="profile-logout-link"
                 type="button"

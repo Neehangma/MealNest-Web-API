@@ -111,6 +111,10 @@ export default function PaymentMethodsClient() {
 
       <main className="payment-methods-main">
         <section className="payment-methods-heading">
+          <Link href="/dashboard/user" className="payment-methods-back">
+            <Icon name="chevron" size={18} />
+            Back to Dashboard
+          </Link>
           <h1>Payment Methods</h1>
           <p>Manage your payment methods for quick and easy reservations.</p>
         </section>

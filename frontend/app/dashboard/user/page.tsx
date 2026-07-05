@@ -271,7 +271,7 @@ export default async function UserDashboardPage() {
                 <span>Update Profile</span>
                 <Icon name="chevron" size={18} />
               </a>
-              <a href="#">
+              <a href="/payment-checkout">
                 <Icon name="card" />
                 <span>Payment Methods</span>
                 <Icon name="chevron" size={18} />
