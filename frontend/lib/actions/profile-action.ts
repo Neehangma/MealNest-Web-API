@@ -54,6 +54,8 @@ export async function updateProfileAction(_prevState: ActionState, formData: For
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const phoneNumber = String(formData.get("phoneNumber") || "").trim();
   const profilePicture = String(formData.get("profilePicture") || "");
+  const location = String(formData.get("location") || "").trim();
+  const bio = String(formData.get("bio") || "").trim();
 
   if (!fullName) {
     return { success: false, message: "Full name is required" };
@@ -71,6 +73,8 @@ export async function updateProfileAction(_prevState: ActionState, formData: For
         email,
         phoneNumber,
         profilePicture,
+        location,
+        bio,
       }),
     });
 

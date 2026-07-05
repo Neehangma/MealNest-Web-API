@@ -137,6 +137,8 @@ async function updateProfile(userId, payload) {
   if (payload.fullName !== undefined && payload.fullName) user.fullName = payload.fullName;
   if (payload.phoneNumber !== undefined) user.phoneNumber = payload.phoneNumber;
   if (payload.profilePicture !== undefined) user.profilePicture = payload.profilePicture;
+  if (payload.location !== undefined) user.location = payload.location;
+  if (payload.bio !== undefined) user.bio = payload.bio;
 
   await user.save();
   return toSafeUser(user);

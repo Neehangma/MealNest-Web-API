@@ -23,6 +23,8 @@ export default async function ProfilePage() {
         email: user.email,
         phoneNumber: user.phoneNumber || "",
         profilePicture: user.profilePicture || fallbackAvatar,
+        location: user.location || "",
+        bio: user.bio || "",
       }}
     />
   );

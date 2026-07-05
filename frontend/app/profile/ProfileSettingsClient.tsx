@@ -1,13 +1,15 @@
 "use client";
 
-import { changePasswordAction, logoutAction, updateProfileAction } from "@/lib/actions/profile-action";
-import { useActionState, useEffect, useRef, useState } from "react";
+import { logoutAction, updateProfileAction } from "@/lib/actions/profile-action";
+import { useActionState, useRef, useState } from "react";
 
 type ProfileUser = {
   fullName: string;
   email: string;
   phoneNumber: string;
   profilePicture: string;
+  location: string;
+  bio: string;
 };
 
 type IconName =
@@ -103,32 +105,21 @@ function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
 
 export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
   const [profileState, profileFormAction, isUpdatingProfile] = useActionState(updateProfileAction, emptyState);
-  const [passwordState, passwordFormAction, isChangingPassword] = useActionState(changePasswordAction, emptyState);
   const [avatar, setAvatar] = useState(user.profilePicture);
-  const [photoMessage, setPhotoMessage] = useState("");
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [notificationSettings, setNotificationSettings] = useState({
+    reservationUpdates: true,
+    promotions: false,
+    pushNotifications: false,
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const passwordFormRef = useRef<HTMLFormElement>(null);
-
-  useEffect(() => {
-    if (passwordState.success) {
-      passwordFormRef.current?.reset();
-    }
-  }, [passwordState.success]);
 
   function handlePhotoChange(file: File | undefined) {
-    setPhotoMessage("");
-
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      setPhotoMessage("Choose a JPG, PNG, GIF, or WEBP image.");
-      return;
-    }
+    if (!file.type.startsWith("image/")) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      setPhotoMessage("Profile photo must be 2MB or smaller.");
-      return;
-    }
+    if (file.size > 2 * 1024 * 1024) return;
 
     const reader = new FileReader();
     reader.onload = () => setAvatar(String(reader.result || user.profilePicture));
@@ -156,6 +147,10 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
 
       <main className="profile-settings-main">
         <section className="profile-settings-heading">
+          <a href="/dashboard/user" className="profile-settings-back">
+            <Icon name="chevron" size={20} />
+            Back to Dashboard
+          </a>
           <h1>Profile Settings</h1>
           <p>Manage your personal information and account settings.</p>
         </section>
@@ -173,18 +168,16 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
                     <Icon name="camera" size={18} />
                   </button>
                 </div>
-                <p>JPG, PNG or GIF. Max size 2MB.</p>
                 <input
                   ref={fileInputRef}
-                  className="profile-file-input"
                   type="file"
                   accept="image/png,image/jpeg,image/gif,image/webp"
                   onChange={(event) => handlePhotoChange(event.target.files?.[0])}
+                  style={{ display: "none" }}
                 />
                 <button type="button" className="profile-outline-button" onClick={() => fileInputRef.current?.click()}>
                   Change Photo
                 </button>
-                {photoMessage && <p className="profile-action-message error">{photoMessage}</p>}
               </div>
 
               <div className="profile-fields">
@@ -202,14 +195,14 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
                 </label>
                 <label>
                   <span>Location</span>
-                  <input name="location" defaultValue="Kathmandu, Nepal" disabled />
+                  <input name="location" defaultValue={user.location} />
                 </label>
                 <label>
                   <span>Bio</span>
                   <textarea
                     name="bio"
-                    defaultValue="Food enthusiast | Coffee lover | Exploring new cuisines around the world."
-                    disabled
+                    defaultValue={user.bio}
+                    rows={4}
                   />
                 </label>
                 {profileState.message && (
@@ -248,54 +241,21 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
 
             <section className="profile-panel profile-actions-card">
               <h2>Quick Actions</h2>
-              <a href="#change-password">
+              <a href="/change-password">
                 <Icon name="lock" />
                 <span>Change Password</span>
                 <Icon name="chevron" size={18} />
               </a>
-              <a href="/payment-methods">
-                <Icon name="card" />
-                <span>Payment Methods</span>
+              
+              <button
+                className="profile-logout-link"
+                type="button"
+                onClick={() => setShowLogoutDialog(true)}
+              >
+                <Icon name="logout" />
+                <span>Logout</span>
                 <Icon name="chevron" size={18} />
-              </a>
-              <a href="#">
-                <Icon name="bell" />
-                <span>Notification Settings</span>
-                <Icon name="chevron" size={18} />
-              </a>
-              <form action={logoutAction}>
-                <button className="profile-logout-link" type="submit">
-                  <Icon name="logout" />
-                  <span>Logout</span>
-                  <Icon name="chevron" size={18} />
-                </button>
-              </form>
-            </section>
-
-            <section className="profile-panel profile-password-card" id="change-password">
-              <h2>Change Password</h2>
-              <form ref={passwordFormRef} action={passwordFormAction}>
-                <label>
-                  <span>Current Password</span>
-                  <input name="currentPassword" type="password" required />
-                </label>
-                <label>
-                  <span>New Password</span>
-                  <input name="newPassword" type="password" minLength={6} required />
-                </label>
-                <label>
-                  <span>Confirm Password</span>
-                  <input name="confirmPassword" type="password" minLength={6} required />
-                </label>
-                {passwordState.message && (
-                  <p className={`profile-action-message ${passwordState.success ? "success" : "error"}`}>
-                    {passwordState.message}
-                  </p>
-                )}
-                <button type="submit" className="profile-submit-button" disabled={isChangingPassword}>
-                  {isChangingPassword ? "Changing..." : "Change Password"}
-                </button>
-              </form>
+              </button>
             </section>
           </aside>
         </div>
@@ -328,6 +288,31 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
           <p>&copy; 2024 MealNest. All rights reserved.</p>
         </div>
       </footer>
+
+      {showLogoutDialog && (
+        <div className="profile-modal-overlay" onClick={() => setShowLogoutDialog(false)}>
+          <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Confirm Logout</h2>
+            <p>Are you sure you want to logout?</p>
+            <div className="profile-modal-actions">
+              <button
+                type="button"
+                className="profile-modal-button secondary"
+                onClick={() => setShowLogoutDialog(false)}
+              >
+                Cancel
+              </button>
+              <form action={logoutAction}>
+                <button type="submit" className="profile-modal-button primary">
+                  Logout
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+     
     </div>
   );
 }
