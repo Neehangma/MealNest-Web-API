@@ -9,6 +9,20 @@ export const API = {
         UPDATE: "/api/v1/profile",
         PASSWORD: "/api/v1/profile/password",
     },
+    DASHBOARD: {
+        GET: "/api/v1/dashboard",
+    },
+    RESTAURANTS: {
+        LIST: "/api/v1/restaurants",
+        BY_ID: (id: string) => `/api/v1/restaurants/${id}`,
+    },
+    FAVORITES: {
+        TOGGLE: (restaurantId: string) => `/api/v1/favorites/${restaurantId}`,
+    },
+    RESERVATIONS: {
+        CREATE: "/api/v1/reservations",
+        BY_ID: (reservationId: string) => `/api/v1/reservations/${reservationId}`,
+    },
     ADMIN: {
         USERS: "/api/v1/admin/users",
         USER_BY_ID: (id: string) => `/api/v1/admin/users/${id}`,

@@ -1,0 +1,3 @@
+@echo off
+echo Starting MealNest backend...
+node dev.js
