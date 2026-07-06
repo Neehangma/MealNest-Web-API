@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node scr/server.js"
+    "start": "node scr/server.js",
+    "dev": "node -e \"const { spawn } = require('child_process'); const child = spawn(process.execPath, ['dev.js'], { stdio: 'inherit' }); child.on('exit', (code) => process.exit(code)); child.on('error', (err) => { console.error(err); process.exit(1); });\""
   },
   "keywords": [],
   "author": "",

@@ -41,16 +41,25 @@ app.use((error, _req, res, _next) => {
   return sendError(res, status, message, error.details);
 });
 
-connectMongo()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`MongoDB connected: ${mongoose.connection.name}`);
-    });
-  })
-  .catch((error) => {
-    console.error("MongoDB connection failed:", error.message);
-    process.exit(1);
+const startServer = () => {
+  console.log(`Starting MealNest backend on port ${PORT}`);
+
+  const server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Health check: http://127.0.0.1:${PORT}/api/health`);
   });
+
+  connectMongo()
+    .then(() => {
+      console.log(`MongoDB connected: ${mongoose.connection.name}`);
+    })
+    .catch((error) => {
+      console.error("MongoDB connection failed:", error.message);
+    });
+
+  return server;
+};
+
+startServer();
 
 module.exports = app;
