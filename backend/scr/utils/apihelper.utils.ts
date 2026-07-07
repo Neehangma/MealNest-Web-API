@@ -1,13 +1,16 @@
-import mongoose from "mongoose";
+declare const require: any;
+declare const module: any;
 
-export function sendSuccess(res, status, payload) {
+const mongoose = require("mongoose");
+
+function sendSuccess(res, status, payload) {
   return res.status(status).json({
     success: true,
     ...payload,
   });
 }
 
-export function sendError(res, status, message, details) {
+function sendError(res, status, message, details) {
   return res.status(status).json({
     success: false,
     message,
@@ -15,11 +18,11 @@ export function sendError(res, status, message, details) {
   });
 }
 
-export function asyncHandler(handler) {
+function asyncHandler(handler) {
   return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 }
 
-export function parsePagination(query) {
+function parsePagination(query) {
   const page = Math.max(parseInt(query.page, 10) || 1, 1);
   const limit = Math.min(Math.max(parseInt(query.limit, 10) || 10, 1), 100);
 
@@ -30,11 +33,11 @@ export function parsePagination(query) {
   };
 }
 
-export function isValidObjectId(id) {
+function isValidObjectId(id) {
   return mongoose.Types.ObjectId.isValid(id);
 }
 
-export function toSafeUser(user) {
+function toSafeUser(user) {
   return {
     id: user._id.toString(),
     fullName: user.fullName || "",
@@ -46,3 +49,12 @@ export function toSafeUser(user) {
     updatedAt: user.updatedAt,
   };
 }
+
+module.exports = {
+  asyncHandler,
+  isValidObjectId,
+  parsePagination,
+  sendError,
+  sendSuccess,
+  toSafeUser,
+};

@@ -260,10 +260,7 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
               <strong>{loading ? "—" : stats.favorites}</strong>
               <span>Favorites</span>
             </div>
-            <div>
-              <strong>{loading ? "—" : stats.averageRating.toFixed(1)}</strong>
-              <span>Rating</span>
-            </div>
+            
           </div>
         </section>
 

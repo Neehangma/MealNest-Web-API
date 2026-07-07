@@ -1,9 +1,37 @@
+declare const require: any;
+declare const module: any;
+
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { ALLOWED_ROLES, BCRYPT_SALT_ROUNDS, JWT_EXPIRES_IN, JWT_SECRET } = require("../config/constant");
 const { HttpException } = require("../exceptions/http-exception");
 const userRepository = require("../repositories/user.repository");
 const { isValidObjectId, toSafeUser } = require("../utils/apihelper.utils");
+
+function formatDisplayDate(dateValue) {
+  const date = new Date(dateValue);
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+
+function formatReservationItem(reservation) {
+  return {
+    _id: reservation._id?.toString(),
+    restaurantId: reservation.restaurantId?.toString(),
+    restaurantName: reservation.restaurantName,
+    cuisine: reservation.cuisine,
+    image: reservation.image,
+    reservationDate: reservation.reservationDate,
+    date: reservation.date,
+    time: reservation.time,
+    guests: reservation.guests,
+    status: reservation.status,
+    specialRequests: reservation.specialRequests,
+  };
+}
 
 function createToken(user) {
   return jwt.sign(
@@ -137,8 +165,6 @@ async function updateProfile(userId, payload) {
   if (payload.fullName !== undefined && payload.fullName) user.fullName = payload.fullName;
   if (payload.phoneNumber !== undefined) user.phoneNumber = payload.phoneNumber;
   if (payload.profilePicture !== undefined) user.profilePicture = payload.profilePicture;
-  if (payload.location !== undefined) user.location = payload.location;
-  if (payload.bio !== undefined) user.bio = payload.bio;
 
   await user.save();
   return toSafeUser(user);
@@ -170,16 +196,134 @@ async function deleteAdminUser(id, currentUserId) {
   await userRepository.deleteUser(id);
 }
 
+async function getDashboard(userId) {
+  const dashboard = await userRepository.getDashboardData(userId);
+  if (!dashboard.user) {
+    return {
+      user: null,
+      stats: { bookings: 0, favorites: 0, averageRating: 0 },
+      favorites: [],
+      upcomingReservations: [],
+      recentHistory: [],
+    };
+  }
+
+  const favorites = (dashboard.favorites || []).map((restaurant) => ({
+    _id: restaurant._id?.toString(),
+    name: restaurant.name,
+    cuisine: restaurant.cuisine,
+    rating: restaurant.rating,
+    image: restaurant.image,
+    isOpen: restaurant.isOpen,
+    status: restaurant.isOpen ? "Available Tonight" : "Closed",
+    location: restaurant.location,
+    priceRange: restaurant.priceRange,
+  }));
+
+  const upcomingReservations = (dashboard.upcomingReservations || []).map(formatReservationItem);
+  const recentHistory = (dashboard.recentHistory || []).map((reservation) => ({
+    ...formatReservationItem(reservation),
+    summary: reservation.status === "completed" ? "Completed reservation" : "Visited restaurant",
+  }));
+
+  return {
+    user: toSafeUser(dashboard.user),
+    stats: {
+      bookings: dashboard.stats?.bookings || 0,
+      favorites: dashboard.stats?.favorites || 0,
+      averageRating: Number(dashboard.stats?.averageRating || 0),
+    },
+    favorites,
+    upcomingReservations,
+    recentHistory,
+  };
+}
+
+async function listRestaurants() {
+  return userRepository.listRestaurants();
+}
+
+async function getRestaurant(id) {
+  if (!isValidObjectId(id)) {
+    throw new HttpException(400, "Invalid restaurant id");
+  }
+
+  const restaurant = await userRepository.getRestaurantById(id);
+  if (!restaurant) {
+    throw new HttpException(404, "Restaurant not found");
+  }
+
+  return restaurant;
+}
+
+async function toggleFavorite(userId, restaurantId) {
+  if (!isValidObjectId(restaurantId)) {
+    throw new HttpException(400, "Invalid restaurant id");
+  }
+
+  const result = await userRepository.toggleFavorite(userId, restaurantId);
+  if (!result) {
+    throw new HttpException(404, "User not found");
+  }
+
+  return {
+    action: result.isFavorite ? "added" : "removed",
+    favorites: (result.favorites.favorites || []).map((restaurant) => ({
+      _id: restaurant._id?.toString(),
+      name: restaurant.name,
+      cuisine: restaurant.cuisine,
+      rating: restaurant.rating,
+      image: restaurant.image,
+      isOpen: restaurant.isOpen,
+      status: restaurant.isOpen ? "Available Tonight" : "Closed",
+    })),
+  };
+}
+
+async function createReservation(userId, payload) {
+  if (!payload.restaurantId || !isValidObjectId(payload.restaurantId)) {
+    throw new HttpException(400, "Invalid restaurant id");
+  }
+
+  const reservation = await userRepository.createReservation(userId, payload);
+  return formatReservationItem(reservation);
+}
+
+async function updateReservation(userId, reservationId, payload) {
+  const reservation = await userRepository.updateReservation(userId, reservationId, payload);
+  if (!reservation) {
+    throw new HttpException(404, "Reservation not found");
+  }
+
+  return formatReservationItem(reservation);
+}
+
+async function cancelReservation(userId, reservationId) {
+  const reservation = await userRepository.cancelReservation(userId, reservationId);
+  if (!reservation) {
+    throw new HttpException(404, "Reservation not found");
+  }
+
+  return formatReservationItem(reservation);
+}
+
 module.exports = {
+  cancelReservation,
   changePassword,
   createAdminUser,
+  createReservation,
   createToken,
   deleteAdminUser,
   getCurrentUser,
+  getDashboard,
+  getRestaurant,
   getUserByIdOrThrow,
   listAdminUsers,
+  listRestaurants,
   login,
   register,
+  toggleFavorite,
   updateAdminUser,
   updateProfile,
+  updateReservation,
 };

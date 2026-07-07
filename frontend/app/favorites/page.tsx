@@ -2,65 +2,44 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getUserData } from "@/lib/cookies";
-import { useEffect } from "react";
-
-interface FavoriteRestaurant {
-  id: string;
-  name: string;
-  cuisine: string;
-  location: string;
-  rating: number;
-  priceRange: string;
-  image: string;
-  isOpen: boolean;
-}
-
-const mockFavorites: FavoriteRestaurant[] = [
-  {
-    id: "1",
-    name: "The Golden Truffle",
-    cuisine: "French",
-    location: "Upper East Side",
-    rating: 4.8,
-    priceRange: "$$$",
-    image: "/images/Register.jpg",
-    isOpen: true,
-  },
-  {
-    id: "2",
-    name: "Sakura Omakase",
-    cuisine: "Japanese",
-    location: "Tribeca",
-    rating: 4.9,
-    priceRange: "$$$$",
-    image: "/images/Login.jpg",
-    isOpen: true,
-  },
-  {
-    id: "3",
-    name: "La Bella Italia",
-    cuisine: "Italian",
-    location: "SoHo",
-    rating: 4.6,
-    priceRange: "$$",
-    image: "/images/Register.jpg",
-    isOpen: true,
-  },
-];
+import { getDashboardData, toggleFavorite, type FavoriteRestaurant } from "@/lib/api/dashboard";
 
 export default function FavoritesPage() {
   const [user, setUser] = useState<any>(null);
-  const [favorites, setFavorites] = useState<FavoriteRestaurant[]>(mockFavorites);
+  const [favorites, setFavorites] = useState<FavoriteRestaurant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     getUserData().then(setUser);
+    void loadFavorites();
   }, []);
 
-  const handleRemoveFavorite = (id: string) => {
-    if (confirm("Remove this restaurant from your favorites?")) {
-      setFavorites(favorites.filter((fav) => fav.id !== id));
+  async function loadFavorites() {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await getDashboardData();
+      setFavorites(response.data.favorites);
+    } catch {
+      setError("We could not load your favorites right now.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleRemoveFavorite = async (id: string) => {
+    if (!confirm("Remove this restaurant from your favorites?")) {
+      return;
+    }
+
+    try {
+      const result = await toggleFavorite(id);
+      setFavorites(result.data.favorites);
+    } catch {
+      setError("Unable to update favorites right now.");
     }
   };
 
@@ -87,7 +66,11 @@ export default function FavoritesPage() {
           </Link>
         </div>
 
-        {favorites.length === 0 ? (
+        {error && <p className="profile-action-message error">{error}</p>}
+
+        {loading && <p>Loading favorites…</p>}
+
+        {!loading && favorites.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">♡</div>
             <h2>No favorites yet</h2>
@@ -99,7 +82,7 @@ export default function FavoritesPage() {
         ) : (
           <div className="favorites-grid">
             {favorites.map((restaurant) => (
-              <div key={restaurant.id} className="favorite-card">
+              <div key={restaurant._id} className="favorite-card">
                 <div className="favorite-image">
                   <Image
                     src={restaurant.image}
@@ -112,7 +95,7 @@ export default function FavoritesPage() {
                   </div>
                   <button
                     className="remove-favorite"
-                    onClick={() => handleRemoveFavorite(restaurant.id)}
+                    onClick={() => void handleRemoveFavorite(restaurant._id)}
                     aria-label="Remove from favorites"
                   >
                     ✕
@@ -127,7 +110,7 @@ export default function FavoritesPage() {
                   <p className="location">{restaurant.location}</p>
                   <div className="favorite-footer">
                     <span className="price-range">{restaurant.priceRange}</span>
-                    <Link href={`/restaurants/${restaurant.id}`} className="book-link">
+                    <Link href={`/restaurants/${restaurant._id}`} className="book-link">
                       Book Table →
                     </Link>
                   </div>
