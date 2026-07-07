@@ -11,7 +11,7 @@ const restaurantSchema = new mongoose.Schema({
   cuisine: { type: String, required: true, trim: true },
   location: { type: String, required: true, trim: true },
   rating: { type: Number, default: 5.0 },
-  priceRange: { type: String, enum: ["$", "$$", "$$$", "$$$$"], default: "$$" },
+  priceRange: { type: String, enum: ["$", "$$", "$$$", "$$$$"], default: "Rs." },
   image: { type: String, default: "/images/Register.jpg" },
   isOpen: { type: Boolean, default: true },
   description: { type: String, trim: true },
@@ -22,4 +22,5 @@ const restaurantSchema = new mongoose.Schema({
   tables: [tableSchema]
 }, { timestamps: true });
 
-module.exports = mongoose.models.Restaurant || mongoose.model("Restaurant", restaurantSchema);
+module.exports = mongoose.models.Restaurant 
+|| mongoose.model("Restaurant", restaurantSchema);

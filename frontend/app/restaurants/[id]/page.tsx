@@ -2,117 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-
-interface Restaurant {
-  id: string;
-  name: string;
-  cuisine: string;
-  location: string;
-  rating: number;
-  priceRange: string;
-  image: string;
-  isOpen: boolean;
-  description: string;
-  address: string;
-  phone: string;
-  hours: string;
-  features: string[];
-}
-
-const mockRestaurants: Record<string, Restaurant> = {
-  "1": {
-    id: "1",
-    name: "The Golden Truffle",
-    cuisine: "French",
-    location: "Upper East Side",
-    rating: 4.8,
-    priceRange: "$$$",
-    image: "/images/Register.jpg",
-    isOpen: true,
-    description: "Experience exquisite French cuisine in an elegant setting. Our award-winning chef brings traditional French techniques with modern innovation, creating unforgettable dining experiences.",
-    address: "123 Park Avenue, New York, NY 10028",
-    phone: "(212) 555-0123",
-    hours: "Mon-Sun: 11:00 AM - 11:00 PM",
-    features: ["Fine Dining", "Wine Selection", "Private Dining", "Valet Parking"],
-  },
-  "2": {
-    id: "2",
-    name: "Sakura Omakase",
-    cuisine: "Japanese",
-    location: "Tribeca",
-    rating: 4.9,
-    priceRange: "$$$$",
-    image: "/images/Login.jpg",
-    isOpen: true,
-    description: "Authentic Japanese omakase experience with the freshest seasonal ingredients. Our master chef crafts each course with precision and artistry.",
-    address: "456 Hudson Street, New York, NY 10013",
-    phone: "(212) 555-0456",
-    hours: "Tue-Sun: 6:00 PM - 11:00 PM",
-    features: ["Omakase", "Sushi Bar", "Sake Selection", "Chef's Table"],
-  },
-  "3": {
-    id: "3",
-    name: "La Bella Italia",
-    cuisine: "Italian",
-    location: "SoHo",
-    rating: 4.6,
-    priceRange: "$$",
-    image: "/images/Register.jpg",
-    isOpen: true,
-    description: "Traditional Italian cuisine made with love and fresh ingredients. From handmade pasta to wood-fired pizzas, every dish tells a story of Italian heritage.",
-    address: "789 Broadway, New York, NY 10012",
-    phone: "(212) 555-0789",
-    hours: "Mon-Sun: 12:00 PM - 10:00 PM",
-    features: ["Handmade Pasta", "Wood-Fired Pizza", "Outdoor Seating", "Family Style"],
-  },
-  "4": {
-    id: "4",
-    name: "El Toro Loco",
-    cuisine: "Spanish",
-    location: "Chelsea",
-    rating: 4.5,
-    priceRange: "$$",
-    image: "/images/Login.jpg",
-    isOpen: false,
-    description: "Vibrant Spanish tapas and paella in a lively atmosphere. Enjoy authentic flavors from across Spain with our extensive tapas menu.",
-    address: "321 West 23rd Street, New York, NY 10011",
-    phone: "(212) 555-0321",
-    hours: "Mon-Sun: 5:00 PM - 12:00 AM",
-    features: ["Tapas", "Paella", "Live Music", "Happy Hour"],
-  },
-  "5": {
-    id: "5",
-    name: "Dragon Palace",
-    cuisine: "Chinese",
-    location: "Chinatown",
-    rating: 4.4,
-    priceRange: "$",
-    image: "/images/Register.jpg",
-    isOpen: true,
-    description: "Authentic Chinese cuisine featuring Cantonese and Szechuan specialties. Family-owned since 1985, serving traditional recipes passed down generations.",
-    address: "555 Mott Street, New York, NY 10013",
-    phone: "(212) 555-0555",
-    hours: "Mon-Sun: 11:00 AM - 10:00 PM",
-    features: ["Dim Sum", "Family Style", "Takeout", "Delivery"],
-  },
-  "6": {
-    id: "6",
-    name: "Le Petit Bistro",
-    cuisine: "French",
-    location: "West Village",
-    rating: 4.7,
-    priceRange: "$$$",
-    image: "/images/Login.jpg",
-    isOpen: true,
-    description: "Cozy French bistro with a neighborhood feel. Classic French dishes prepared with seasonal ingredients in an intimate setting.",
-    address: "888 Greenwich Street, New York, NY 10014",
-    phone: "(212) 555-0888",
-    hours: "Mon-Sun: 8:00 AM - 10:00 PM",
-    features: ["Brunch", "French Classics", "Wine Bar", "Outdoor Patio"],
-  },
-};
+import { createReservation, getRestaurantById, toggleFavorite, type RestaurantItem } from "@/lib/api/dashboard";
 
 export default function RestaurantDetailPage() {
   const params = useParams();
@@ -121,8 +13,71 @@ export default function RestaurantDetailPage() {
   const [selectedTime, setSelectedTime] = useState("");
   const [partySize, setPartySize] = useState("2");
   const [isFavorite, setIsFavorite] = useState(false);
+  const [restaurant, setRestaurant] = useState<RestaurantItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const restaurant = mockRestaurants[restaurantId];
+  useEffect(() => {
+    async function loadRestaurant() {
+      try {
+        setLoading(true);
+        const response = await getRestaurantById(restaurantId);
+        setRestaurant(response.data);
+      } catch {
+        setRestaurant(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    void loadRestaurant();
+  }, [restaurantId]);
+
+  async function handleReserve() {
+    if (!restaurant || !selectedDate || !selectedTime) {
+      setMessage("Please select a date and time.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setMessage("");
+      await createReservation({
+        restaurantId: restaurant._id,
+        restaurantName: restaurant.name,
+        cuisine: restaurant.cuisine,
+        image: restaurant.image,
+        reservationDate: selectedDate,
+        date: selectedDate,
+        time: selectedTime,
+        guests: Number(partySize),
+        status: "confirmed",
+      });
+      setMessage("Reservation created successfully.");
+    } catch {
+      setMessage("Unable to create your reservation right now.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleFavoriteToggle() {
+    if (!restaurant) return;
+
+    try {
+      await toggleFavorite(restaurant._id);
+      setIsFavorite((current) => !current);
+    } catch {
+      setMessage("Unable to update favorites right now.");
+    }
+  }
+
+  if (loading) {
+    return <div className="restaurant-error"><div className="error-container"><h1>Loading restaurant…</h1></div></div>;
+  }
+
+  if (!restaurant) {
 
   if (!restaurant) {
     return (
@@ -180,6 +135,9 @@ export default function RestaurantDetailPage() {
           <div className={`status-badge ${restaurant.isOpen ? "open" : "closed"}`}>
             {restaurant.isOpen ? "Open Now" : "Closed"}
           </div>
+          <button type="button" className="detail-nav-button" onClick={() => void handleFavoriteToggle()}>
+            {isFavorite ? "★ Saved" : "☆ Save"}
+          </button>
           <h1>{restaurant.name}</h1>
           <div className="hero-meta">
             <span className="rating">★ {restaurant.rating}</span>

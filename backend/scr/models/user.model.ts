@@ -1,5 +1,58 @@
+declare const require: any;
+declare const module: any;
+
 const mongoose = require("mongoose");
 const { ALLOWED_ROLES } = require("../config/constant");
+
+const reservationSchema = new mongoose.Schema(
+  {
+    restaurantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Restaurant",
+      required: true,
+    },
+    restaurantName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    cuisine: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    image: {
+      type: String,
+      default: "",
+    },
+    reservationDate: {
+      type: Date,
+      required: true,
+    },
+    date: {
+      type: String,
+      required: true,
+    },
+    time: {
+      type: String,
+      required: true,
+    },
+    guests: {
+      type: Number,
+      default: 2,
+    },
+    status: {
+      type: String,
+      enum: ["confirmed", "pending", "completed", "cancelled"],
+      default: "confirmed",
+    },
+    specialRequests: {
+      type: String,
+      default: "",
+    },
+  },
+  { timestamps: true }
+);
 
 const userSchema = new mongoose.Schema(
   {
@@ -17,7 +70,7 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: String,
-      minlength: 10,
+      default: "",
       trim: true,
     },
     password: {
@@ -30,19 +83,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    location: {
-      type: String,
-      default: "",
-    },
-    bio: {
-      type: String,
-      default: "",
-    },
     role: {
       type: String,
       enum: ALLOWED_ROLES,
       default: "user",
     },
+    favorites: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Restaurant",
+    }],
+    reservations: [reservationSchema],
   },
   { timestamps: true }
 );

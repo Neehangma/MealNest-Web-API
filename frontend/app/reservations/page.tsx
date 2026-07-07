@@ -2,61 +2,34 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getUserData } from "@/lib/cookies";
-import { useEffect } from "react";
-
-interface Reservation {
-  id: string;
-  restaurantName: string;
-  restaurantImage: string;
-  date: string;
-  time: string;
-  partySize: number;
-  status: "confirmed" | "pending" | "cancelled";
-  specialRequests?: string;
-}
-
-const mockReservations: Reservation[] = [
-  {
-    id: "1",
-    restaurantName: "The Golden Truffle",
-    restaurantImage: "/images/Register.jpg",
-    date: "Tomorrow",
-    time: "7:30 PM",
-    partySize: 2,
-    status: "confirmed",
-    specialRequests: "Anniversary dinner - quiet table preferred",
-  },
-  {
-    id: "2",
-    restaurantName: "Sakura Omakase",
-    restaurantImage: "/images/Login.jpg",
-    date: "FRI, OCT 25",
-    time: "8:00 PM",
-    partySize: 4,
-    status: "confirmed",
-  },
-  {
-    id: "3",
-    restaurantName: "La Bella Italia",
-    restaurantImage: "/images/Register.jpg",
-    date: "SAT, OCT 26",
-    time: "6:00 PM",
-    partySize: 3,
-    status: "pending",
-    specialRequests: "Gluten-free options needed",
-  },
-];
+import { cancelReservation, getDashboardData, type ReservationItem } from "@/lib/api/dashboard";
 
 export default function ReservationsPage() {
   const [user, setUser] = useState<any>(null);
-  const [reservations, setReservations] = useState<Reservation[]>(mockReservations);
+  const [reservations, setReservations] = useState<ReservationItem[]>([]);
   const [filter, setFilter] = useState<"all" | "upcoming" | "past" | "cancelled">("all");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     getUserData().then(setUser);
+    void loadReservations();
   }, []);
+
+  async function loadReservations() {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await getDashboardData();
+      setReservations([...(response.data.upcomingReservations || []), ...(response.data.recentHistory || [])]);
+    } catch {
+      setError("We could not load your reservations right now.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const filteredReservations = reservations.filter((res) => {
     if (filter === "all") return res.status !== "cancelled";
@@ -65,15 +38,20 @@ export default function ReservationsPage() {
     return true;
   });
 
-  const handleCancel = (id: string) => {
-    if (confirm("Are you sure you want to cancel this reservation?")) {
-      setReservations(reservations.map((res) =>
-        res.id === id ? { ...res, status: "cancelled" as const } : res
-      ));
+  const handleCancel = async (id: string) => {
+    if (!confirm("Are you sure you want to cancel this reservation?")) {
+      return;
+    }
+
+    try {
+      await cancelReservation(id);
+      await loadReservations();
+    } catch {
+      setError("Unable to cancel this reservation right now.");
     }
   };
 
-  const getStatusBadge = (status: Reservation["status"]) => {
+  const getStatusBadge = (status: ReservationItem["status"]) => {
     switch (status) {
       case "confirmed":
         return <span className="status-badge confirmed">Confirmed</span>;
@@ -128,8 +106,12 @@ export default function ReservationsPage() {
           </button>
         </div>
 
+        {error && <p className="profile-action-message error">{error}</p>}
+
+        {loading && <p>Loading reservations…</p>}
+
         <div className="reservations-list">
-          {filteredReservations.length === 0 ? (
+          {!loading && filteredReservations.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">📅</div>
               <h2>No reservations found</h2>
@@ -140,10 +122,10 @@ export default function ReservationsPage() {
             </div>
           ) : (
             filteredReservations.map((reservation) => (
-              <div key={reservation.id} className={`reservation-card ${reservation.status}`}>
+              <div key={reservation._id} className={`reservation-card ${reservation.status}`}>
                 <div className="reservation-image">
                   <Image
-                    src={reservation.restaurantImage}
+                    src={reservation.image || "/images/Register.jpg"}
                     alt={reservation.restaurantName}
                     fill
                     className="reservation-img"
@@ -157,7 +139,7 @@ export default function ReservationsPage() {
                   <div className="reservation-details">
                     <div className="detail-item">
                       <span>Date</span>
-                      <strong>{reservation.date}</strong>
+                      <strong>{reservation.date || reservation.reservationDate}</strong>
                     </div>
                     <div className="detail-item">
                       <span>Time</span>
@@ -165,7 +147,7 @@ export default function ReservationsPage() {
                     </div>
                     <div className="detail-item">
                       <span>Party Size</span>
-                      <strong>{reservation.partySize} {reservation.partySize === 1 ? "Guest" : "Guests"}</strong>
+                      <strong>{reservation.guests} {reservation.guests === 1 ? "Guest" : "Guests"}</strong>
                     </div>
                   </div>
                   {reservation.specialRequests && (
@@ -177,12 +159,12 @@ export default function ReservationsPage() {
                   <div className="reservation-actions">
                     {reservation.status !== "cancelled" && (
                       <>
-                        <Link href={`/restaurants/${reservation.id}`} className="action-button secondary">
+                        <Link href={`/restaurants/${reservation.restaurantId || reservation._id}`} className="action-button secondary">
                           View Restaurant
                         </Link>
                         <button
                           className="action-button danger"
-                          onClick={() => handleCancel(reservation.id)}
+                          onClick={() => void handleCancel(reservation._id)}
                         >
                           Cancel Reservation
                         </button>

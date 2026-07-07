@@ -24,6 +24,16 @@ router.patch(
   asyncHandler(userController.changePassword)
 );
 
+router.get("/dashboard", authenticate, asyncHandler(userController.getDashboard));
+router.get("/restaurants", authenticate, asyncHandler(userController.listRestaurants));
+router.get("/restaurants/:id", authenticate, asyncHandler(userController.getRestaurant));
+router.get("/favorites", authenticate, asyncHandler(userController.getDashboard));
+router.post("/favorites/:restaurantId", authenticate, asyncHandler(userController.toggleFavorite));
+router.delete("/favorites/:restaurantId", authenticate, asyncHandler(userController.toggleFavorite));
+router.post("/reservations", authenticate, asyncHandler(userController.createReservation));
+router.patch("/reservations/:reservationId", authenticate, asyncHandler(userController.updateReservation));
+router.delete("/reservations/:reservationId", authenticate, asyncHandler(userController.cancelReservation));
+
 router.get("/admin/users", authenticate, requireAdmin, asyncHandler(userController.listUsers));
 router.get("/admin/users/:id", authenticate, requireAdmin, asyncHandler(userController.getUser));
 router.post(

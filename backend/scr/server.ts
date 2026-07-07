@@ -4,11 +4,12 @@ const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
 
-const { PORT } = require("./config/constant.js");
-const { connectMongo } = require("./database/mongodb.js");
-const { HttpException } = require("./exceptions/http-exception.js");
-const userRoutes = require("./routes/user.route.js");
-const { sendError } = require("./utils/apihelper.utils.js");
+const { PORT } = require("./config/constant");
+const { connectMongo } = require("./database/mongodb");
+const { HttpException } = require("./exceptions/http-exception");
+const userRoutes = require("./routes/user.route");
+const { sendError } = require("./utils/apihelper.utils");
+
 
 const app = express();
 
@@ -40,6 +41,9 @@ app.use((error, _req, res, _next) => {
 
   return sendError(res, status, message, error.details);
 });
+
+const restaurantRoutes = require("./routes/restaurant.route");
+app.use("/api/v1/restaurants", restaurantRoutes);
 
 const startServer = () => {
   console.log(`Starting MealNest backend on port ${PORT}`);

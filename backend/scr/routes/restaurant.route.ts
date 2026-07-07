@@ -1,0 +1,14 @@
+const express = require("express");
+const restaurantController = require("../controller/restaurant.controller");
+const { authenticate, requireAdmin } = require("../middleware/authorized.middleware");
+const { asyncHandler } = require("../utils/apihelper.utils");
+
+const router = express.Router();
+
+router.get("/", asyncHandler(restaurantController.getRestaurants));
+router.get("/:id", asyncHandler(restaurantController.getRestaurantById));
+router.post("/", authenticate, requireAdmin, asyncHandler(restaurantController.createRestaurant));
+router.put("/:id", authenticate, requireAdmin, asyncHandler(restaurantController.updateRestaurant));
+router.delete("/:id", authenticate, requireAdmin, asyncHandler(restaurantController.deleteRestaurant));
+
+module.exports = router;
