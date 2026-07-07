@@ -1,182 +1,110 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   cancelReservation,
   getDashboardData,
+  getRestaurants,
   toggleFavorite,
   updateReservation,
+  type DashboardResponse,
   type DashboardStats,
   type FavoriteRestaurant,
   type ReservationItem,
+  type RestaurantItem,
 } from "@/lib/api/dashboard";
+import DashboardHeader from "./_components/DashboardHeader";
+import Sidebar from "./_components/Sidebar";
+import StatsCard from "./_components/StatsCard";
+import ReservationCard, { type EditForm } from "./_components/ReservationCard";
+import FavoriteRestaurantCard from "./_components/FavoriteRestaurantCard";
+import RecommendationCard from "./_components/RecommendationCard";
+import ReservationHistory from "./_components/ReservationHistory";
+import QuickActions from "./_components/QuickActions";
+import EmptyState from "./_components/EmptyState";
+import Icon from "./_components/Icon";
+import {
+  CardSkeleton,
+  HistoryRowSkeleton,
+  ReservationCardSkeleton,
+} from "./_components/Skeletons";
+import { formatDateInput, formatToday } from "./_components/helpers";
 
 type DashboardUser = {
   fullName?: string;
+  email?: string;
   profilePicture?: string;
   role?: string;
 };
 
-type IconName =
-  | "search"
-  | "user"
-  | "card"
-  | "bell"
-  | "chevron"
-  | "grid"
-  | "heart"
-  | "star"
-  | "utensils"
-  | "martini"
-  | "croissant"
-  | "globe"
-  | "share";
-
-function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
-  const props = {
-    width: size,
-    height: size,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 2,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    "aria-hidden": true,
-  };
-
-  return (
-    <svg {...props}>
-      {name === "search" && (
-        <>
-          <circle cx="11" cy="11" r="7" />
-          <path d="m20 20-3.5-3.5" />
-        </>
-      )}
-      {name === "user" && (
-        <>
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </>
-      )}
-      {name === "card" && (
-        <>
-          <rect x="3" y="6" width="18" height="12" rx="2" />
-          <path d="M3 10h18" />
-          <path d="M7 15h4" />
-        </>
-      )}
-      {name === "bell" && (
-        <>
-          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7" />
-          <path d="M13.7 21a2 2 0 0 1-3.4 0" />
-        </>
-      )}
-      {name === "chevron" && <path d="m9 18 6-6-6-6" />}
-      {name === "grid" && (
-        <>
-          <rect x="3" y="3" width="7" height="7" />
-          <rect x="14" y="3" width="7" height="7" />
-          <rect x="3" y="14" width="7" height="7" />
-          <rect x="14" y="14" width="7" height="7" />
-        </>
-      )}
-      {name === "heart" && <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" />}
-      {name === "star" && <path d="m12 2 3.1 6.3 6.9 1-5 4.8 1.2 6.8L12 17.7 5.8 21 7 14.1 2 9.3l6.9-1L12 2Z" />}
-      {name === "utensils" && (
-        <>
-          <path d="M4 3v8" />
-          <path d="M8 3v8" />
-          <path d="M4 7h4" />
-          <path d="M6 11v10" />
-          <path d="M17 3v18" />
-          <path d="M14 3c0 5 6 5 6 0" />
-        </>
-      )}
-      {name === "martini" && (
-        <>
-          <path d="M8 3h8l-4 6-4-6Z" />
-          <path d="M12 9v9" />
-          <path d="M8 21h8" />
-        </>
-      )}
-      {name === "croissant" && (
-        <>
-          <path d="M4 13c2-6 7-8 16-8-3 2-4 5-4 9" />
-          <path d="M20 19c-8 0-14-1-16-6 2 6 7 8 16 6Z" />
-        </>
-      )}
-      {name === "globe" && (
-        <>
-          <circle cx="12" cy="12" r="9" />
-          <path d="M3 12h18" />
-          <path d="M12 3a14 14 0 0 1 0 18" />
-          <path d="M12 3a14 14 0 0 0 0 18" />
-        </>
-      )}
-      {name === "share" && (
-        <>
-          <circle cx="18" cy="5" r="3" />
-          <circle cx="6" cy="12" r="3" />
-          <circle cx="18" cy="19" r="3" />
-          <path d="m8.6 13.5 6.8 4" />
-          <path d="m15.4 6.5-6.8 4" />
-        </>
-      )}
-    </svg>
-  );
-}
-
-function formatDateInput(dateValue?: string) {
-  if (!dateValue) return "";
-  const date = new Date(dateValue);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toISOString().slice(0, 10);
-}
-
-function formatDisplayDate(dateValue?: string) {
-  if (!dateValue) return "";
-  const date = new Date(dateValue);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
+const EMPTY_EDIT_FORM: EditForm = { date: "", time: "", guests: "2", specialRequests: "" };
 
 export default function DashboardClient({ user }: { user: DashboardUser }) {
-  const router = useRouter();
   const [stats, setStats] = useState<DashboardStats>({ bookings: 0, favorites: 0, averageRating: 0 });
   const [favorites, setFavorites] = useState<FavoriteRestaurant[]>([]);
   const [upcomingReservations, setUpcomingReservations] = useState<ReservationItem[]>([]);
   const [recentHistory, setRecentHistory] = useState<ReservationItem[]>([]);
+  const [recommendations, setRecommendations] = useState<RestaurantItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [recommendationsLoading, setRecommendationsLoading] = useState(true);
   const [error, setError] = useState("");
   const [editingReservationId, setEditingReservationId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ date: "", time: "", guests: "2", specialRequests: "" });
+  const [editForm, setEditForm] = useState<EditForm>(EMPTY_EDIT_FORM);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const displayName = user?.fullName || "MealNest User";
-  const avatar = user?.profilePicture || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=220&q=80";
+  const firstName = displayName.split(" ")[0];
+  const today = useMemo(() => formatToday(), []);
 
-  const loadDashboard = async () => {
-    setLoading(true);
-    setError("");
+  const favoriteIds = useMemo(() => new Set(favorites.map((favorite) => favorite._id)), [favorites]);
 
+  const applyDashboard = useCallback((data: DashboardResponse["data"]) => {
+    setStats(data.stats);
+    setFavorites(data.favorites);
+    setUpcomingReservations(data.upcomingReservations);
+    setRecentHistory(data.recentHistory);
+  }, []);
+
+  const refreshDashboard = useCallback(async () => {
     try {
       const response = await getDashboardData();
-      setStats(response.data.stats);
-      setFavorites(response.data.favorites);
-      setUpcomingReservations(response.data.upcomingReservations);
-      setRecentHistory(response.data.recentHistory);
+      applyDashboard(response.data);
+      setError("");
     } catch {
       setError("We could not load your dashboard data right now.");
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [applyDashboard]);
 
   useEffect(() => {
-    void loadDashboard();
-  }, []);
+    let active = true;
+
+    (async () => {
+      try {
+        const response = await getDashboardData();
+        if (active) applyDashboard(response.data);
+      } catch {
+        if (active) setError("We could not load your dashboard data right now.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+
+    (async () => {
+      try {
+        const response = await getRestaurants();
+        if (active) setRecommendations(response.data);
+      } catch {
+        // recommendations are non-critical; keep the dashboard usable
+      } finally {
+        if (active) setRecommendationsLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [applyDashboard]);
 
   const handleFavoriteToggle = async (restaurantId: string) => {
     try {
@@ -201,14 +129,18 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
   const saveEdit = async (reservationId: string) => {
     try {
       const payload = {
-        date: new Date(editForm.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        date: new Date(editForm.date).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }),
         reservationDate: editForm.date,
         time: editForm.time,
         guests: Number(editForm.guests || 2),
         specialRequests: editForm.specialRequests,
       };
       await updateReservation(reservationId, payload);
-      await loadDashboard();
+      await refreshDashboard();
       setEditingReservationId(null);
     } catch {
       setError("Unable to update this reservation right now.");
@@ -222,225 +154,231 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
 
     try {
       await cancelReservation(reservationId);
-      await loadDashboard();
+      await refreshDashboard();
     } catch {
       setError("Unable to cancel this reservation right now.");
     }
   };
 
+  const averageRatingDisplay = Number(stats.averageRating || 0).toFixed(1);
+
   return (
-    <div className="customer-dashboard">
-      <header className="customer-nav">
-        <a className="customer-brand" href="/dashboard/user">MealNest</a>
-        <nav aria-label="Customer navigation">
-          <a href="/dashboard/user">Discover</a>
-          <a href="/reservations">Reservations</a>
-          <a href="/favorites">Favorites</a>
-        </nav>
-        <div className="customer-nav-actions">
-          <button type="button" aria-label="Search">
-            <Icon name="search" size={22} />
-          </button>
-          <img src={avatar} alt={`${displayName} profile`} />
-        </div>
-      </header>
+    <div className="dash-shell">
+      <DashboardHeader user={user} onToggleSidebar={() => setSidebarOpen((open) => !open)} />
 
-      <main className="customer-main">
-        <section className="customer-profile-card">
-          <div className="customer-identity">
-            <img src={avatar} alt="" />
-            <h1>{displayName}</h1>
-          </div>
-          <div className="customer-metrics" aria-label="Dashboard statistics">
+      <div className="dash-body">
+        <Sidebar open={sidebarOpen} onNavigate={() => setSidebarOpen(false)} />
+        {sidebarOpen && <div className="dash-sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
+
+        <main className="dash-main">
+          <section className="dash-welcome dash-fade-in">
             <div>
-              <strong>{loading ? "—" : stats.bookings}</strong>
-              <span>Bookings</span>
+              <h1>Welcome back, {firstName}!</h1>
+              <p>Ready to discover your next dining experience?</p>
             </div>
-            <div>
-              <strong>{loading ? "—" : stats.favorites}</strong>
-              <span>Favorites</span>
-            </div>
-            <div>
-              <strong>{loading ? "—" : stats.averageRating.toFixed(1)}</strong>
-              <span>Rating</span>
-            </div>
-          </div>
-        </section>
-
-        <div className="customer-layout">
-          <section className="customer-primary">
-            {error && <p className="profile-action-message error">{error}</p>}
-
-            <div className="customer-section-head">
-              <h2>Upcoming Reservations</h2>
-              <Link href="/reservations">View All</Link>
-            </div>
-
-            <div className="reservation-list">
-              {loading && <p>Loading upcoming reservations…</p>}
-              {!loading && upcomingReservations.length === 0 && <p>No upcoming reservations yet.</p>}
-              {!loading &&
-                upcomingReservations.map((reservation) => (
-                  <article className="reservation-card" key={reservation._id}>
-                    <img src={reservation.image || "/images/Register.jpg"} alt="" />
-                    <div>
-                      <div className="reservation-meta">
-                        <span>{reservation.date || formatDisplayDate(reservation.reservationDate)}</span>
-                        <p>{reservation.time} - {reservation.guests} {reservation.guests === 1 ? "Guest" : "Guests"}</p>
-                      </div>
-                      <h3>{reservation.restaurantName}</h3>
-                      <p>{reservation.cuisine}</p>
-                    </div>
-                    <div className="reservation-actions">
-                      {editingReservationId === reservation._id ? (
-                        <>
-                          <input
-                            type="date"
-                            value={editForm.date}
-                            onChange={(event) => setEditForm((current) => ({ ...current, date: event.target.value }))}
-                          />
-                          <input
-                            type="time"
-                            value={editForm.time}
-                            onChange={(event) => setEditForm((current) => ({ ...current, time: event.target.value }))}
-                          />
-                          <select
-                            value={editForm.guests}
-                            onChange={(event) => setEditForm((current) => ({ ...current, guests: event.target.value }))}
-                          >
-                            <option value="1">1 Guest</option>
-                            <option value="2">2 Guests</option>
-                            <option value="3">3 Guests</option>
-                            <option value="4">4 Guests</option>
-                            <option value="5">5 Guests</option>
-                            <option value="6">6 Guests</option>
-                          </select>
-                          <button type="button" onClick={() => void saveEdit(reservation._id)}>Save</button>
-                          <button type="button" onClick={() => setEditingReservationId(null)}>Cancel</button>
-                        </>
-                      ) : (
-                        <>
-                          <button type="button" onClick={() => startEditing(reservation)}>Edit</button>
-                          <button type="button" onClick={() => void handleCancelReservation(reservation._id)}>Cancel</button>
-                        </>
-                      )}
-                    </div>
-                  </article>
-                ))}
-            </div>
-
-            <div className="customer-section-head favorites-head">
-              <h2>Favorite Restaurants</h2>
-              <button type="button" aria-label="Change favorite restaurant view">
-                <Icon name="grid" size={20} />
-              </button>
-            </div>
-
-            <div className="favorite-grid" style={{ overflowX: "auto" }}>
-              {loading && <p>Loading your favorites…</p>}
-              {!loading && favorites.length === 0 && <p>No favorites yet.</p>}
-              {!loading &&
-                favorites.map((favorite) => (
-                  <article className="favorite-card" key={favorite._id}>
-                    <div className="favorite-image">
-                      <img src={favorite.image || "/images/Register.jpg"} alt="" />
-                      <span className={`status-badge ${favorite.isOpen ? "open" : "closed"}`}>
-                        {favorite.isOpen ? "Open Now" : "Closed"}
-                      </span>
-                      <button
-                        type="button"
-                        aria-label={`Remove ${favorite.name} from favorites`}
-                        onClick={() => void handleFavoriteToggle(favorite._id)}
-                      >
-                        <Icon name="heart" size={21} />
-                      </button>
-                    </div>
-                    <div className="favorite-body">
-                      <div className="favorite-title">
-                        <h3>{favorite.name}</h3>
-                        <span><Icon name="star" size={15} /> {favorite.rating}</span>
-                      </div>
-                      <p className="favorite-cuisine">{favorite.cuisine}</p>
-                      <p className="favorite-location">{favorite.location || "Neighborhood favorite"}</p>
-                      <div className="favorite-footer">
-                        <span className="favorite-price">{favorite.priceRange || "$$"}</span>
-                        <Link href={`/restaurants/${favorite._id}`} className="favorite-book-link">
-                          Book Table →
-                        </Link>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-            </div>
+            <span className="dash-today">
+              <Icon name="calendar" size={16} />
+              {today}
+            </span>
           </section>
 
-          <aside className="customer-sidebar">
-            <section className="side-card">
-              <h2>Quick Actions</h2>
-              <Link href="/profile">
-                <Icon name="user" />
-                <span>Update Profile</span>
-                <Icon name="chevron" size={18} />
-              </Link>
-              <Link href="/payment-methods">
-                <Icon name="card" />
-                <span>Payment Methods</span>
-                <Icon name="chevron" size={18} />
-              </Link>
-              <Link href="/reservations">
-                <Icon name="bell" />
-                <span>Dining Alerts</span>
-                <Icon name="chevron" size={18} />
-              </Link>
-            </section>
+          {error && (
+            <p className="dash-alert" role="alert">
+              {error}
+            </p>
+          )}
 
-            <section className="side-card history-card">
-              <h2>Recent History</h2>
-              {loading && <p>Loading history…</p>}
-              {!loading && recentHistory.length === 0 && <p>No completed reservations yet.</p>}
-              {!loading && recentHistory.map((item) => (
-                <article className="history-row" key={item._id}>
-                  <div><Icon name={item.cuisine?.toLowerCase().includes("japanese") ? "utensils" : "utensils"} size={22} /></div>
-                  <span>
-                    <strong>{item.restaurantName}</strong>
-                    <small>{formatDisplayDate(item.reservationDate)}</small>
-                    <Link href={`/restaurants/${item.restaurantId || item._id}`}>Re-book</Link>
-                  </span>
-                </article>
-              ))}
-              <Link href="/reservations" className="customer-link-button">Full History</Link>
-            </section>
-          </aside>
-        </div>
-      </main>
+          <section className="dash-stats-grid" aria-label="Your dining statistics">
+            <StatsCard
+              icon="calendar"
+              value={upcomingReservations.length}
+              label="Upcoming Reservations"
+              description="Tables booked and waiting"
+              tone="amber"
+              loading={loading}
+              delay={0}
+            />
+            <StatsCard
+              icon="heart"
+              value={stats.favorites}
+              label="Favorite Restaurants"
+              description="Places you love"
+              tone="rose"
+              loading={loading}
+              delay={80}
+            />
+            <StatsCard
+              icon="check-circle"
+              value={recentHistory.length}
+              label="Completed Reservations"
+              description="Dining experiences enjoyed"
+              tone="green"
+              loading={loading}
+              delay={160}
+            />
+            <StatsCard
+              icon="star"
+              value={averageRatingDisplay}
+              label="Average Rating"
+              description="Across your favorites"
+              tone="violet"
+              loading={loading}
+              delay={240}
+            />
+          </section>
 
-      <footer className="customer-footer">
-        <div>
-          <h2>MealNest</h2>
-          <p>Premium dining logistics and reservations for the modern connoisseur.</p>
-        </div>
-        <nav aria-label="Platform links">
-          <h3>Platform</h3>
-          <a href="#">About Us</a>
-          <a href="#">Press</a>
-          <a href="#">Careers</a>
-        </nav>
-        <nav aria-label="Support links">
-          <h3>Support</h3>
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
-          <a href="#">Contact</a>
-        </nav>
-        <div>
-          <h3>Connect</h3>
-          <div className="social-row">
-            <Icon name="globe" />
-            <Icon name="globe" />
-            <Icon name="share" />
+          <div className="dash-columns">
+            <div className="dash-col-main">
+              <section className="dash-panel">
+                <div className="dash-panel-head">
+                  <h2>Upcoming Reservations</h2>
+                  <Link href="/reservations" className="dash-panel-link">
+                    View All
+                    <Icon name="chevron" size={16} />
+                  </Link>
+                </div>
+
+                {loading ? (
+                  <div className="dash-reservation-stack">
+                    <ReservationCardSkeleton />
+                    <ReservationCardSkeleton />
+                  </div>
+                ) : upcomingReservations.length === 0 ? (
+                  <EmptyState
+                    icon="calendar"
+                    title="No upcoming reservations"
+                    message="You have no tables booked yet. Discover great restaurants and reserve your next dining experience."
+                    actionLabel="Reserve a Table"
+                    actionHref="/dashboard/user#recommended"
+                  />
+                ) : (
+                  <div className="dash-reservation-stack">
+                    {upcomingReservations.map((reservation) => (
+                      <ReservationCard
+                        key={reservation._id}
+                        reservation={reservation}
+                        isEditing={editingReservationId === reservation._id}
+                        editForm={editForm}
+                        onEditFormChange={(patch) => setEditForm((current) => ({ ...current, ...patch }))}
+                        onStartEdit={startEditing}
+                        onSaveEdit={saveEdit}
+                        onCancelEdit={() => setEditingReservationId(null)}
+                        onCancelReservation={handleCancelReservation}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="dash-panel">
+                <div className="dash-panel-head">
+                  <h2>Favorite Restaurants</h2>
+                  <Link href="/favorites" className="dash-panel-link">
+                    View All
+                    <Icon name="chevron" size={16} />
+                  </Link>
+                </div>
+
+                {loading ? (
+                  <div className="dash-card-grid">
+                    <CardSkeleton />
+                    <CardSkeleton />
+                    <CardSkeleton />
+                  </div>
+                ) : favorites.length === 0 ? (
+                  <EmptyState
+                    icon="heart"
+                    title="No favorites yet"
+                    message="Tap the heart on any restaurant to save it here for quick access."
+                    actionLabel="Explore Restaurants"
+                    actionHref="/dashboard/user#recommended"
+                  />
+                ) : (
+                  <div className="dash-card-grid">
+                    {favorites.map((favorite) => (
+                      <FavoriteRestaurantCard
+                        key={favorite._id}
+                        favorite={favorite}
+                        onRemove={handleFavoriteToggle}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="dash-panel" id="recommended">
+                <div className="dash-panel-head">
+                  <h2>Recommended For You</h2>
+                  <Link href="/favorites" className="dash-panel-link">
+                    Browse All
+                    <Icon name="chevron" size={16} />
+                  </Link>
+                </div>
+
+                {recommendationsLoading ? (
+                  <div className="dash-card-grid">
+                    <CardSkeleton />
+                    <CardSkeleton />
+                    <CardSkeleton />
+                  </div>
+                ) : recommendations.length === 0 ? (
+                  <EmptyState
+                    icon="compass"
+                    title="No recommendations available"
+                    message="We could not find restaurants to recommend right now. Please check back soon."
+                  />
+                ) : (
+                  <div className="dash-card-grid">
+                    {recommendations.map((restaurant) => (
+                      <RecommendationCard
+                        key={restaurant._id}
+                        restaurant={restaurant}
+                        isFavorite={favoriteIds.has(restaurant._id)}
+                        onToggleFavorite={handleFavoriteToggle}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
+
+            <aside className="dash-col-side">
+              <section className="dash-panel">
+                <div className="dash-panel-head">
+                  <h2>Quick Actions</h2>
+                </div>
+                <QuickActions />
+              </section>
+
+              <section className="dash-panel" id="recent-history">
+                <div className="dash-panel-head">
+                  <h2>Recent History</h2>
+                  <Link href="/reservations" className="dash-panel-link">
+                    Full History
+                    <Icon name="chevron" size={16} />
+                  </Link>
+                </div>
+
+                {loading ? (
+                  <div className="dash-history-list">
+                    <HistoryRowSkeleton />
+                    <HistoryRowSkeleton />
+                    <HistoryRowSkeleton />
+                  </div>
+                ) : recentHistory.length === 0 ? (
+                  <EmptyState
+                    icon="clock"
+                    title="No dining history yet"
+                    message="Your completed reservations will appear here after your first visit."
+                  />
+                ) : (
+                  <ReservationHistory items={recentHistory} />
+                )}
+              </section>
+            </aside>
           </div>
-          <p>© 2024 MealNest. All rights reserved.</p>
-        </div>
-      </footer>
+        </main>
+      </div>
     </div>
   );
 }
