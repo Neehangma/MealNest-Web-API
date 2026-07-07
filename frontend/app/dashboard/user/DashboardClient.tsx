@@ -171,71 +171,68 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
         {sidebarOpen && <div className="dash-sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
 
         <main className="dash-main">
-          <section className="dash-welcome dash-fade-in">
-            <div>
-              <h1>Welcome back, {firstName}!</h1>
-              <p>Ready to discover your next dining experience?</p>
-            </div>
-            <span className="dash-today">
-              <Icon name="calendar" size={16} />
-              {today}
-            </span>
-          </section>
+          <div className="dash-layout">
 
-          {error && (
-            <p className="dash-alert" role="alert">
-              {error}
-            </p>
-          )}
+            {/* Left Content */}
+            <section className="dash-content">
 
-          <section className="dash-stats-grid" aria-label="Your dining statistics">
-            <StatsCard
-              icon="calendar"
-              value={upcomingReservations.length}
-              label="Upcoming Reservations"
-              description="Tables booked and waiting"
-              tone="amber"
-              loading={loading}
-              delay={0}
-            />
-            <StatsCard
-              icon="heart"
-              value={stats.favorites}
-              label="Favorite Restaurants"
-              description="Places you love"
-              tone="rose"
-              loading={loading}
-              delay={80}
-            />
-            <StatsCard
-              icon="check-circle"
-              value={recentHistory.length}
-              label="Completed Reservations"
-              description="Dining experiences enjoyed"
-              tone="green"
-              loading={loading}
-              delay={160}
-            />
-            <StatsCard
-              icon="star"
-              value={averageRatingDisplay}
-              label="Average Rating"
-              description="Across your favorites"
-              tone="violet"
-              loading={loading}
-              delay={240}
-            />
-          </section>
+              {/* Welcome */}
+              <section className="dash-welcome dash-fade-in">
+                <div>
+                  <h1>Welcome back, {firstName}!</h1>
+                  <p>Ready to reserve another unforgettable dining experience?</p>
+                </div>
 
-          <div className="dash-columns">
-            <div className="dash-col-main">
+                <span className="dash-today">
+                  <Icon name="calendar" size={16} />
+                  {today}
+                </span>
+              </section>
+
+              {/* Statistics */}
+              <section className="dash-stats-grid">
+                <StatsCard
+                  icon="calendar"
+                  value={upcomingReservations.length}
+                  label="Upcoming Reservations"
+                  description="Tables booked"
+                  tone="amber"
+                  loading={loading}
+                />
+
+                <StatsCard
+                  icon="heart"
+                  value={stats.favorites}
+                  label="Favorite Restaurants"
+                  description="Saved places"
+                  tone="rose"
+                  loading={loading}
+                />
+
+                <StatsCard
+                  icon="check-circle"
+                  value={recentHistory.length}
+                  label="Completed Visits"
+                  description="Finished reservations"
+                  tone="green"
+                  loading={loading}
+                />
+
+                <StatsCard
+                  icon="star"
+                  value={averageRatingDisplay}
+                  label="Average Rating"
+                  description="Your dining score"
+                  tone="violet"
+                  loading={loading}
+                />
+              </section>
+
+              {/* Upcoming */}
               <section className="dash-panel">
                 <div className="dash-panel-head">
                   <h2>Upcoming Reservations</h2>
-                  <Link href="/reservations" className="dash-panel-link">
-                    View All
-                    <Icon name="chevron" size={16} />
-                  </Link>
+                  <Link href="/reservations">View All</Link>
                 </div>
 
                 {loading ? (
@@ -246,10 +243,8 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
                 ) : upcomingReservations.length === 0 ? (
                   <EmptyState
                     icon="calendar"
-                    title="No upcoming reservations"
-                    message="You have no tables booked yet. Discover great restaurants and reserve your next dining experience."
-                    actionLabel="Reserve a Table"
-                    actionHref="/dashboard/user#recommended"
+                    title="No Upcoming Reservations"
+                    message="Book a restaurant and your reservations will appear here."
                   />
                 ) : (
                   <div className="dash-reservation-stack">
@@ -259,7 +254,12 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
                         reservation={reservation}
                         isEditing={editingReservationId === reservation._id}
                         editForm={editForm}
-                        onEditFormChange={(patch) => setEditForm((current) => ({ ...current, ...patch }))}
+                        onEditFormChange={(patch) =>
+                          setEditForm((current) => ({
+                            ...current,
+                            ...patch,
+                          }))
+                        }
                         onStartEdit={startEditing}
                         onSaveEdit={saveEdit}
                         onCancelEdit={() => setEditingReservationId(null)}
@@ -270,110 +270,58 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
                 )}
               </section>
 
+              {/* Favorites */}
               <section className="dash-panel">
                 <div className="dash-panel-head">
                   <h2>Favorite Restaurants</h2>
-                  <Link href="/favorites" className="dash-panel-link">
-                    View All
-                    <Icon name="chevron" size={16} />
-                  </Link>
+                  <Link href="/favorites">View All</Link>
                 </div>
 
-                {loading ? (
-                  <div className="dash-card-grid">
-                    <CardSkeleton />
-                    <CardSkeleton />
-                    <CardSkeleton />
-                  </div>
-                ) : favorites.length === 0 ? (
-                  <EmptyState
-                    icon="heart"
-                    title="No favorites yet"
-                    message="Tap the heart on any restaurant to save it here for quick access."
-                    actionLabel="Explore Restaurants"
-                    actionHref="/dashboard/user#recommended"
-                  />
-                ) : (
-                  <div className="dash-card-grid">
-                    {favorites.map((favorite) => (
-                      <FavoriteRestaurantCard
-                        key={favorite._id}
-                        favorite={favorite}
-                        onRemove={handleFavoriteToggle}
-                      />
-                    ))}
-                  </div>
-                )}
+                <div className="dash-card-grid">
+                  {favorites.map((favorite) => (
+                    <FavoriteRestaurantCard
+                      key={favorite._id}
+                      favorite={favorite}
+                      onRemove={handleFavoriteToggle}
+                    />
+                  ))}
+                </div>
               </section>
 
+              {/* Recommendations */}
               <section className="dash-panel" id="recommended">
                 <div className="dash-panel-head">
-                  <h2>Recommended For You</h2>
-                  <Link href="/favorites" className="dash-panel-link">
-                    Browse All
-                    <Icon name="chevron" size={16} />
-                  </Link>
+                  <h2>Recommended Restaurants</h2>
+                  <Link href="/restaurants">Browse All</Link>
                 </div>
 
-                {recommendationsLoading ? (
-                  <div className="dash-card-grid">
-                    <CardSkeleton />
-                    <CardSkeleton />
-                    <CardSkeleton />
-                  </div>
-                ) : recommendations.length === 0 ? (
-                  <EmptyState
-                    icon="compass"
-                    title="No recommendations available"
-                    message="We could not find restaurants to recommend right now. Please check back soon."
-                  />
-                ) : (
-                  <div className="dash-card-grid">
-                    {recommendations.map((restaurant) => (
-                      <RecommendationCard
-                        key={restaurant._id}
-                        restaurant={restaurant}
-                        isFavorite={favoriteIds.has(restaurant._id)}
-                        onToggleFavorite={handleFavoriteToggle}
-                      />
-                    ))}
-                  </div>
-                )}
+                <div className="dash-card-grid">
+                  {recommendations.map((restaurant) => (
+                    <RecommendationCard
+                      key={restaurant._id}
+                      restaurant={restaurant}
+                      isFavorite={favoriteIds.has(restaurant._id)}
+                      onToggleFavorite={handleFavoriteToggle}
+                    />
+                  ))}
+                </div>
               </section>
-            </div>
+            </section>
 
-            <aside className="dash-col-side">
+            {/* Right Side */}
+            <aside className="dash-right">
               <section className="dash-panel">
-                <div className="dash-panel-head">
-                  <h2>Quick Actions</h2>
-                </div>
+                <h2>Quick Actions</h2>
                 <QuickActions />
               </section>
 
               <section className="dash-panel" id="recent-history">
                 <div className="dash-panel-head">
                   <h2>Recent History</h2>
-                  <Link href="/reservations" className="dash-panel-link">
-                    Full History
-                    <Icon name="chevron" size={16} />
-                  </Link>
+                  <Link href="/reservations">Full History</Link>
                 </div>
 
-                {loading ? (
-                  <div className="dash-history-list">
-                    <HistoryRowSkeleton />
-                    <HistoryRowSkeleton />
-                    <HistoryRowSkeleton />
-                  </div>
-                ) : recentHistory.length === 0 ? (
-                  <EmptyState
-                    icon="clock"
-                    title="No dining history yet"
-                    message="Your completed reservations will appear here after your first visit."
-                  />
-                ) : (
-                  <ReservationHistory items={recentHistory} />
-                )}
+                <ReservationHistory items={recentHistory} />
               </section>
             </aside>
           </div>
