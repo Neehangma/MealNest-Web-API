@@ -3,45 +3,39 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import {
+  getDashboardData,
+  toggleFavorite,
+  type FavoriteRestaurant,
+} from "@/lib/api/dashboard";
+import type { AuthUser } from "@/lib/api/auth";
 import { getUserData } from "@/lib/cookies";
-import { getDashboardData, toggleFavorite, type FavoriteRestaurant } from "@/lib/api/dashboard";
 
 export default function FavoritesPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [favorites, setFavorites] = useState<FavoriteRestaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     getUserData().then(setUser);
-    void loadFavorites();
+    getDashboardData()
+      .then((response) => setFavorites(response.data.favorites))
+      .catch(() => setError("We could not load your favorites right now."))
+      .finally(() => setLoading(false));
   }, []);
 
-  async function loadFavorites() {
+  async function handleRemoveFavorite(id: string) {
+    if (!window.confirm("Remove this restaurant from your favorites?")) return;
+
     try {
-      setLoading(true);
       setError("");
-      const response = await getDashboardData();
-      setFavorites(response.data.favorites);
-    } catch {
-      setError("We could not load your favorites right now.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const handleRemoveFavorite = async (id: string) => {
-    if (!confirm("Remove this restaurant from your favorites?")) {
-      return;
-    }
-
-    try {
       const result = await toggleFavorite(id);
       setFavorites(result.data.favorites);
     } catch {
       setError("Unable to update favorites right now.");
     }
-  };
+  }
 
   return (
     <main className="favorites-page">
@@ -68,9 +62,9 @@ export default function FavoritesPage() {
 
         {error && <p className="profile-action-message error">{error}</p>}
 
-        {loading && <p>Loading favorites…</p>}
-
-        {!loading && favorites.length === 0 ? (
+        {loading ? (
+          <p>Loading favorites...</p>
+        ) : favorites.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon">♡</div>
             <h2>No favorites yet</h2>
@@ -94,9 +88,10 @@ export default function FavoritesPage() {
                     {restaurant.isOpen ? "Open Now" : "Closed"}
                   </div>
                   <button
+                    type="button"
                     className="remove-favorite"
                     onClick={() => void handleRemoveFavorite(restaurant._id)}
-                    aria-label="Remove from favorites"
+                    aria-label={`Remove ${restaurant.name} from favorites`}
                   >
                     ✕
                   </button>
