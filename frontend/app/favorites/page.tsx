@@ -17,6 +17,10 @@ interface FavoriteRestaurant {
   isOpen: boolean;
 }
 
+interface FavoriteUser {
+  fullName?: string;
+}
+
 const mockFavorites: FavoriteRestaurant[] = [
   {
     id: "1",
@@ -51,7 +55,7 @@ const mockFavorites: FavoriteRestaurant[] = [
 ];
 
 export default function FavoritesPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<FavoriteUser | null>(null);
   const [favorites, setFavorites] = useState<FavoriteRestaurant[]>(mockFavorites);
 
   useEffect(() => {
@@ -126,7 +130,6 @@ export default function FavoritesPage() {
                   <p className="cuisine">{restaurant.cuisine}</p>
                   <p className="location">{restaurant.location}</p>
                   <div className="favorite-footer">
-                    <span className="price-range">{restaurant.priceRange}</span>
                     <Link href={`/restaurants/${restaurant.id}`} className="book-link">
                       Book Table →
                     </Link>

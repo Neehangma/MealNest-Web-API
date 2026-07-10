@@ -219,7 +219,6 @@ export default function Home() {
                     <p className="cuisine">{restaurant.cuisine}</p>
                     <p className="location">{restaurant.location}</p>
                     <div className="restaurant-footer">
-                      <span className="price-range">{restaurant.priceRange}</span>
                       <span className="book-now">Book Table →</span>
                     </div>
                   </div>

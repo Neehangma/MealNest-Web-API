@@ -283,7 +283,7 @@ export default function AdminRestaurantsPage() {
           <div className="mb-6 flex gap-2">
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
+              onChange={(e) => setStatusFilter(e.target.value as "all" | Restaurant["status"])}
               className="px-4 py-2 border border-gray-300 rounded-lg bg-white"
             >
               <option value="all">All Status</option>
@@ -301,7 +301,6 @@ export default function AdminRestaurantsPage() {
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Cuisine</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Rating</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Price</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -309,7 +308,7 @@ export default function AdminRestaurantsPage() {
               <tbody className="divide-y divide-gray-200">
                 {filteredRestaurants.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                       No restaurants found matching your search.
                     </td>
                   </tr>
@@ -334,13 +333,12 @@ export default function AdminRestaurantsPage() {
                           <span className="text-gray-900">{restaurant.rating}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-gray-900">{restaurant.priceRange}</td>
                       <td className="px-6 py-4">{getStatusBadge(restaurant.status)}</td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
                           <select
                             value={restaurant.status}
-                            onChange={(e) => handleStatusChange(restaurant.id, e.target.value as any)}
+                            onChange={(e) => handleStatusChange(restaurant.id, e.target.value as Restaurant["status"])}
                             className="text-sm border border-gray-300 rounded px-2 py-1"
                           >
                             <option value="active">Active</option>
@@ -412,8 +410,6 @@ export default function AdminRestaurantsPage() {
                   <p className="text-gray-900">★ {selectedRestaurant.rating}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-gray-600">Price Range</label>
-                  <p className="text-gray-900">{selectedRestaurant.priceRange}</p>
                 </div>
               </div>
               <div>

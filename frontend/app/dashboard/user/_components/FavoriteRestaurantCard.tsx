@@ -46,7 +46,6 @@ export default function FavoriteRestaurantCard({
           {favorite.location || "Neighborhood favorite"}
         </p>
         <div className="dash-favorite-footer">
-          <span className="dash-price">{favorite.priceRange || "$$"}</span>
           <Link href={`/restaurants/${favorite._id}`} className="dash-btn dash-btn-outline dash-btn-sm">
             Book Table
             <Icon name="arrow-right" size={15} />

@@ -47,7 +47,6 @@ export default function RecommendationCard({
         </p>
 
         <div className="dash-recommend-info">
-          <span className="dash-price">{restaurant.priceRange || "$$"}</span>
           <span className={`dash-open-pill ${restaurant.isOpen ? "is-open" : "is-closed"}`}>
             {restaurant.isOpen ? "Open Now" : "Closed"}
           </span>

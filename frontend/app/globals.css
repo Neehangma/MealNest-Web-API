@@ -5199,14 +5199,28 @@ font-size:30px;
 
 .user-dashboard-shell {
   min-height: 100vh;
-  display: flex;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: 216px minmax(0, 1fr);
+  grid-template-rows: 74px minmax(calc(100vh - 74px), auto);
+  align-items: stretch;
   background: var(--dash-bg);
 }
 
 .user-dashboard-content {
-  flex: 1 1 auto;
+  grid-column: 2;
+  grid-row: 1 / -1;
   min-width: 0;
+}
+
+.user-dashboard-content:has(> .dash-shell),
+.user-dashboard-content > .dash-shell,
+.user-dashboard-content > .dash-shell > .dash-body {
+  display: contents;
+}
+
+.user-dashboard-content > .dash-shell > .dash-header {
+  grid-column: 1 / -1;
+  grid-row: 1;
 }
 
 .user-sidebar-toggle {
@@ -5220,14 +5234,15 @@ font-size:30px;
 
 .dash-sidebar {
   position: sticky;
-  top: 0;
-  flex: 0 0 248px;
-  width: 248px;
-  height: 100vh;
-  padding: 24px 18px;
+  top: 74px;
+  grid-column: 1;
+  grid-row: 2;
+  width: 216px;
+  height: calc(100vh - 74px);
+  padding: 18px 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
   background: var(--dash-surface);
   border-right: 1px solid var(--dash-border);
   overflow-y: auto;
@@ -5238,9 +5253,13 @@ font-size:30px;
 }
 
 .dash-sidebar-nav {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 4px 0;
 }
 
 .dash-sidebar-link {
@@ -5248,7 +5267,8 @@ font-size:30px;
   align-items: center;
   gap: 14px;
   width: 100%;
-  padding: 12px 14px;
+  min-height: 48px;
+  padding: 0 14px;
   border: 0;
   border-radius: 12px;
   background: transparent;
@@ -5273,7 +5293,8 @@ font-size:30px;
 }
 
 .dash-sidebar-logout-form {
-  margin-top: auto;
+  flex: 0 0 auto;
+  margin-top: 0;
   padding-top: 12px;
   border-top: 1px solid var(--dash-border);
 }
@@ -5292,8 +5313,10 @@ font-size:30px;
 }
 
 .dash-main {
-  flex: 1 1 auto;
+  grid-column: 2;
+  grid-row: 2;
   min-width: 0;
+  min-height: calc(100vh - 74px);
   padding: 32px clamp(20px, 4vw, 44px) 64px;
 }
 
@@ -6248,12 +6271,23 @@ font-size:30px;
 }
 
 @media (max-width: 900px) {
+  .user-dashboard-shell {
+    display: block;
+  }
+
+  .user-dashboard-content,
+  .user-dashboard-content:has(> .dash-shell),
+  .user-dashboard-content > .dash-shell,
+  .user-dashboard-content > .dash-shell > .dash-body {
+    display: block;
+  }
+
   .dash-header-nav {
     display: none;
   }
 
   .dash-header-menu-btn {
-    display: flex;
+    display: none;
   }
 
   .dash-sidebar {
