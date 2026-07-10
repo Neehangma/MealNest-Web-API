@@ -18,7 +18,7 @@ export default function RecommendationCard({
   return (
     <article className="dash-recommend-card dash-fade-in">
       <Link href={`/restaurants/${restaurant._id}`} className="dash-recommend-media">
-        <img src={restaurant.image || FALLBACK_IMAGE} alt={restaurant.name} />
+        <img src={restaurant.image || FALLBACK_IMAGE} alt={restaurant.name} onError={(event) => { event.currentTarget.src = FALLBACK_IMAGE; }} />
       </Link>
       <button
         type="button"

@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 
 const cors = require("cors");
 const express = require("express");
@@ -42,19 +42,23 @@ app.use((error, _req, res, _next) => {
 });
 
 const startServer = () => {
-  console.log(`Starting MealNest backend on port ${PORT}`);
-
   const server = app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`Health check: http://127.0.0.1:${PORT}/api/health`);
+    console.log(`Server running port ${PORT}`);
+    console.log(`Local API base URL: http://127.0.0.1:${PORT}/api`);
+    console.log(`Flutter Android emulator API base URL: http://10.0.2.2:${PORT}/api`);
+  });
+
+  server.on("error", (error) => {
+    console.error(`Server error: ${error.message}`);
+    process.exit(1);
   });
 
   connectMongo()
     .then(() => {
-      console.log(`MongoDB connected: ${mongoose.connection.name}`);
+      console.log(`Database connected: ${mongoose.connection.name}`);
     })
     .catch((error) => {
-      console.error("MongoDB connection failed:", error.message);
+      console.error(`Database error: ${error.message}`);
     });
 
   return server;

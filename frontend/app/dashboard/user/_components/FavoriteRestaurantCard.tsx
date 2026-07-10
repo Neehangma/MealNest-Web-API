@@ -16,7 +16,7 @@ export default function FavoriteRestaurantCard({
   return (
     <article className="dash-favorite-card dash-fade-in">
       <Link href={`/restaurants/${favorite._id}`} className="dash-favorite-media">
-        <img src={favorite.image || FALLBACK_IMAGE} alt={favorite.name} />
+        <img src={favorite.image || FALLBACK_IMAGE} alt={favorite.name} onError={(event) => { event.currentTarget.src = FALLBACK_IMAGE; }} />
         <span className={`dash-open-badge ${favorite.isOpen ? "is-open" : "is-closed"}`}>
           {favorite.isOpen ? "Open Now" : "Closed"}
         </span>

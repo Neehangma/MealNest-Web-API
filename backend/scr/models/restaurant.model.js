@@ -11,6 +11,7 @@ const restaurantSchema = new mongoose.Schema({
   cuisine: { type: String, required: true, trim: true },
   location: { type: String, required: true, trim: true },
   rating: { type: Number, default: 5.0 },
+  reviewCount: { type: Number, default: 0 },
   priceRange: { type: String, enum: ["$", "$$", "$$$", "$$$$"], default: "$$" },
   image: { type: String, default: "/images/Register.jpg" },
   isOpen: { type: Boolean, default: true },
@@ -18,6 +19,8 @@ const restaurantSchema = new mongoose.Schema({
   address: { type: String, required: true },
   phone: { type: String, required: true },
   hours: { type: String, default: "Mon-Sun: 11:00 AM - 10:00 PM" },
+  featured: { type: Boolean, default: false },
+  availableTimeSlots: [{ type: String }],
   features: [{ type: String }],
   tables: [tableSchema]
 }, { timestamps: true });

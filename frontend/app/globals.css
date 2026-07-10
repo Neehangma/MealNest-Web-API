@@ -4916,7 +4916,8 @@ font-size:30px;
    Warm beige / white, soft shadows, rounded cards, animations
 ============================================================ */
 
-.dash-shell {
+.dash-shell,
+.user-dashboard-shell {
   --dash-bg: #f6efe7;
   --dash-surface: #ffffff;
   --dash-surface-soft: #fbf6f0;
@@ -5196,6 +5197,22 @@ font-size:30px;
 
 /* ---------- Layout: sidebar + main ---------- */
 
+.user-dashboard-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  background: var(--dash-bg);
+}
+
+.user-dashboard-content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.user-sidebar-toggle {
+  display: none;
+}
+
 .dash-body {
   display: flex;
   align-items: flex-start;
@@ -5203,10 +5220,10 @@ font-size:30px;
 
 .dash-sidebar {
   position: sticky;
-  top: 74px;
+  top: 0;
   flex: 0 0 248px;
   width: 248px;
-  height: calc(100vh - 74px);
+  height: 100vh;
   padding: 24px 18px;
   display: flex;
   flex-direction: column;
@@ -6269,6 +6286,32 @@ font-size:30px;
     inset: 0;
     z-index: 55;
     background: rgba(43, 33, 27, 0.4);
+  }
+
+  .user-sidebar-toggle {
+    position: fixed;
+    left: 16px;
+    bottom: 18px;
+    z-index: 54;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    padding: 0;
+    border: 1px solid var(--dash-border);
+    border-radius: 12px;
+    background: var(--dash-surface);
+    box-shadow: var(--dash-shadow);
+  }
+
+  .user-sidebar-toggle span {
+    width: 19px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--dash-brand);
   }
 }
 

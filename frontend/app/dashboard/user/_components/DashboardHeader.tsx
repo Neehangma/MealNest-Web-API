@@ -20,9 +20,13 @@ const NAV_LINKS = [
 export default function DashboardHeader({
   user,
   onToggleSidebar,
+  searchQuery = "",
+  onSearchChange,
 }: {
   user: HeaderUser;
   onToggleSidebar?: () => void;
+  searchQuery?: string;
+  onSearchChange?: (value: string) => void;
 }) {
   const displayName = user?.fullName || "MealNest User";
   const avatar = user?.profilePicture;
@@ -68,7 +72,7 @@ export default function DashboardHeader({
       <div className="dash-header-actions">
         <div className="dash-header-search">
           <Icon name="search" size={18} />
-          <input type="search" placeholder="Search restaurants" aria-label="Search restaurants" />
+          <input type="search" value={searchQuery} onChange={(event) => onSearchChange?.(event.target.value)} placeholder="Search restaurants" aria-label="Search restaurants" />
         </div>
 
         <div className="dash-profile" ref={menuRef}>

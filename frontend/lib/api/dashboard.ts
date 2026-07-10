@@ -13,6 +13,7 @@ export type FavoriteRestaurant = {
   name: string;
   cuisine: string;
   rating: number;
+  reviewCount: number;
   image: string;
   isOpen: boolean;
   status: string;
@@ -50,6 +51,7 @@ export type RestaurantItem = {
   cuisine: string;
   location: string;
   rating: number;
+  reviewCount: number;
   priceRange: string;
   image: string;
   isOpen: boolean;
@@ -57,6 +59,8 @@ export type RestaurantItem = {
   address: string;
   phone: string;
   hours: string;
+  featured: boolean;
+  availableTimeSlots: string[];
   features: string[];
 };
 

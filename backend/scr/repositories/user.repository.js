@@ -3,72 +3,42 @@ const User = require("../models/user.model.js");
 const Restaurant = require("../models/restaurant.model.js");
 const { parsePagination } = require("../utils/apihelper.utils.js");
 
+const defaultSlots = ["11:00 AM", "12:30 PM", "2:00 PM", "5:30 PM", "7:00 PM", "8:30 PM"];
+const restaurant = (name, cuisine, image, description, options = {}) => ({
+  name, cuisine, image, description, location: options.location || "Kathmandu",
+  rating: options.rating || 4.6, reviewCount: options.reviewCount || 120,
+  priceRange: options.priceRange || "$$", isOpen: true,
+  address: options.address || `${name}, Kathmandu, Nepal`, phone: options.phone || "+977 01-5550100",
+  hours: options.hours || "Mon-Sun: 11:00 AM - 10:00 PM", featured: Boolean(options.featured),
+  availableTimeSlots: options.availableTimeSlots || defaultSlots,
+  features: options.features || ["Reservations", "Family Friendly", `${cuisine} Cuisine`],
+});
+
 const seedRestaurants = [
-  {
-    name: "The Golden Truffle",
-    cuisine: "French",
-    location: "Upper East Side",
-    rating: 4.8,
-    priceRange: "$$$",
-    image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=80",
-    isOpen: true,
-    description: "Modern French dining with seasonal tasting menus.",
-    address: "120 Madison Ave, New York, NY",
-    phone: "+1 (212) 555-0188",
-    hours: "Mon-Sun: 5:00 PM - 10:30 PM",
-    features: ["Private Dining", "Wine Pairing", "Reservations"],
-  },
-  {
-    name: "Sakura Omakase",
-    cuisine: "Japanese",
-    location: "Tribeca",
-    rating: 4.9,
-    priceRange: "$$$$",
-    image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=900&q=80",
-    isOpen: true,
-    description: "Chef-led omakase experience in a sleek setting.",
-    address: "44 Hudson St, New York, NY",
-    phone: "+1 (212) 555-0145",
-    hours: "Tue-Sun: 6:00 PM - 11:00 PM",
-    features: ["Omakase", "Sushi Bar", "Late Night"],
-  },
-  {
-    name: "La Bella Italia",
-    cuisine: "Italian",
-    location: "SoHo",
-    rating: 4.6,
-    priceRange: "$$",
-    image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=80",
-    isOpen: true,
-    description: "Rustic Italian comfort food and handmade pasta.",
-    address: "22 Greene St, New York, NY",
-    phone: "+1 (212) 555-0121",
-    hours: "Mon-Sun: 11:30 AM - 10:00 PM",
-    features: ["Pasta", "Outdoor Seating", "Family Friendly"],
-  },
-  {
-    name: "The Spice Route",
-    cuisine: "Indian",
-    location: "Williamsburg",
-    rating: 4.7,
-    priceRange: "$$",
-    image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80",
-    isOpen: false,
-    description: "Bold spice-forward plates with modern presentation.",
-    address: "80 Kent Ave, Brooklyn, NY",
-    phone: "+1 (718) 555-0164",
-    hours: "Mon-Sun: 12:00 PM - 9:00 PM",
-    features: ["Vegetarian", "Takeout", "Cocktails"],
-  },
+  restaurant("Amour", "French", "/images/Amour.png", "Elegant French dining with classic dishes, pastries, and a romantic atmosphere.", { rating: 4.8, priceRange: "$$$", featured: true }),
+  restaurant("Antica", "Italian", "/images/Antica.png", "Traditional Italian restaurant serving handmade pasta, pizza, and authentic regional dishes.", { rating: 4.7 }),
+  restaurant("Bella", "Italian", "/images/bella.png", "A welcoming Italian restaurant known for fresh pasta, wood-fired pizza, and family-style dining.", { location: "Thamel", rating: 4.6 }),
+  restaurant("Bhanchha", "Nepali", "/images/bhanchha.png", "Authentic Nepali cuisine featuring dal bhat, momo, curries, and traditional homemade flavours.", { location: "Patan", rating: 4.8, priceRange: "$", featured: true }),
+  restaurant("Chulo", "Nepali", "/images/chulo.png", "Traditional Nepali restaurant serving momo, thakali sets, grilled meats, and local favourites.", { location: "Lazimpat", rating: 4.7 }),
+  restaurant("Golden", "Chinese", "/images/Golden.png", "Chinese restaurant offering noodles, fried rice, dumplings, stir-fries, and family platters.", { location: "New Road", rating: 4.5 }),
+  restaurant("Hankook Sarang", "Korean", "/images/hankook.png", "Authentic Korean dining featuring barbecue, bibimbap, kimchi, and traditional side dishes.", { location: "Jhamsikhel", rating: 4.9, priceRange: "$$$", featured: true }),
+  restaurant("Kimchi House", "Korean", "/images/kimchi.png", "Korean comfort food restaurant specialising in kimchi dishes, soups, barbecue, and rice bowls.", { location: "Thamel", rating: 4.7 }),
+  restaurant("La Vie", "French", "/images/Lavie.png", "Modern French cuisine served in a stylish and relaxed dining environment.", { location: "Durbar Marg", rating: 4.7, priceRange: "$$$" }),
+  restaurant("The Mahal", "Indian", "/images/mahal.jpg", "Indian restaurant serving rich curries, biryani, tandoori dishes, naan, and vegetarian options.", { location: "Kupondole", rating: 4.8 }),
+  restaurant("Napoli", "Italian", "/images/napoli.png", "Neapolitan-style pizza restaurant with fresh ingredients, pasta, and classic Italian desserts.", { location: "Boudha", rating: 4.6 }),
+  restaurant("Osaka", "Japanese", "/images/osaka.png", "Japanese restaurant offering sushi, ramen, tempura, rice bowls, and seasonal dishes.", { location: "Baluwatar", rating: 4.8, priceRange: "$$$" }),
+  restaurant("Roja", "Mexican", "/images/Roja.png", "Mexican restaurant serving tacos, burritos, enchiladas, grilled dishes, and fresh salsa.", { location: "Thamel", rating: 4.5 }),
+  restaurant("Roma", "Italian", "/images/roma.png", "Classic Roman-inspired restaurant offering pasta, pizza, seafood, and traditional Italian dishes.", { location: "Sanepa", rating: 4.7 }),
+  restaurant("Sakura Restaurant", "Japanese", "/images/Sakura.png", "Japanese restaurant specialising in sushi, sashimi, ramen, tempura, and bento meals.", { location: "Jhamsikhel", rating: 4.9, priceRange: "$$$", featured: true }),
+  restaurant("Sarang", "Korean", "/images/Sarang.png", "Korean restaurant serving barbecue, hot pots, bibimbap, fried chicken, and traditional side dishes.", { location: "Lazimpat", rating: 4.6 }),
+  restaurant("Sensa", "Contemporary", "/images/Sensa.png", "Contemporary restaurant offering modern international dishes in an elegant atmosphere.", { location: "Durbar Marg", rating: 4.8, priceRange: "$$$" }),
+  restaurant("Seoul Kitchen", "Korean", "/images/Seoul.png", "Korean restaurant known for barbecue, rice bowls, soups, noodles, and authentic Seoul-style flavours.", { location: "Boudha", rating: 4.7 }),
 ];
 
 async function ensureSeedRestaurants() {
-  const count = await Restaurant.countDocuments();
-  if (count > 0) {
-    return Restaurant.find({}).sort({ name: 1 });
-  }
-
-  await Restaurant.insertMany(seedRestaurants);
+  await Restaurant.bulkWrite(seedRestaurants.map((record) => ({
+    updateOne: { filter: { name: record.name }, update: { $set: record }, upsert: true },
+  })));
   return Restaurant.find({}).sort({ name: 1 });
 }
 

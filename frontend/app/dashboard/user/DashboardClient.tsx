@@ -15,7 +15,6 @@ import {
   type RestaurantItem,
 } from "@/lib/api/dashboard";
 import DashboardHeader from "./_components/DashboardHeader";
-import Sidebar from "./_components/Sidebar";
 import StatsCard from "./_components/StatsCard";
 import ReservationCard, { type EditForm } from "./_components/ReservationCard";
 import FavoriteRestaurantCard from "./_components/FavoriteRestaurantCard";
@@ -51,13 +50,20 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
   const [error, setError] = useState("");
   const [editingReservationId, setEditingReservationId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<EditForm>(EMPTY_EDIT_FORM);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const displayName = user?.fullName || "MealNest User";
   const firstName = displayName.split(" ")[0];
   const today = useMemo(() => formatToday(), []);
 
   const favoriteIds = useMemo(() => new Set(favorites.map((favorite) => favorite._id)), [favorites]);
+  const filteredRecommendations = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return recommendations;
+    return recommendations.filter((restaurant) =>
+      [restaurant.name, restaurant.cuisine, restaurant.location].some((value) => value.toLowerCase().includes(query)),
+    );
+  }, [recommendations, searchQuery]);
 
   const applyDashboard = useCallback((data: DashboardResponse["data"]) => {
     setStats(data.stats);
@@ -164,12 +170,9 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
 
   return (
     <div className="dash-shell">
-      <DashboardHeader user={user} onToggleSidebar={() => setSidebarOpen((open) => !open)} />
+      <DashboardHeader user={user} searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
       <div className="dash-body">
-        <Sidebar open={sidebarOpen} onNavigate={() => setSidebarOpen(false)} />
-        {sidebarOpen && <div className="dash-sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
-
         <main className="dash-main">
           <div className="dash-layout">
 
@@ -240,12 +243,6 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
                     <ReservationCardSkeleton />
                     <ReservationCardSkeleton />
                   </div>
-                ) : upcomingReservations.length === 0 ? (
-                  <EmptyState
-                    icon="calendar"
-                    title="No Upcoming Reservations"
-                    message="Book a restaurant and your reservations will appear here."
-                  />
                 ) : (
                   <div className="dash-reservation-stack">
                     {upcomingReservations.map((reservation) => (
@@ -296,7 +293,7 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
                 </div>
 
                 <div className="dash-card-grid">
-                  {recommendations.map((restaurant) => (
+                  {filteredRecommendations.map((restaurant) => (
                     <RecommendationCard
                       key={restaurant._id}
                       restaurant={restaurant}
