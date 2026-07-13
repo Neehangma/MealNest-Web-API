@@ -3325,6 +3325,17 @@ font-size:30px;
   margin-top: auto;
 }
 
+.reservation-actions > .action-button {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+}
+
 .action-button {
   padding: 10px 20px;
   border-radius: 8px;
@@ -4734,7 +4745,8 @@ font-size:30px;
   letter-spacing: 0.05em;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
   padding: 14px 18px;
   border: 1px solid #dfbda9;
   border-radius: 8px;
@@ -4743,7 +4755,8 @@ font-size:30px;
   transition: all 0.3s;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
   outline: none;
   border-color: #a45100;
   box-shadow: 0 0 0 3px rgba(164, 81, 0, 0.1);
@@ -4833,6 +4846,13 @@ font-size:30px;
 
 .payment-checkout-footer {
   margin-top: 48px;
+}
+
+.pay-button:disabled,
+.cancel-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
 }
 
 @media(max-width:700px) {

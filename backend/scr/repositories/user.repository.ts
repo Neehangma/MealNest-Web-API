@@ -133,7 +133,7 @@ async function getDashboardData(userId) {
   const restaurants = await ensureSeedRestaurants();
 
   if (!user) {
-    return { user: null, stats: { bookings: 0, favorites: 0, averageRating: 0 }, favorites: [], upcomingReservations: [], recentHistory: [] };
+    return { user: null, stats: { bookings: 0, favorites: 0, averageRating: 0 }, favorites: [], upcomingReservations: [], recentHistory: [], cancelledReservations: [] };
   }
 
   const sortedReservations = [...(user.reservations || [])].sort((a, b) => new Date(a.reservationDate) - new Date(b.reservationDate));
@@ -149,6 +149,10 @@ async function getDashboardData(userId) {
     return reservation.status !== "cancelled" && reservationDate < now;
   });
 
+  const cancelledReservations = sortedReservations.filter(
+    (reservation) => reservation.status === "cancelled"
+  );
+
   const favoriteRestaurants = (user.favorites && user.favorites.length > 0)
     ? user.favorites
     : restaurants.slice(0, 4);
@@ -163,6 +167,7 @@ async function getDashboardData(userId) {
     favorites: favoriteRestaurants,
     upcomingReservations,
     recentHistory,
+    cancelledReservations,
   };
 }
 
@@ -204,8 +209,17 @@ async function createReservation(userId, payload) {
     date: payload.date,
     time: payload.time,
     guests: payload.guests || 2,
-    status: payload.status || "confirmed",
+    status: "confirmed",
     specialRequests: payload.specialRequests || "",
+    bookingReference: `MN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+    location: payload.location || "",
+    restaurantAddress: payload.restaurantAddress || "",
+    customerName: user.fullName || payload.customerName,
+    customerEmail: user.email,
+    customerPhone: user.phoneNumber || payload.customerPhone,
+    paymentMethod: payload.paymentMethod,
+    paymentStatus: payload.paymentStatus,
+    totalPaid: payload.totalPaid,
   };
 
   user.reservations.unshift(reservation);

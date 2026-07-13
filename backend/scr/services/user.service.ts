@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const { ALLOWED_ROLES, BCRYPT_SALT_ROUNDS, JWT_EXPIRES_IN, JWT_SECRET } = require("../config/constant");
 const { HttpException } = require("../exceptions/http-exception");
 const userRepository = require("../repositories/user.repository");
+const { sendBookingConfirmationEmail } = require("./emailService");
 const { isValidObjectId, toSafeUser } = require("../utils/apihelper.utils");
 
 function formatDisplayDate(dateValue) {
@@ -30,6 +31,18 @@ function formatReservationItem(reservation) {
     guests: reservation.guests,
     status: reservation.status,
     specialRequests: reservation.specialRequests,
+    bookingReference: reservation.bookingReference,
+    location: reservation.location,
+    restaurantLocation: reservation.location,
+    restaurantAddress: reservation.restaurantAddress,
+    customerName: reservation.customerName,
+    customerEmail: reservation.customerEmail,
+    customerPhone: reservation.customerPhone,
+    paymentMethod: reservation.paymentMethod,
+    paymentStatus: reservation.paymentStatus,
+    totalPaid: reservation.totalPaid,
+    totalAmount: reservation.totalPaid,
+    partySize: reservation.guests,
   };
 }
 
@@ -205,6 +218,7 @@ async function getDashboard(userId) {
       favorites: [],
       upcomingReservations: [],
       recentHistory: [],
+      cancelledReservations: [],
     };
   }
 
@@ -226,6 +240,7 @@ async function getDashboard(userId) {
     ...formatReservationItem(reservation),
     summary: reservation.status === "completed" ? "Completed reservation" : "Visited restaurant",
   }));
+  const cancelledReservations = (dashboard.cancelledReservations || []).map(formatReservationItem);
 
   return {
     user: toSafeUser(dashboard.user),
@@ -237,6 +252,7 @@ async function getDashboard(userId) {
     favorites,
     upcomingReservations,
     recentHistory,
+    cancelledReservations,
   };
 }
 
@@ -286,8 +302,45 @@ async function createReservation(userId, payload) {
     throw new HttpException(400, "Invalid restaurant id");
   }
 
+  if (!["esewa", "mobile_banking"].includes(payload.paymentMethod)) {
+    throw new HttpException(400, "Payment method must be eSewa or Mobile Banking");
+  }
+
+  if (payload.paymentStatus !== "simulated_success") {
+    throw new HttpException(400, "Payment must succeed before creating a reservation");
+  }
+
+  if (!payload.customerName || !/^(97|98)\d{8}$/.test(String(payload.customerPhone || ""))) {
+    throw new HttpException(400, "Valid customer payment details are required");
+  }
+
+  if (!Number.isFinite(Number(payload.totalPaid)) || Number(payload.totalPaid) < 0) {
+    throw new HttpException(400, "Invalid payment amount");
+  }
+
   const reservation = await userRepository.createReservation(userId, payload);
-  return formatReservationItem(reservation);
+  if (!reservation) {
+    throw new HttpException(404, "User not found");
+  }
+
+  const booking = formatReservationItem(reservation);
+  const user = await userRepository.findById(userId);
+  let emailSent = false;
+
+  if (user?.email && booking.status === "confirmed" && booking.paymentStatus === "simulated_success") {
+    try {
+      await sendBookingConfirmationEmail({
+        recipientEmail: user.email,
+        customerName: user.fullName || booking.customerName,
+        booking,
+      });
+      emailSent = true;
+    } catch (error) {
+      console.error(`Booking confirmation email failed for ${reservation.bookingReference}: ${error.message}`);
+    }
+  }
+
+  return { booking, emailSent };
 }
 
 async function updateReservation(userId, reservationId, payload) {

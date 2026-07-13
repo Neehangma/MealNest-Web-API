@@ -34,6 +34,32 @@ export type ReservationItem = {
   guests: number;
   status: string;
   specialRequests?: string;
+  bookingReference?: string;
+  location?: string;
+  restaurantLocation?: string;
+  restaurantAddress?: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  paymentMethod?: "esewa" | "mobile_banking";
+  paymentStatus?: "simulated_success";
+  totalPaid?: number;
+  totalAmount?: number;
+  partySize?: number;
+};
+
+export type ConfirmedBooking = ReservationItem & {
+  bookingReference: string;
+  restaurantLocation: string;
+  restaurantAddress: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  paymentMethod: "esewa" | "mobile_banking";
+  paymentStatus: "simulated_success";
+  totalPaid: number;
+  totalAmount: number;
+  partySize: number;
 };
 
 export type DashboardResponse = {
@@ -43,6 +69,7 @@ export type DashboardResponse = {
     favorites: FavoriteRestaurant[];
     upcomingReservations: ReservationItem[];
     recentHistory: ReservationItem[];
+    cancelledReservations: ReservationItem[];
   };
 };
 
@@ -86,6 +113,14 @@ export type FavoriteToggleResponse = {
 };
 
 export type ReservationCreateResponse = {
+  success: boolean;
+  message: string;
+  booking?: ConfirmedBooking;
+  data?: ConfirmedBooking;
+  emailSent?: boolean;
+};
+
+export type ReservationMutationResponse = {
   success: boolean;
   message: string;
   data: ReservationItem;
@@ -174,14 +209,14 @@ export async function createReservation(payload: Record<string, unknown>) {
 }
 
 export async function updateReservation(reservationId: string, payload: Record<string, unknown>) {
-  return request<ReservationCreateResponse>(API.RESERVATIONS.BY_ID(reservationId), {
+  return request<ReservationMutationResponse>(API.RESERVATIONS.BY_ID(reservationId), {
     method: "PATCH",
     body: JSON.stringify(payload),
   });
 }
 
 export async function cancelReservation(reservationId: string) {
-  return request<ReservationCreateResponse>(API.RESERVATIONS.BY_ID(reservationId), {
+  return request<ReservationMutationResponse>(API.RESERVATIONS.BY_ID(reservationId), {
     method: "DELETE",
   });
 }

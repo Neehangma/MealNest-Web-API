@@ -114,17 +114,18 @@ async function toggleFavorite(req, res) {
 }
 
 async function createReservation(req, res) {
-  const reservation = await userService.createReservation(req.user._id, req.body);
+  const result = await userService.createReservation(req.user._id, req.body);
   return sendSuccess(res, 201, {
     message: "Reservation created successfully",
-    data: reservation,
+    booking: result.booking,
+    emailSent: result.emailSent,
   });
 }
 
 async function updateReservation(req, res) {
   const reservation = await userService.updateReservation(
     req.user._id,
-    req.params.id,
+    req.params.reservationId,
     req.body
   );
   return sendSuccess(res, 200, {
@@ -134,7 +135,7 @@ async function updateReservation(req, res) {
 }
 
 async function cancelReservation(req, res) {
-  const reservation = await userService.cancelReservation(req.user._id, req.params.id);
+  const reservation = await userService.cancelReservation(req.user._id, req.params.reservationId);
   return sendSuccess(res, 200, {
     message: "Reservation cancelled successfully",
     data: reservation,

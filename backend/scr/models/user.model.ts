@@ -50,6 +50,47 @@ const reservationSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    bookingReference: {
+      type: String,
+      default: "",
+    },
+    location: {
+      type: String,
+      default: "",
+    },
+    restaurantAddress: {
+      type: String,
+      default: "",
+    },
+    customerName: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    customerPhone: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    customerEmail: {
+      type: String,
+      default: "",
+      trim: true,
+      lowercase: true,
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["esewa", "mobile_banking"],
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["simulated_success"],
+    },
+    totalPaid: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   { timestamps: true }
 );
