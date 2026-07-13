@@ -44,6 +44,8 @@ function toSafeUser(user) {
     email: user.email,
     phoneNumber: user.phoneNumber || "",
     profilePicture: user.profilePicture || "",
+    location: user.location || "",
+    bio: user.bio || "",
     role: user.role || "user",
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,

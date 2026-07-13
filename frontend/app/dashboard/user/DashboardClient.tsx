@@ -3,15 +3,14 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  getDashboardData,
   getRestaurants,
-  toggleFavorite,
-  type DashboardResponse,
+  type DashboardData,
   type DashboardStats,
   type FavoriteRestaurant,
   type ReservationItem,
   type RestaurantItem,
 } from "@/lib/api/dashboard";
+import { getUserDashboardAction, toggleFavoriteAction } from "@/lib/actions/dashboard-action";
 import { useUserDashboardShell } from "@/app/_components/UserDashboardShell";
 import StatsCard from "./_components/StatsCard";
 import RecommendationCard from "./_components/RecommendationCard";
@@ -53,7 +52,7 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
     );
   }, [recommendations, searchQuery]);
 
-  const applyDashboard = useCallback((data: DashboardResponse["data"]) => {
+  const applyDashboard = useCallback((data: DashboardData) => {
     setStats(data.stats);
     setFavorites(data.favorites);
     setUpcomingReservations(data.upcomingReservations);
@@ -65,8 +64,8 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
 
     (async () => {
       try {
-        const response = await getDashboardData();
-        if (active) applyDashboard(response.data);
+        const data = await getUserDashboardAction();
+        if (active) applyDashboard(data);
       } catch {
         if (active) setError("We could not load your dashboard data right now.");
       } finally {
@@ -92,9 +91,9 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
 
   const handleFavoriteToggle = async (restaurantId: string) => {
     try {
-      const result = await toggleFavorite(restaurantId);
-      setFavorites(result.data.favorites);
-      setStats((current) => ({ ...current, favorites: result.data.favorites.length }));
+      const updatedFavorites = await toggleFavoriteAction(restaurantId);
+      setFavorites(updatedFavorites);
+      setStats((current) => ({ ...current, favorites: updatedFavorites.length }));
     } catch {
       setError("Unable to update favorites right now.");
     }

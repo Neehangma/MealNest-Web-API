@@ -124,6 +124,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    location: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    bio: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     role: {
       type: String,
       enum: ALLOWED_ROLES,

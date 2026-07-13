@@ -153,9 +153,7 @@ async function getDashboardData(userId) {
     (reservation) => reservation.status === "cancelled"
   );
 
-  const favoriteRestaurants = (user.favorites && user.favorites.length > 0)
-    ? user.favorites
-    : restaurants.slice(0, 4);
+  const favoriteRestaurants = user.favorites || [];
 
   return {
     user,

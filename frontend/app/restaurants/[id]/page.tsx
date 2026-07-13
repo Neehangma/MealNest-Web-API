@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { getRestaurantById, toggleFavorite, type RestaurantItem } from "@/lib/api/dashboard";
+import { getRestaurantById, type RestaurantItem } from "@/lib/api/dashboard";
+import { getFavoritesAction, toggleFavoriteAction } from "@/lib/actions/dashboard-action";
 import { getStableRestaurantPrice } from "@/lib/restaurant-price";
 
 const FALLBACK_IMAGE = "/images/Register.jpg";
@@ -37,6 +38,13 @@ export default function RestaurantDetailPage() {
         setError(reason instanceof Error ? reason.message : "Restaurant not found");
       })
       .finally(() => setLoading(false));
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    getFavoritesAction()
+      .then((favorites) => setIsFavorite(favorites.some((favorite) => favorite._id === id)))
+      .catch(() => setIsFavorite(false));
   }, [id]);
 
   const today = new Date().toLocaleDateString("en-CA");
@@ -77,8 +85,8 @@ export default function RestaurantDetailPage() {
 
     try {
       setError("");
-      await toggleFavorite(restaurant._id);
-      setIsFavorite((value) => !value);
+      const favorites = await toggleFavoriteAction(restaurant._id);
+      setIsFavorite(favorites.some((favorite) => favorite._id === restaurant._id));
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Unable to update favorites.");
     }

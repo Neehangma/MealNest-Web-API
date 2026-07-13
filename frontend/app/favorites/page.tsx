@@ -3,11 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import {
-  getDashboardData,
-  toggleFavorite,
-  type FavoriteRestaurant,
-} from "@/lib/api/dashboard";
+import type { FavoriteRestaurant } from "@/lib/api/dashboard";
+import { getFavoritesAction, toggleFavoriteAction } from "@/lib/actions/dashboard-action";
 import { getStableRestaurantPrice } from "@/lib/restaurant-price";
 
 export default function FavoritesPage() {
@@ -16,8 +13,8 @@ export default function FavoritesPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getDashboardData()
-      .then((response) => setFavorites(response.data.favorites))
+    getFavoritesAction()
+      .then(setFavorites)
       .catch(() => setError("We could not load your favorites right now."))
       .finally(() => setLoading(false));
   }, []);
@@ -27,8 +24,7 @@ export default function FavoritesPage() {
 
     try {
       setError("");
-      const result = await toggleFavorite(id);
-      setFavorites(result.data.favorites);
+      setFavorites(await toggleFavoriteAction(id));
     } catch {
       setError("Unable to update favorites right now.");
     }

@@ -62,15 +62,17 @@ export type ConfirmedBooking = ReservationItem & {
   partySize: number;
 };
 
+export type DashboardData = {
+  stats: DashboardStats;
+  favorites: FavoriteRestaurant[];
+  upcomingReservations: ReservationItem[];
+  recentHistory: ReservationItem[];
+  cancelledReservations: ReservationItem[];
+};
+
 export type DashboardResponse = {
   success: boolean;
-  data: {
-    stats: DashboardStats;
-    favorites: FavoriteRestaurant[];
-    upcomingReservations: ReservationItem[];
-    recentHistory: ReservationItem[];
-    cancelledReservations: ReservationItem[];
-  };
+  data: DashboardData;
 };
 
 export type RestaurantItem = {

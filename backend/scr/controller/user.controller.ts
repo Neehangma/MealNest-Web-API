@@ -109,7 +109,7 @@ async function getRestaurant(req, res) {
 }
 
 async function toggleFavorite(req, res) {
-  const result = await userService.toggleFavorite(req.user._id, req.params.id);
+  const result = await userService.toggleFavorite(req.user._id, req.params.restaurantId);
   return sendSuccess(res, 200, result);
 }
 
