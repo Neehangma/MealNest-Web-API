@@ -18,6 +18,13 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("auth_token")?.value;
   const user = parseUser(request.cookies.get("user_data")?.value);
+
+  if (pathname === "/") {
+    if (!token) return NextResponse.redirect(new URL("/login", request.url));
+    if (user?.role === "admin") return NextResponse.redirect(new URL("/admin", request.url));
+    return NextResponse.redirect(new URL("/dashboard/user", request.url));
+  }
+
   const isProtectedRoute =
     pathname.startsWith("/admin") ||
     pathname.startsWith("/dashboard") ||

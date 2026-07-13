@@ -93,22 +93,6 @@ export default function PaymentMethodsClient() {
 
   return (
     <div className="payment-methods-page">
-      <header className="customer-nav payment-methods-nav">
-        <Link className="customer-brand" href="/dashboard/user">
-          MealNest
-        </Link>
-        <nav aria-label="Customer navigation">
-          <Link href="/dashboard/user">Discover</Link>
-          <Link href="/reservations">Reservations</Link>
-          <Link href="/favorites">Favorites</Link>
-        </nav>
-        <div className="customer-nav-actions">
-          <button type="button" aria-label="Search">
-            <Icon name="card" size={22} />
-          </button>
-        </div>
-      </header>
-
       <main className="payment-methods-main">
         <section className="payment-methods-heading">
           <Link href="/dashboard/user" className="payment-methods-back">

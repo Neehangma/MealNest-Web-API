@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { logoutAction } from "@/lib/actions/profile-action";
 import Icon from "./Icon";
@@ -12,7 +14,7 @@ type HeaderUser = {
 };
 
 const NAV_LINKS = [
-  { label: "Discover", href: "/dashboard/user" },
+  { label: "Discover", href: "/discover" },
   { label: "My Reservations", href: "/reservations" },
   { label: "Favorites", href: "/favorites" },
 ];
@@ -29,6 +31,7 @@ export default function DashboardHeader({
   onSearchChange?: (value: string) => void;
 }) {
   const displayName = user?.fullName || "MealNest User";
+  const pathname = usePathname();
   const avatar = user?.profilePicture;
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -57,13 +60,14 @@ export default function DashboardHeader({
           <span />
         </button>
         <Link href="/dashboard/user" className="dash-header-brand">
-          MealNest
+          <Image src="/images/Logo.png" alt="MealNest logo" width={40} height={40} priority />
+          <span>MealNest</span>
         </Link>
       </div>
 
       <nav className="dash-header-nav" aria-label="Primary">
         {NAV_LINKS.map((link) => (
-          <Link key={link.label} href={link.href}>
+          <Link key={link.label} href={link.href} className={pathname === link.href || pathname.startsWith(`${link.href}/`) ? "is-active" : ""} aria-current={pathname === link.href || pathname.startsWith(`${link.href}/`) ? "page" : undefined}>
             {link.label}
           </Link>
         ))}

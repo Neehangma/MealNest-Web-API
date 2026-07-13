@@ -46,10 +46,13 @@ export default function RecommendationCard({
           {restaurant.location}
         </p>
 
+        {restaurant.description && <p className="dash-restaurant-description">{restaurant.description}</p>}
+
         <div className="dash-recommend-info">
           <span className={`dash-open-pill ${restaurant.isOpen ? "is-open" : "is-closed"}`}>
             {restaurant.isOpen ? "Open Now" : "Closed"}
           </span>
+          {restaurant.priceRange && <span className="dash-price">{restaurant.priceRange}</span>}
         </div>
 
         {restaurant.hours && (
@@ -60,7 +63,7 @@ export default function RecommendationCard({
         )}
 
         <Link href={`/restaurants/${restaurant._id}`} className="dash-btn dash-btn-primary dash-btn-block">
-          Reserve Now
+          View Details
         </Link>
       </div>
     </article>

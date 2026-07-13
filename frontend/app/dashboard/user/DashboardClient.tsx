@@ -3,32 +3,24 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  cancelReservation,
   getDashboardData,
   getRestaurants,
   toggleFavorite,
-  updateReservation,
   type DashboardResponse,
   type DashboardStats,
   type FavoriteRestaurant,
   type ReservationItem,
   type RestaurantItem,
 } from "@/lib/api/dashboard";
-import DashboardHeader from "./_components/DashboardHeader";
+import { useUserDashboardShell } from "@/app/_components/UserDashboardShell";
 import StatsCard from "./_components/StatsCard";
-import ReservationCard, { type EditForm } from "./_components/ReservationCard";
-import FavoriteRestaurantCard from "./_components/FavoriteRestaurantCard";
 import RecommendationCard from "./_components/RecommendationCard";
 import ReservationHistory from "./_components/ReservationHistory";
 import QuickActions from "./_components/QuickActions";
 import EmptyState from "./_components/EmptyState";
 import Icon from "./_components/Icon";
-import {
-  CardSkeleton,
-  HistoryRowSkeleton,
-  ReservationCardSkeleton,
-} from "./_components/Skeletons";
-import { formatDateInput, formatToday } from "./_components/helpers";
+import { CardSkeleton } from "./_components/Skeletons";
+import { formatToday } from "./_components/helpers";
 
 type DashboardUser = {
   fullName?: string;
@@ -36,8 +28,6 @@ type DashboardUser = {
   profilePicture?: string;
   role?: string;
 };
-
-const EMPTY_EDIT_FORM: EditForm = { date: "", time: "", guests: "2", specialRequests: "" };
 
 export default function DashboardClient({ user }: { user: DashboardUser }) {
   const [stats, setStats] = useState<DashboardStats>({ bookings: 0, favorites: 0, averageRating: 0 });
@@ -48,9 +38,7 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
   const [loading, setLoading] = useState(true);
   const [recommendationsLoading, setRecommendationsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [editingReservationId, setEditingReservationId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<EditForm>(EMPTY_EDIT_FORM);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { searchQuery } = useUserDashboardShell();
 
   const displayName = user?.fullName || "MealNest User";
   const firstName = displayName.split(" ")[0];
@@ -71,16 +59,6 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
     setUpcomingReservations(data.upcomingReservations);
     setRecentHistory(data.recentHistory);
   }, []);
-
-  const refreshDashboard = useCallback(async () => {
-    try {
-      const response = await getDashboardData();
-      applyDashboard(response.data);
-      setError("");
-    } catch {
-      setError("We could not load your dashboard data right now.");
-    }
-  }, [applyDashboard]);
 
   useEffect(() => {
     let active = true;
@@ -122,56 +100,10 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
     }
   };
 
-  const startEditing = (reservation: ReservationItem) => {
-    setEditingReservationId(reservation._id);
-    setEditForm({
-      date: formatDateInput(reservation.reservationDate),
-      time: reservation.time,
-      guests: String(reservation.guests || 2),
-      specialRequests: reservation.specialRequests || "",
-    });
-  };
-
-  const saveEdit = async (reservationId: string) => {
-    try {
-      const payload = {
-        date: new Date(editForm.date).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }),
-        reservationDate: editForm.date,
-        time: editForm.time,
-        guests: Number(editForm.guests || 2),
-        specialRequests: editForm.specialRequests,
-      };
-      await updateReservation(reservationId, payload);
-      await refreshDashboard();
-      setEditingReservationId(null);
-    } catch {
-      setError("Unable to update this reservation right now.");
-    }
-  };
-
-  const handleCancelReservation = async (reservationId: string) => {
-    if (!window.confirm("Are you sure you want to cancel this reservation?")) {
-      return;
-    }
-
-    try {
-      await cancelReservation(reservationId);
-      await refreshDashboard();
-    } catch {
-      setError("Unable to cancel this reservation right now.");
-    }
-  };
-
   const averageRatingDisplay = Number(stats.averageRating || 0).toFixed(1);
 
   return (
     <div className="dash-shell">
-      <DashboardHeader user={user} searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-
       <div className="dash-body">
         <main className="dash-main">
           <div className="dash-layout">
@@ -231,83 +163,36 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
                 />
               </section>
 
-              {/* Upcoming */}
-              <section className="dash-panel">
-                <div className="dash-panel-head">
-                  <h2>Upcoming Reservations</h2>
-                  <Link href="/reservations">View All</Link>
+              <section className="dashboard-restaurants-section" id="restaurants">
+                <div className="dashboard-restaurants-header">
+                  <div>
+                    <h2>Explore Restaurants</h2>
+                    <p>Discover and reserve your next dining experience</p>
+                  </div>
+                  <Link href="/discover" className="dash-btn dash-btn-outline">View All Restaurants</Link>
                 </div>
 
-                {loading ? (
-                  <div className="dash-reservation-stack">
-                    <ReservationCardSkeleton />
-                    <ReservationCardSkeleton />
+                {recommendationsLoading ? (
+                  <div className="dashboard-restaurant-grid" aria-label="Loading restaurants">
+                    {Array.from({ length: 6 }).map((_, index) => <CardSkeleton key={index} />)}
                   </div>
-                ) : (
-                  <div className="dash-reservation-stack">
-                    {upcomingReservations.map((reservation) => (
-                      <ReservationCard
-                        key={reservation._id}
-                        reservation={reservation}
-                        isEditing={editingReservationId === reservation._id}
-                        editForm={editForm}
-                        onEditFormChange={(patch) =>
-                          setEditForm((current) => ({
-                            ...current,
-                            ...patch,
-                          }))
-                        }
-                        onStartEdit={startEditing}
-                        onSaveEdit={saveEdit}
-                        onCancelEdit={() => setEditingReservationId(null)}
-                        onCancelReservation={handleCancelReservation}
+                ) : filteredRecommendations.length > 0 ? (
+                  <div className="dashboard-restaurant-grid">
+                    {filteredRecommendations.map((restaurant) => (
+                      <RecommendationCard
+                        key={restaurant._id}
+                        restaurant={restaurant}
+                        isFavorite={favoriteIds.has(restaurant._id)}
+                        onToggleFavorite={handleFavoriteToggle}
                       />
                     ))}
                   </div>
+                ) : (
+                  <EmptyState icon="utensils" title="No restaurants found" message="Try a different search or explore restaurants again shortly." actionLabel="View All Restaurants" actionHref="/discover" />
                 )}
               </section>
 
-              {/* Favorites */}
-              <section className="dash-panel">
-                <div className="dash-panel-head">
-                  <h2>Favorite Restaurants</h2>
-                  <Link href="/favorites">View All</Link>
-                </div>
-
-                <div className="dash-card-grid">
-                  {favorites.map((favorite) => (
-                    <FavoriteRestaurantCard
-                      key={favorite._id}
-                      favorite={favorite}
-                      onRemove={handleFavoriteToggle}
-                    />
-                  ))}
-                </div>
-              </section>
-
-              {/* Recommendations */}
-              <section className="dash-panel" id="recommended">
-                <div className="dash-panel-head">
-                  <h2>Recommended Restaurants</h2>
-                  <Link href="/restaurants">Browse All</Link>
-                </div>
-
-                <div className="dash-card-grid">
-                  {filteredRecommendations.map((restaurant) => (
-                    <RecommendationCard
-                      key={restaurant._id}
-                      restaurant={restaurant}
-                      isFavorite={favoriteIds.has(restaurant._id)}
-                      onToggleFavorite={handleFavoriteToggle}
-                    />
-                  ))}
-                </div>
-              </section>
-            </section>
-
-            {/* Right Side */}
-            <aside className="dash-right">
-              <section className="dash-panel">
+              <section className="dash-panel dashboard-quick-actions-section">
                 <h2>Quick Actions</h2>
                 <QuickActions />
               </section>
@@ -320,7 +205,7 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
 
                 <ReservationHistory items={recentHistory} />
               </section>
-            </aside>
+            </section>
           </div>
         </main>
       </div>

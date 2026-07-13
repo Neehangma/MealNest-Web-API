@@ -49,22 +49,6 @@ export default function ChangePasswordClient() {
 
   return (
     <div className="change-password-page">
-      <header className="customer-nav change-password-nav">
-        <Link className="customer-brand" href="/profile">
-          MealNest
-        </Link>
-        <nav aria-label="Customer navigation">
-          <Link href="/dashboard/user">Discover</Link>
-          <Link href="/reservations">Reservations</Link>
-          <Link href="/favorites">Favorites</Link>
-        </nav>
-        <div className="customer-nav-actions">
-          <button type="button" aria-label="Search">
-            <Icon name="lock" size={22} />
-          </button>
-        </div>
-      </header>
-
       <main className="change-password-main">
         <section className="change-password-heading">
           <Link href="/profile" className="change-password-back">

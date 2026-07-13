@@ -8,17 +8,13 @@ import {
   toggleFavorite,
   type FavoriteRestaurant,
 } from "@/lib/api/dashboard";
-import type { AuthUser } from "@/lib/api/auth";
-import { getUserData } from "@/lib/cookies";
 
 export default function FavoritesPage() {
-  const [user, setUser] = useState<AuthUser | null>(null);
   const [favorites, setFavorites] = useState<FavoriteRestaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getUserData().then(setUser);
     getDashboardData()
       .then((response) => setFavorites(response.data.favorites))
       .catch(() => setError("We could not load your favorites right now."))
@@ -39,16 +35,6 @@ export default function FavoritesPage() {
 
   return (
     <main className="favorites-page">
-      <nav className="favorites-nav">
-        <Link href="/dashboard/user" className="favorites-brand">
-          <Image src="/images/Logo.png" alt="MealNest" width={40} height={40} />
-          <span>MealNest</span>
-        </Link>
-        <div className="nav-user">
-          <span>{user?.fullName || "User"}</span>
-        </div>
-      </nav>
-
       <div className="favorites-container">
         <div className="favorites-header">
           <div>

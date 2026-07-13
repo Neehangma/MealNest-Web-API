@@ -13,14 +13,14 @@ const ACTIONS: QuickAction[] = [
   {
     label: "Book a Table",
     description: "Find and reserve your next spot",
-    href: "/dashboard/user#recommended",
+    href: "/discover",
     icon: "calendar",
     tone: "amber",
   },
   {
     label: "Browse Restaurants",
     description: "Explore places near you",
-    href: "/dashboard/user#recommended",
+    href: "/discover",
     icon: "compass",
     tone: "green",
   },
@@ -34,7 +34,7 @@ const ACTIONS: QuickAction[] = [
   {
     label: "Reservation History",
     description: "Review your past dining",
-    href: "/dashboard/user#recent-history",
+    href: "/reservations",
     icon: "clock",
     tone: "rose",
   },

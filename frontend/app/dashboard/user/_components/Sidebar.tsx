@@ -18,7 +18,6 @@ export default function Sidebar({ open, onNavigate }: { open: boolean; onNavigat
   const pathname = usePathname();
   return (
     <aside className={`dash-sidebar ${open ? "is-open" : ""}`} aria-label="User dashboard navigation">
-      <Link href="/dashboard/user" className="dash-sidebar-brand" onClick={onNavigate}>MealNest</Link>
       <nav className="dash-sidebar-nav">
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);

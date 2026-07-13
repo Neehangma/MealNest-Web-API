@@ -128,23 +128,6 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
 
   return (
     <div className="profile-settings-page">
-      <header className="customer-nav profile-settings-nav">
-        <a className="customer-brand" href="/dashboard/user">
-          MealNest
-        </a>
-        <nav aria-label="Customer navigation">
-          <a href="/dashboard/user">Discover</a>
-          <a href="/reservations">Reservations</a>
-          <a href="/favorites">Favorites</a>
-        </nav>
-        <div className="customer-nav-actions">
-          <button type="button" aria-label="Search">
-            <Icon name="search" size={22} />
-          </button>
-          <img src={avatar} alt={`${user.fullName} profile`} />
-        </div>
-      </header>
-
       <main className="profile-settings-main">
         <section className="profile-settings-heading">
           <a href="/dashboard/user" className="profile-settings-back">
