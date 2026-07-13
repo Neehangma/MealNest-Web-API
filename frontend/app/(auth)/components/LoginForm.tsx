@@ -74,7 +74,7 @@ export default function LoginForm() {
             </form>
 
             <p className="bottom-text">
-              Don&apos;t have an account? <Link href="/register">Create an account</Link>
+              Don&apos;t have an account? <Link href="/signup">Create an account</Link>
             </p>
           </div>
         </section>

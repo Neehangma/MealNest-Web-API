@@ -1,7 +1,11 @@
 "use client";
 
 import Link from "next/link";
+<<<<<<< Updated upstream
 import { useCallback, useEffect, useMemo, useState } from "react";
+=======
+import { useEffect, useState } from "react";
+>>>>>>> Stashed changes
 import {
   getDashboardData,
   getRestaurants,
@@ -103,6 +107,7 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
   const averageRatingDisplay = Number(stats.averageRating || 0).toFixed(1);
 
   return (
+<<<<<<< Updated upstream
     <div className="dash-shell">
       <div className="dash-body">
         <main className="dash-main">
@@ -110,6 +115,27 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
 
             {/* Left Content */}
             <section className="dash-content">
+=======
+    <div className="customer-dashboard">
+      <main className="customer-main">
+        <section className="customer-profile-card">
+          <div className="customer-identity">
+            <img src={avatar} alt="" />
+            <h1>{displayName}</h1>
+          </div>
+          <div className="customer-metrics" aria-label="Dashboard statistics">
+            <div>
+              <strong>{loading ? "—" : stats.bookings}</strong>
+              <span>Bookings</span>
+            </div>
+            <div>
+              <strong>{loading ? "—" : stats.favorites}</strong>
+              <span>Favorites</span>
+            </div>
+            
+          </div>
+        </section>
+>>>>>>> Stashed changes
 
               {/* Welcome */}
               <section className="dash-welcome dash-fade-in">
@@ -118,11 +144,18 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
                   <p>Ready to reserve another unforgettable dining experience?</p>
                 </div>
 
+<<<<<<< Updated upstream
                 <span className="dash-today">
                   <Icon name="calendar" size={16} />
                   {today}
                 </span>
               </section>
+=======
+            <div className="customer-section-head">
+              <h2>Upcoming Reservations</h2>
+              <Link href="/dashboard/user/reservations">View All</Link>
+            </div>
+>>>>>>> Stashed changes
 
               {/* Statistics */}
               <section className="dash-stats-grid">
@@ -153,6 +186,7 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
                   loading={loading}
                 />
 
+<<<<<<< Updated upstream
                 <StatsCard
                   icon="star"
                   value={averageRatingDisplay}
@@ -206,6 +240,71 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
                 <ReservationHistory items={recentHistory} />
               </section>
             </section>
+=======
+          <aside className="customer-sidebar">
+            <section className="side-card">
+              <h2>Quick Actions</h2>
+              <Link href="/dashboard/user/profile">
+                <Icon name="user" />
+                <span>Update Profile</span>
+                <Icon name="chevron" size={18} />
+              </Link>
+              <Link href="/dashboard/user/payment-methods">
+                <Icon name="card" />
+                <span>Payment Methods</span>
+                <Icon name="chevron" size={18} />
+              </Link>
+              <Link href="/dashboard/user/reservations">
+                <Icon name="bell" />
+                <span>Dining Alerts</span>
+                <Icon name="chevron" size={18} />
+              </Link>
+            </section>
+
+            <section className="side-card history-card">
+              <h2>Recent History</h2>
+              {loading && <p>Loading history…</p>}
+              {!loading && recentHistory.length === 0 && <p>No completed reservations yet.</p>}
+              {!loading && recentHistory.map((item) => (
+                <article className="history-row" key={item._id}>
+                  <div><Icon name={item.cuisine?.toLowerCase().includes("japanese") ? "utensils" : "utensils"} size={22} /></div>
+                  <span>
+                    <strong>{item.restaurantName}</strong>
+                    <small>{formatDisplayDate(item.reservationDate)}</small>
+                    <Link href={`/restaurants/${item.restaurantId || item._id}`}>Re-book</Link>
+                  </span>
+                </article>
+              ))}
+              <Link href="/dashboard/user/reservations" className="customer-link-button">Full History</Link>
+            </section>
+          </aside>
+        </div>
+      </main>
+
+      <footer className="customer-footer">
+        <div>
+          <h2>MealNest</h2>
+          <p>Premium dining logistics and reservations for the modern connoisseur.</p>
+        </div>
+        <nav aria-label="Platform links">
+          <h3>Platform</h3>
+          <a href="#">About Us</a>
+          <a href="#">Press</a>
+          <a href="#">Careers</a>
+        </nav>
+        <nav aria-label="Support links">
+          <h3>Support</h3>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Contact</a>
+        </nav>
+        <div>
+          <h3>Connect</h3>
+          <div className="social-row">
+            <Icon name="globe" />
+            <Icon name="globe" />
+            <Icon name="share" />
+>>>>>>> Stashed changes
           </div>
         </main>
       </div>

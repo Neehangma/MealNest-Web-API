@@ -123,7 +123,7 @@ export default function Home() {
         </Link>
         <div className="home-nav-actions">
           <Link href="/login">Login</Link>
-          <Link className="home-nav-button" href="/register">
+          <Link className="home-nav-button" href="/signup">
             Sign Up
           </Link>
         </div>
@@ -146,7 +146,7 @@ export default function Home() {
             from one simple place.
           </p>
           <div className="home-hero-actions">
-            <Link className="home-primary" href="/register">
+            <Link className="home-primary" href="/signup">
               Create Account
             </Link>
             <Link className="home-secondary" href="/login">

@@ -8,8 +8,10 @@ export async function setTokenCookie(token: string) {
   cookieStore.set({
     name: "auth_token",
     value: token,
+    httpOnly: true,
     path: "/",
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
   });
 }
 
@@ -23,8 +25,10 @@ export async function storeUserData(userData: AuthUser) {
   cookieStore.set({
     name: "user_data",
     value: JSON.stringify(userData),
+    httpOnly: true,
     path: "/",
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
   });
 }
 
