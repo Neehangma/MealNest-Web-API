@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 
 type IconName = "check" | "utensils" | "calendar" | "users" | "home" | "star";
 
@@ -56,24 +59,14 @@ function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
 }
 
 export default function BookingConfirmationPage() {
+  const [booking] = useState(() => {
+    const fallback = { restaurantName: "Your restaurant", date: "Selected date", time: "Selected time", guests: 2, location: "Kathmandu", cuisine: "" };
+    if (typeof window === "undefined") return fallback;
+    const stored = sessionStorage.getItem("mealnest_booking");
+    return stored ? { ...fallback, ...JSON.parse(stored) } : fallback;
+  });
   return (
     <div className="booking-confirmation-page">
-      <header className="customer-nav booking-confirmation-nav">
-        <Link className="customer-brand" href="/dashboard/user">
-          MealNest
-        </Link>
-        <nav aria-label="Customer navigation">
-          <Link href="/dashboard/user">Discover</Link>
-          <Link href="/reservations">Reservations</Link>
-          <Link href="/favorites">Favorites</Link>
-        </nav>
-        <div className="customer-nav-actions">
-          <button type="button" aria-label="Search">
-            <Icon name="check" size={22} />
-          </button>
-        </div>
-      </header>
-
       <main className="booking-confirmation-main">
         <div className="booking-confirmation-container">
           <div className="confirmation-icon">
@@ -87,7 +80,7 @@ export default function BookingConfirmationPage() {
             
             <div className="confirmation-message">
               <p>Dear <strong>Dipika Maharjan</strong>,</p>
-              <p>Your reservation at <strong>The Golden Truffle</strong> is confirmed.</p>
+              <p>Your reservation at <strong>{booking.restaurantName}</strong> is confirmed.</p>
             </div>
 
             <div className="booking-details-card">
@@ -99,7 +92,7 @@ export default function BookingConfirmationPage() {
                   </div>
                   <div className="detail-content">
                     <span className="detail-label">Restaurant</span>
-                    <span className="detail-value">The Golden Truffle</span>
+                    <span className="detail-value">{booking.restaurantName}</span>
                   </div>
                 </li>
                 <li>
@@ -108,7 +101,7 @@ export default function BookingConfirmationPage() {
                   </div>
                   <div className="detail-content">
                     <span className="detail-label">Date & Time</span>
-                    <span className="detail-value">Tomorrow, 7:30 PM</span>
+                    <span className="detail-value">{booking.date}, {booking.time}</span>
                   </div>
                 </li>
                 <li>
@@ -117,7 +110,7 @@ export default function BookingConfirmationPage() {
                   </div>
                   <div className="detail-content">
                     <span className="detail-label">Guests</span>
-                    <span className="detail-value">2 Guests</span>
+                    <span className="detail-value">{booking.guests} Guests</span>
                   </div>
                 </li>
                 <li>
@@ -126,7 +119,7 @@ export default function BookingConfirmationPage() {
                   </div>
                   <div className="detail-content">
                     <span className="detail-label">Location</span>
-                    <span className="detail-value">Upper East Side, French Cuisine</span>
+                    <span className="detail-value">{booking.location}{booking.cuisine ? `, ${booking.cuisine} Cuisine` : ""}</span>
                   </div>
                 </li>
                 <li>

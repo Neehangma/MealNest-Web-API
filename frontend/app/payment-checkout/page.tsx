@@ -45,22 +45,6 @@ export default function PaymentCheckoutPage() {
 
   return (
     <div className="payment-checkout-page">
-      <header className="customer-nav payment-checkout-nav">
-        <Link className="customer-brand" href="/dashboard/user">
-          MealNest
-        </Link>
-        <nav aria-label="Customer navigation">
-          <Link href="/dashboard/user">Discover</Link>
-          <Link href="/reservations">Reservations</Link>
-          <Link href="/favorites">Favorites</Link>
-        </nav>
-        <div className="customer-nav-actions">
-          <button type="button" aria-label="Search">
-            <Icon name="check" size={22} />
-          </button>
-        </div>
-      </header>
-
       <main className="payment-checkout-main">
         <section className="payment-checkout-heading">
           <Link href="/dashboard/user" className="payment-checkout-back">

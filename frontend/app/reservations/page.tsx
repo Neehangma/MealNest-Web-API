@@ -3,18 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getUserData } from "@/lib/cookies";
 import { cancelReservation, getDashboardData, type ReservationItem } from "@/lib/api/dashboard";
 
 export default function ReservationsPage() {
-  const [user, setUser] = useState<any>(null);
   const [reservations, setReservations] = useState<ReservationItem[]>([]);
   const [filter, setFilter] = useState<"all" | "upcoming" | "past" | "cancelled">("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getUserData().then(setUser);
     void loadReservations();
   }, []);
 
@@ -64,16 +61,6 @@ export default function ReservationsPage() {
 
   return (
     <main className="reservations-page">
-      <nav className="reservations-nav">
-        <Link href="/dashboard/user" className="reservations-brand">
-          <Image src="/images/Logo.png" alt="MealNest" width={40} height={40} />
-          <span>MealNest</span>
-        </Link>
-        <div className="nav-user">
-          <span>{user?.fullName || "User"}</span>
-        </div>
-      </nav>
-
       <div className="reservations-container">
         <div className="reservations-header">
           <div>
