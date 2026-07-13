@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-type IconName = "chevron" | "check";
+type IconName = "chevron" | "check" | "bank";
 
 function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
   const props = {
@@ -23,6 +23,7 @@ function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
     <svg {...props}>
       {name === "chevron" && <path d="m9 18 6-6-6-6" />}
       {name === "check" && <path d="M20 6 9 17l-5-5" />}
+      {name === "bank" && <><path d="m3 10 9-6 9 6"/><path d="M5 10v8M9 10v8M15 10v8M19 10v8M3 20h18"/></>}
     </svg>
   );
 }
@@ -59,35 +60,33 @@ export default function PaymentCheckoutPage() {
 
         <div className="payment-checkout-content">
           <div className="payment-methods-selection">
-            <h2>Select Payment Method</h2>
+            <h2>Choose Your Payment Option</h2>
             
-            <div className="payment-method-options">
+            <div className="payment-option-grid">
               <button
                 type="button"
-                className={`payment-method-option ${selectedMethod === "esewa" ? "selected" : ""}`}
+                className={`payment-option-card ${selectedMethod === "esewa" ? "selected" : ""}`}
                 onClick={() => setSelectedMethod("esewa")}
               >
-                <div className="payment-method-radio">
-                  {selectedMethod === "esewa" && <Icon name="check" size={16} />}
-                </div>
-                <div className="payment-method-label">
+                <div className="payment-option-icon esewa-icon" aria-hidden="true">e</div>
+                <div className="payment-option-copy">
                   <h3>Pay via eSewa</h3>
-                  <p>Pay using your eSewa wallet</p>
+                  <p>Use eSewa wallet</p>
                 </div>
+                {selectedMethod === "esewa" && <span className="payment-selected-check"><Icon name="check" size={14}/></span>}
               </button>
 
               <button
                 type="button"
-                className={`payment-method-option ${selectedMethod === "bank" ? "selected" : ""}`}
+                className={`payment-option-card ${selectedMethod === "bank" ? "selected" : ""}`}
                 onClick={() => setSelectedMethod("bank")}
               >
-                <div className="payment-method-radio">
-                  {selectedMethod === "bank" && <Icon name="check" size={16} />}
-                </div>
-                <div className="payment-method-label">
+                <div className="payment-option-icon bank-icon"><Icon name="bank" size={28}/></div>
+                <div className="payment-option-copy">
                   <h3>Linked Bank Account</h3>
-                  <p>Pay using your linked bank account</p>
+                  <p>Pay instantly via bank account</p>
                 </div>
+                {selectedMethod === "bank" && <span className="payment-selected-check"><Icon name="check" size={14}/></span>}
               </button>
             </div>
           </div>
@@ -159,7 +158,7 @@ export default function PaymentCheckoutPage() {
               className="pay-button"
               onClick={handlePayment}
             >
-              {selectedMethod === "esewa" ? "PAY VIA ESEWA" : "PAY VIA BANK"}
+              {selectedMethod === "esewa" ? "Pay via eSewa" : "Pay via Bank Account"}
             </button>
           </div>
         </div>
