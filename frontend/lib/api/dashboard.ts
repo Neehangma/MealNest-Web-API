@@ -19,6 +19,7 @@ export type FavoriteRestaurant = {
   status: string;
   location?: string;
   priceRange?: string;
+  price?: number;
 };
 
 export type ReservationItem = {
@@ -53,6 +54,7 @@ export type RestaurantItem = {
   rating: number;
   reviewCount: number;
   priceRange: string;
+  price?: number;
   image: string;
   isOpen: boolean;
   description: string;
@@ -125,7 +127,27 @@ export async function getDashboardData() {
 }
 
 export async function getRestaurants() {
-  return request<RestaurantsListResponse>(API.RESTAURANTS.LIST);
+  const response = await request<unknown>(`${API.RESTAURANTS.LIST}?limit=100`);
+  const body = response as {
+    success?: boolean;
+    restaurants?: unknown;
+    data?: unknown | { restaurants?: unknown; data?: unknown };
+  };
+  const nestedData = body.data as { restaurants?: unknown; data?: unknown } | undefined;
+  const restaurants = Array.isArray(body.data)
+    ? body.data
+    : Array.isArray(body.restaurants)
+      ? body.restaurants
+      : Array.isArray(nestedData?.restaurants)
+        ? nestedData.restaurants
+        : Array.isArray(nestedData?.data)
+          ? nestedData.data
+          : [];
+
+  return {
+    success: body.success !== false,
+    data: restaurants as RestaurantItem[],
+  } satisfies RestaurantsListResponse;
 }
 
 export async function getRestaurantById(id: string) {

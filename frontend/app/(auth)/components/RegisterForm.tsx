@@ -37,7 +37,7 @@ export default function RegisterForm() {
       return;
     }
 
-    router.push("/login");
+    router.push("/dashboard/user");
     router.refresh();
   }
 

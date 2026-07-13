@@ -218,6 +218,7 @@ async function getDashboard(userId) {
     status: restaurant.isOpen ? "Available Tonight" : "Closed",
     location: restaurant.location,
     priceRange: restaurant.priceRange,
+    price: restaurant.price,
   }));
 
   const upcomingReservations = (dashboard.upcomingReservations || []).map(formatReservationItem);

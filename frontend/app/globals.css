@@ -1586,6 +1586,210 @@ font-size:30px;
    CUSTOMER DASHBOARD MOCKUP
 =========================== */
 
+.user-dashboard-layout {
+  min-height: 100vh;
+  background: #f8f1eb;
+  color: #241a16;
+}
+
+.user-dashboard-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+}
+
+.user-dashboard-header nav a.active {
+  color: #964700;
+  font-weight: 800;
+}
+
+.user-dashboard-body {
+  display: flex;
+  align-items: flex-start;
+  min-height: calc(100vh - 88px);
+}
+
+.user-dashboard-sidebar {
+  width: 210px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 88px;
+  height: calc(100vh - 88px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow-y: auto;
+  padding: 28px 16px 24px;
+  background: #ffffff;
+  border-right: 1px solid #eadfce;
+}
+
+.user-dashboard-sidebar nav {
+  display: grid;
+  gap: 7px;
+}
+
+.user-sidebar-link,
+.user-sidebar-logout {
+  width: 100%;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 13px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #526376;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.user-sidebar-link > span,
+.user-sidebar-logout > span {
+  width: 20px;
+  color: #964700;
+  font-size: 18px;
+  text-align: center;
+}
+
+.user-sidebar-link:hover,
+.user-sidebar-link.active {
+  background: #f7eadf;
+  color: #964700;
+}
+
+.user-sidebar-logout {
+  color: #9f2f24;
+}
+
+.user-dashboard-content {
+  flex: 1;
+  min-width: 0;
+  background: #f8f1eb;
+}
+
+.user-dashboard-search {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid #eadfce;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.user-dashboard-search input {
+  width: 150px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #2a2420;
+}
+
+.user-dashboard-profile {
+  position: relative;
+}
+
+.user-dashboard-profile summary {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #526376;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.user-dashboard-profile summary::-webkit-details-marker {
+  display: none;
+}
+
+.user-dashboard-profile > div {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 150px;
+  display: grid;
+  padding: 8px;
+  border: 1px solid #eadfce;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(61, 40, 28, 0.14);
+}
+
+.user-dashboard-profile > div a {
+  padding: 9px 10px;
+  border-radius: 6px;
+  color: #526376;
+}
+
+.user-dashboard-profile > div a:hover {
+  background: #f7eadf;
+  color: #964700;
+}
+
+.user-settings-page {
+  min-height: calc(100vh - 88px);
+  padding: 48px;
+}
+
+.user-settings-page h1 {
+  margin: 0 0 10px;
+  color: #332720;
+  font-family: Georgia, serif;
+  font-size: 36px;
+}
+
+@media (max-width: 900px) {
+  .user-dashboard-header {
+    grid-template-columns: 1fr auto;
+    padding: 0 24px;
+  }
+
+  .user-dashboard-header > nav,
+  .user-dashboard-search,
+  .user-dashboard-profile summary span {
+    display: none;
+  }
+
+  .user-dashboard-body {
+    display: block;
+  }
+
+  .user-dashboard-sidebar {
+    width: 100%;
+    height: auto;
+    position: sticky;
+    top: 88px;
+    z-index: 40;
+    display: block;
+    overflow-x: auto;
+    padding: 10px 14px;
+    border-right: 0;
+    border-bottom: 1px solid #eadfce;
+  }
+
+  .user-dashboard-sidebar nav {
+    display: flex;
+    width: max-content;
+  }
+
+  .user-dashboard-sidebar form {
+    display: none;
+  }
+
+  .user-sidebar-link {
+    width: auto;
+    white-space: nowrap;
+  }
+}
+
 .customer-dashboard {
   min-height: 100vh;
   background: #fff7f1;
@@ -2738,7 +2942,8 @@ font-size:30px;
   font-weight: 700;
 }
 
-.booking-form select {
+.booking-form select,
+.booking-form input[type="date"] {
   width: 100%;
   height: 50px;
   padding: 0 16px;
@@ -2749,7 +2954,8 @@ font-size:30px;
   color: #231814;
 }
 
-.booking-form select:focus {
+.booking-form select:focus,
+.booking-form input[type="date"]:focus {
   outline: none;
   border-color: #a45100;
   box-shadow: 0 0 0 4px rgba(164, 81, 0, 0.1);
@@ -5087,12 +5293,24 @@ font-size:30px;
 }
 
 .dash-header-search input {
+  height: auto;
+  margin: 0;
+  padding: 0;
   border: 0;
+  border-radius: 0;
   outline: 0;
   background: transparent;
+  box-shadow: none;
+  appearance: none;
   font-size: 14px;
   color: var(--dash-ink);
   width: 180px;
+}
+
+.dash-header-search input:focus {
+  border: 0;
+  outline: 0;
+  box-shadow: none;
 }
 
 .dash-profile {

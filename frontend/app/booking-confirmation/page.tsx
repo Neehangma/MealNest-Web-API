@@ -143,7 +143,7 @@ export default function BookingConfirmationPage() {
               <Link href="/dashboard/user" className="back-to-dashboard">
                 Back to Dashboard
               </Link>
-              <Link href="/reservations" className="view-reservations">
+              <Link href="/dashboard/user/reservations" className="view-reservations">
                 View All Reservations
               </Link>
             </div>

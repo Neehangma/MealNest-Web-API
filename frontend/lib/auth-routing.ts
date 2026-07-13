@@ -5,7 +5,7 @@ export function getDashboardPathForRole(role?: AuthUser["role"]) {
     case "admin":
       return "/admin/dashboard";
     case "user":
-      return "/dashboard";
+      return "/dashboard/user";
     default:
       return "/login";
   }

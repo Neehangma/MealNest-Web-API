@@ -16,6 +16,12 @@ function parseUser(value?: string) {
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // The landing page is public for both guests and authenticated users.
+  if (pathname === "/") {
+    return NextResponse.next();
+  }
+
   const token = request.cookies.get("auth_token")?.value;
   const user = parseUser(request.cookies.get("user_data")?.value);
 
@@ -46,5 +52,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/login", "/register", "/ResetPassword", "/admin/:path*", "/dashboard/:path*", "/profile/:path*"],
+  matcher: ["/", "/login", "/signup", "/ResetPassword", "/admin/:path*", "/dashboard/:path*", "/profile/:path*"],
 };

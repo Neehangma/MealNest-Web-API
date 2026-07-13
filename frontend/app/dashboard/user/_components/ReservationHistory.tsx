@@ -34,7 +34,7 @@ export default function ReservationHistory({ items }: { items: ReservationItem[]
               </div>
             </div>
             <Link
-              href={`/restaurants/${item.restaurantId || item._id}`}
+              href={`/dashboard/user/restaurants/${item.restaurantId || item._id}`}
               className="dash-btn dash-btn-outline dash-btn-sm"
             >
               View Details

@@ -14,9 +14,9 @@ type HeaderUser = {
 };
 
 const NAV_LINKS = [
-  { label: "Discover", href: "/discover" },
-  { label: "My Reservations", href: "/reservations" },
-  { label: "Favorites", href: "/favorites" },
+  { label: "Discover", href: "/dashboard/user/discover" },
+  { label: "My Reservations", href: "/dashboard/user/reservations" },
+  { label: "Favorites", href: "/dashboard/user/favorites" },
 ];
 
 export default function DashboardHeader({
@@ -104,15 +104,15 @@ export default function DashboardHeader({
                 <strong>{displayName}</strong>
                 {user?.email && <small>{user.email}</small>}
               </div>
-              <Link href="/profile" role="menuitem" onClick={() => setMenuOpen(false)}>
+              <Link href="/dashboard/user/profile" role="menuitem" onClick={() => setMenuOpen(false)}>
                 <Icon name="user" size={18} />
                 <span>My Profile</span>
               </Link>
-              <Link href="/reservations" role="menuitem" onClick={() => setMenuOpen(false)}>
+              <Link href="/dashboard/user/reservations" role="menuitem" onClick={() => setMenuOpen(false)}>
                 <Icon name="calendar" size={18} />
                 <span>My Reservations</span>
               </Link>
-              <Link href="/payment-methods" role="menuitem" onClick={() => setMenuOpen(false)}>
+              <Link href="/dashboard/user/payment-methods" role="menuitem" onClick={() => setMenuOpen(false)}>
                 <Icon name="card" size={18} />
                 <span>Payment Methods</span>
               </Link>

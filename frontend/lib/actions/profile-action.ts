@@ -128,5 +128,5 @@ export async function changePasswordAction(_prevState: ActionState, formData: Fo
 
 export async function logoutAction() {
   await clearAuthCookies();
-  redirect("/login");
+  redirect("/");
 }
