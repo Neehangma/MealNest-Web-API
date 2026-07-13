@@ -3810,6 +3810,17 @@ font-size:30px;
   border: 1px solid #ead5c8;
 }
 
+.payment-method-choice {
+  margin-bottom: 32px;
+}
+
+.payment-method-choice h2 {
+  margin: 0 0 18px;
+  color: #231814;
+  font-family: Georgia, serif;
+  font-size: 24px;
+}
+
 .payment-methods-header {
   display: flex;
   align-items: center;
@@ -3878,7 +3889,8 @@ font-size:30px;
   letter-spacing: 0.05em;
 }
 
-.payment-methods-form input {
+.payment-methods-form input,
+.payment-methods-form select {
   padding: 12px 16px;
   border: 1px solid #dfbda9;
   border-radius: 8px;
@@ -3887,7 +3899,8 @@ font-size:30px;
   transition: all 0.3s;
 }
 
-.payment-methods-form input:focus {
+.payment-methods-form input:focus,
+.payment-methods-form select:focus {
   outline: none;
   border-color: #a45100;
   box-shadow: 0 0 0 3px rgba(164, 81, 0, 0.1);
@@ -4544,6 +4557,85 @@ font-size:30px;
   color: #231814;
 }
 
+.payment-option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.payment-option-card {
+  position: relative;
+  width: 100%;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #ead8c5;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #231814;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.payment-option-card:hover {
+  border-color: #a45100;
+  box-shadow: 0 8px 20px rgba(89, 45, 12, 0.08);
+}
+
+.payment-option-card.selected {
+  border: 2px solid #a45100;
+  background: #fff8f0;
+}
+
+.payment-option-icon {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+}
+
+.esewa-icon {
+  background: #eef9ea;
+  color: #55b93e;
+  font-size: 34px;
+  font-weight: 800;
+}
+
+.bank-icon {
+  background: #fff2e3;
+  color: #a45100;
+}
+
+.payment-option-copy h3 {
+  margin: 0 0 5px;
+  color: #231814;
+  font-size: 18px;
+}
+
+.payment-option-copy p {
+  margin: 0;
+  color: #61728a;
+  font-size: 14px;
+}
+
+.payment-selected-check {
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #a45100;
+  color: white;
+}
+
 .payment-method-options {
   display: flex;
   flex-direction: column;
@@ -4741,6 +4833,12 @@ font-size:30px;
 
 .payment-checkout-footer {
   margin-top: 48px;
+}
+
+@media(max-width:700px) {
+  .payment-option-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media(max-width:900px) {

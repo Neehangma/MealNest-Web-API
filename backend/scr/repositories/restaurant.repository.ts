@@ -9,7 +9,75 @@ const RESTAURANT_PRICES = {
   Roja: 200, Roma: 325, "Sakura Omakase": 500, "Sakura Restaurant": 325,
   Sarang: 275, Sensa: 450, "Seoul Kitchen": 300,
   "The Golden Truffle": 500, "The Mahal": 375, "The Spice Route": 250,
+  Patio: 320, Trials: 450,
 };
+
+const NEW_RESTAURANTS = [
+  {
+    name: "Patio",
+    cuisine: "Mediterranean",
+    location: "Lazimpat",
+    description: "A relaxed Mediterranean dining room serving bright seasonal plates and wood-fired favorites.",
+    rating: 4.6,
+    reviewCount: 86,
+    image: "/images/Patio.jpg",
+    price: 320,
+    isActive: true,
+    isOpen: true,
+    address: "Lazimpat Road, Kathmandu",
+    phone: "+977 1-4422100",
+    hours: "Mon-Sun: 11:00 AM - 10:00 PM",
+    featured: true,
+    availableTimeSlots: ["11:30 AM", "1:00 PM", "5:30 PM", "7:00 PM", "8:30 PM"],
+    features: ["Mediterranean Menu", "Private Dining", "Seasonal Plates"],
+  },
+  {
+    name: "Trials",
+    cuisine: "Contemporary Nepali",
+    location: "Jhamsikhel",
+    description: "Contemporary Nepali cuisine presented in an intimate modern setting with locally sourced ingredients.",
+    rating: 4.8,
+    reviewCount: 112,
+    image: "/images/Trials.jpg",
+    price: 450,
+    isActive: true,
+    isOpen: true,
+    address: "Jhamsikhel, Lalitpur",
+    phone: "+977 1-5423100",
+    hours: "Tue-Sun: 12:00 PM - 10:30 PM",
+    featured: true,
+    availableTimeSlots: ["12:00 PM", "2:00 PM", "6:00 PM", "7:30 PM", "9:00 PM"],
+    features: ["Local Ingredients", "Chef Tasting Menu", "Reservations"],
+  },
+];
+
+const EXISTING_RESTAURANT_IMAGES = {
+  "The Golden Truffle": "/images/Golden.jpg",
+  "Sakura Omakase": "/images/sakura.jpg",
+  "La Bella Italia": "/images/roma.jpg",
+  "The Spice Route": "/images/osaka.jpg",
+};
+
+async function ensureNewRestaurants() {
+  await Restaurant.bulkWrite(
+    NEW_RESTAURANTS.map((restaurant) => ({
+      updateOne: {
+        filter: { name: restaurant.name },
+        update: { $setOnInsert: restaurant },
+        upsert: true,
+      },
+    })),
+  );
+
+  await Restaurant.bulkWrite(
+    Object.entries(EXISTING_RESTAURANT_IMAGES).map(([name, image]) => ({
+      updateOne: {
+        filter: { name },
+        update: { $set: { image } },
+      },
+    })),
+  );
+}
 
 function getStableRestaurantPrice(restaurant) {
   const numericPrice = Number(restaurant.price);
@@ -44,6 +112,7 @@ async function findRestaurantById(id) {
 }
 
 async function listRestaurants(queryParams) {
+  await ensureNewRestaurants();
   const { page, limit, skip } = parsePagination(queryParams);
 
   const search = String(queryParams.search || "").trim();
@@ -51,7 +120,7 @@ async function listRestaurants(queryParams) {
   const location = String(queryParams.location || "").trim();
 
   let filter = {
-    isActive: true,
+    isActive: { $ne: false },
   };
 
   if (search) {
