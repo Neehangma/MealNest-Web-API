@@ -2942,7 +2942,8 @@ font-size:30px;
   font-weight: 700;
 }
 
-.booking-form select {
+.booking-form select,
+.booking-form input[type="date"] {
   width: 100%;
   height: 50px;
   padding: 0 16px;
@@ -2953,7 +2954,8 @@ font-size:30px;
   color: #231814;
 }
 
-.booking-form select:focus {
+.booking-form select:focus,
+.booking-form input[type="date"]:focus {
   outline: none;
   border-color: #a45100;
   box-shadow: 0 0 0 4px rgba(164, 81, 0, 0.1);

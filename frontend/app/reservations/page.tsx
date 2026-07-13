@@ -146,7 +146,7 @@ export default function ReservationsPage() {
                   <div className="reservation-actions">
                     {reservation.status !== "cancelled" && (
                       <>
-                        <Link href={`/restaurants/${reservation.restaurantId || reservation._id}`} className="action-button secondary">
+                        <Link href={`/dashboard/user/restaurants/${reservation.restaurantId || reservation._id}`} className="action-button secondary">
                           View Restaurant
                         </Link>
                         <button

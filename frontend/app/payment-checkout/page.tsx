@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type IconName = "chevron" | "check";
 
@@ -27,6 +28,7 @@ function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
 }
 
 export default function PaymentCheckoutPage() {
+  const router = useRouter();
   const [selectedMethod, setSelectedMethod] = useState<"esewa" | "bank">("esewa");
   const [showDetails, setShowDetails] = useState(true);
 
@@ -36,7 +38,7 @@ export default function PaymentCheckoutPage() {
     if (selectedMethod === "esewa") {
       setShowSuccessModal(true);
       setTimeout(() => {
-        window.location.href = "/booking-confirmation";
+        router.push("/dashboard/user/booking-confirmation");
       }, 2000);
     } else {
       alert("Processing bank account payment...");

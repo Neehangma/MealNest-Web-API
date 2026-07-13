@@ -19,7 +19,6 @@ import ReservationHistory from "./_components/ReservationHistory";
 import QuickActions from "./_components/QuickActions";
 import EmptyState from "./_components/EmptyState";
 import Icon from "./_components/Icon";
-import { CardSkeleton } from "./_components/Skeletons";
 import { formatToday } from "./_components/helpers";
 
 type DashboardUser = {
@@ -37,6 +36,7 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
   const [recommendations, setRecommendations] = useState<RestaurantItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [recommendationsLoading, setRecommendationsLoading] = useState(true);
+  const [recommendationsError, setRecommendationsError] = useState(false);
   const [error, setError] = useState("");
   const { searchQuery } = useUserDashboardShell();
 
@@ -79,7 +79,7 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
         const response = await getRestaurants();
         if (active) setRecommendations(response.data);
       } catch {
-        // recommendations are non-critical; keep the dashboard usable
+        if (active) setRecommendationsError(true);
       } finally {
         if (active) setRecommendationsLoading(false);
       }
@@ -169,13 +169,13 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
                     <h2>Explore Restaurants</h2>
                     <p>Discover and reserve your next dining experience</p>
                   </div>
-                  <Link href="/discover" className="dash-btn dash-btn-outline">View All Restaurants</Link>
+                  <Link href="/dashboard/user/discover" className="dash-btn dash-btn-outline">View All Restaurants</Link>
                 </div>
 
                 {recommendationsLoading ? (
-                  <div className="dashboard-restaurant-grid" aria-label="Loading restaurants">
-                    {Array.from({ length: 6 }).map((_, index) => <CardSkeleton key={index} />)}
-                  </div>
+                  <p>Loading restaurants...</p>
+                ) : recommendationsError ? (
+                  <p className="profile-action-message error">Unable to load restaurants. Please try again.</p>
                 ) : filteredRecommendations.length > 0 ? (
                   <div className="dashboard-restaurant-grid">
                     {filteredRecommendations.map((restaurant) => (
@@ -188,7 +188,7 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
                     ))}
                   </div>
                 ) : (
-                  <EmptyState icon="utensils" title="No restaurants found" message="Try a different search or explore restaurants again shortly." actionLabel="View All Restaurants" actionHref="/discover" />
+                  <EmptyState icon="utensils" title="No restaurants found" message="Try a different search or explore restaurants again shortly." actionLabel="View All Restaurants" actionHref="/dashboard/user/discover" />
                 )}
               </section>
 
@@ -200,7 +200,7 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
               <section className="dash-panel" id="recent-history">
                 <div className="dash-panel-head">
                   <h2>Recent History</h2>
-                  <Link href="/reservations">Full History</Link>
+                  <Link href="/dashboard/user/reservations">Full History</Link>
                 </div>
 
                 <ReservationHistory items={recentHistory} />

@@ -15,7 +15,7 @@ export default function FavoriteRestaurantCard({
 }) {
   return (
     <article className="dash-favorite-card dash-fade-in">
-      <Link href={`/restaurants/${favorite._id}`} className="dash-favorite-media">
+      <Link href={`/dashboard/user/restaurants/${favorite._id}`} className="dash-favorite-media">
         <img src={favorite.image || FALLBACK_IMAGE} alt={favorite.name} onError={(event) => { event.currentTarget.src = FALLBACK_IMAGE; }} />
         <span className={`dash-open-badge ${favorite.isOpen ? "is-open" : "is-closed"}`}>
           {favorite.isOpen ? "Open Now" : "Closed"}
@@ -32,7 +32,7 @@ export default function FavoriteRestaurantCard({
 
       <div className="dash-favorite-body">
         <div className="dash-favorite-title">
-          <Link href={`/restaurants/${favorite._id}`}>
+          <Link href={`/dashboard/user/restaurants/${favorite._id}`}>
             <h3>{favorite.name}</h3>
           </Link>
           <span className="dash-rating">
@@ -46,7 +46,7 @@ export default function FavoriteRestaurantCard({
           {favorite.location || "Neighborhood favorite"}
         </p>
         <div className="dash-favorite-footer">
-          <Link href={`/restaurants/${favorite._id}`} className="dash-btn dash-btn-outline dash-btn-sm">
+          <Link href={`/dashboard/user/restaurants/${favorite._id}`} className="dash-btn dash-btn-outline dash-btn-sm">
             Book Table
             <Icon name="arrow-right" size={15} />
           </Link>

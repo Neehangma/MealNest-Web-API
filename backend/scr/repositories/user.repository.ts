@@ -4,6 +4,7 @@ declare const module: any;
 const mongoose = require("mongoose");
 const User = require("../models/user.model");
 const Restaurant = require("../models/restaurant.model");
+const { ensureRestaurantPrices } = require("./restaurant.repository");
 const { parsePagination } = require("../utils/apihelper.utils");
 
 const seedRestaurants = [
@@ -13,6 +14,7 @@ const seedRestaurants = [
     location: "Upper East Side",
     rating: 4.8,
     priceRange: "$$$",
+    price: 500,
     image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=900&q=80",
     isOpen: true,
     description: "Modern French dining with seasonal tasting menus.",
@@ -27,6 +29,7 @@ const seedRestaurants = [
     location: "Tribeca",
     rating: 4.9,
     priceRange: "$$$$",
+    price: 500,
     image: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=900&q=80",
     isOpen: true,
     description: "Chef-led omakase experience in a sleek setting.",
@@ -41,6 +44,7 @@ const seedRestaurants = [
     location: "SoHo",
     rating: 4.6,
     priceRange: "$$",
+    price: 350,
     image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=80",
     isOpen: true,
     description: "Rustic Italian comfort food and handmade pasta.",
@@ -55,6 +59,7 @@ const seedRestaurants = [
     location: "Williamsburg",
     rating: 4.7,
     priceRange: "$$",
+    price: 250,
     image: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80",
     isOpen: false,
     description: "Bold spice-forward plates with modern presentation.",
@@ -68,11 +73,11 @@ const seedRestaurants = [
 async function ensureSeedRestaurants() {
   const count = await Restaurant.countDocuments();
   if (count > 0) {
-    return Restaurant.find({}).sort({ name: 1 });
+    return ensureRestaurantPrices(await Restaurant.find({}).sort({ name: 1 }));
   }
 
   await Restaurant.insertMany(seedRestaurants);
-  return Restaurant.find({}).sort({ name: 1 });
+  return ensureRestaurantPrices(await Restaurant.find({}).sort({ name: 1 }));
 }
 
 function findByEmail(email, includePassword = false) {

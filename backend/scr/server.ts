@@ -8,6 +8,7 @@ const { PORT } = require("./config/constant");
 const { connectMongo } = require("./database/mongodb");
 const { HttpException } = require("./exceptions/http-exception");
 const userRoutes = require("./routes/user.route");
+const restaurantRoutes = require("./routes/restaurant.route");
 const { sendError } = require("./utils/apihelper.utils");
 
 
@@ -24,6 +25,9 @@ app.get("/api/health", (_req, res) => {
   res.json({ success: true, message: "MealNest Backend Running" });
 });
 
+// Public restaurant browsing must be registered before the authenticated
+// catch-all user routes that expose the same path.
+app.use("/api/v1/restaurants", restaurantRoutes);
 app.use("/api/v1", userRoutes);
 app.use("/api", userRoutes);
 
@@ -41,9 +45,6 @@ app.use((error, _req, res, _next) => {
 
   return sendError(res, status, message, error.details);
 });
-
-const restaurantRoutes = require("./routes/restaurant.route");
-app.use("/api/v1/restaurants", restaurantRoutes);
 
 const startServer = () => {
   const server = app.listen(PORT, () => {

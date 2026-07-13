@@ -13,6 +13,7 @@ const restaurantSchema = new mongoose.Schema({
   rating: { type: Number, default: 5.0 },
   reviewCount: { type: Number, default: 0 },
   priceRange: { type: String, enum: ["$", "$$", "$$$", "$$$$"], default: "$$" },
+  price: { type: Number, min: 150, max: 500 },
   image: { type: String, default: "/images/Register.jpg" },
   isOpen: { type: Boolean, default: true },
   description: { type: String, trim: true },

@@ -8,6 +8,7 @@ import {
   toggleFavorite,
   type FavoriteRestaurant,
 } from "@/lib/api/dashboard";
+import { getStableRestaurantPrice } from "@/lib/restaurant-price";
 
 export default function FavoritesPage() {
   const [favorites, setFavorites] = useState<FavoriteRestaurant[]>([]);
@@ -90,8 +91,8 @@ export default function FavoritesPage() {
                   <p className="cuisine">{restaurant.cuisine}</p>
                   <p className="location">{restaurant.location}</p>
                   <div className="favorite-footer">
-                    <span className="price-range">{restaurant.priceRange}</span>
-                    <Link href={`/restaurants/${restaurant._id}`} className="book-link">
+                    <span className="price-range">Rs. {getStableRestaurantPrice(restaurant)}</span>
+                    <Link href={`/dashboard/user/restaurants/${restaurant._id}`} className="book-link">
                       Book Table →
                     </Link>
                   </div>

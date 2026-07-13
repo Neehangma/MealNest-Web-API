@@ -110,7 +110,7 @@ export default function ReservationCard({
 
             <div className="dash-reservation-actions">
               <Link
-                href={`/restaurants/${reservation.restaurantId || reservation._id}`}
+                href={`/dashboard/user/restaurants/${reservation.restaurantId || reservation._id}`}
                 className="dash-btn dash-btn-outline"
               >
                 View Details
