@@ -9,9 +9,8 @@ const NAV_ITEMS: Array<{ label: string; href: string; icon: IconName }> = [
   { label: "Dashboard", href: "/dashboard/user", icon: "grid" },
   { label: "My Reservations", href: "/reservations", icon: "calendar" },
   { label: "Favorites", href: "/favorites", icon: "heart" },
-  { label: "Profile", href: "/profile", icon: "user" },
+  { label: "Profile Settings", href: "/profile", icon: "user" },
   { label: "Payment Methods", href: "/payment-methods", icon: "card" },
-  { label: "Settings", href: "/change-password", icon: "settings" },
 ];
 
 export default function Sidebar({ open, onNavigate }: { open: boolean; onNavigate?: () => void }) {

@@ -3,15 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-<<<<<<< Updated upstream
 import {
   getDashboardData,
   toggleFavorite,
   type FavoriteRestaurant,
 } from "@/lib/api/dashboard";
-=======
-import { getDashboardData, toggleFavorite, type FavoriteRestaurant } from "@/lib/api/dashboard";
->>>>>>> Stashed changes
 
 export default function FavoritesPage() {
   const [favorites, setFavorites] = useState<FavoriteRestaurant[]>([]);
@@ -19,14 +15,10 @@ export default function FavoritesPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-<<<<<<< Updated upstream
     getDashboardData()
       .then((response) => setFavorites(response.data.favorites))
       .catch(() => setError("We could not load your favorites right now."))
       .finally(() => setLoading(false));
-=======
-    void loadFavorites();
->>>>>>> Stashed changes
   }, []);
 
   async function handleRemoveFavorite(id: string) {

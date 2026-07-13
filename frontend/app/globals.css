@@ -5291,12 +5291,24 @@ font-size:30px;
 }
 
 .dash-header-search input {
+  height: auto;
+  margin: 0;
+  padding: 0;
   border: 0;
+  border-radius: 0;
   outline: 0;
   background: transparent;
+  box-shadow: none;
+  appearance: none;
   font-size: 14px;
   color: var(--dash-ink);
   width: 180px;
+}
+
+.dash-header-search input:focus {
+  border: 0;
+  outline: 0;
+  box-shadow: none;
 }
 
 .dash-profile {
