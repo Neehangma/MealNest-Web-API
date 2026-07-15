@@ -68,7 +68,7 @@ export default function LogoutProvider({ children }: { children: React.ReactNode
     {open && <div className="profile-modal-overlay logout-confirmation-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeModal(); }}>
       <section className="profile-modal logout-confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="logout-confirmation-title" aria-describedby="logout-confirmation-message">
         <h2 id="logout-confirmation-title">Confirm Logout</h2>
-        <p id="logout-confirmation-message">Are you sure you want to log out of your MealNest account?</p>
+        <p id="logout-confirmation-message">Are you sure you want to log out?</p>
         <div className="profile-modal-actions">
           <button ref={cancelRef} type="button" className="profile-modal-button secondary" onClick={closeModal} disabled={submitting}>Cancel</button>
           <form action={logoutAction} onSubmit={() => setSubmitting(true)}>

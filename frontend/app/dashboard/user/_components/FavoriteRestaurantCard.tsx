@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import type { FavoriteRestaurant } from "@/lib/api/dashboard";
+import { getRestaurantImage, RESTAURANT_FALLBACK_IMAGE } from "@/lib/restaurant-image";
 import Icon from "./Icon";
 
-const FALLBACK_IMAGE = "/images/Register.jpg";
 
 export default function FavoriteRestaurantCard({
   favorite,
@@ -16,7 +16,7 @@ export default function FavoriteRestaurantCard({
   return (
     <article className="dash-favorite-card dash-fade-in">
       <Link href={`/dashboard/user/restaurants/${favorite._id}`} className="dash-favorite-media">
-        <img src={favorite.image || FALLBACK_IMAGE} alt={favorite.name} onError={(event) => { event.currentTarget.src = FALLBACK_IMAGE; }} />
+        <img src={getRestaurantImage(favorite.image)} alt={favorite.name} onError={(event) => { event.currentTarget.src = RESTAURANT_FALLBACK_IMAGE; }} />
         <span className={`dash-open-badge ${favorite.isOpen ? "is-open" : "is-closed"}`}>
           {favorite.isOpen ? "Open Now" : "Closed"}
         </span>
@@ -35,10 +35,6 @@ export default function FavoriteRestaurantCard({
           <Link href={`/dashboard/user/restaurants/${favorite._id}`}>
             <h3>{favorite.name}</h3>
           </Link>
-          <span className="dash-rating">
-            <Icon name="star" size={14} />
-            {favorite.rating}
-          </span>
         </div>
         <p className="dash-favorite-cuisine">{favorite.cuisine}</p>
         <p className="dash-favorite-location">

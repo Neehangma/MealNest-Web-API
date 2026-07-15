@@ -142,6 +142,16 @@ async function cancelReservation(req, res) {
   });
 }
 
+async function listMyReservations(req, res) {
+  const bookings = await userService.listMyReservations(req.user._id);
+  return sendSuccess(res, 200, { bookings, data: bookings });
+}
+
+async function listAdminReservations(_req, res) {
+  const bookings = await userService.listAdminReservations();
+  return sendSuccess(res, 200, { data: bookings, total: bookings.length });
+}
+
 module.exports = {
   cancelReservation,
   changePassword,
@@ -153,6 +163,8 @@ module.exports = {
   getRestaurant,
   getUser,
   getRestaurants,
+  listMyReservations,
+  listAdminReservations,
   listUsers,
   login,
   register,

@@ -46,6 +46,13 @@ export type ReservationItem = {
   totalPaid?: number;
   totalAmount?: number;
   partySize?: number;
+  transactionId?: string;
+  createdAt?: string;
+  restaurantPhone?: string;
+  restaurant?: {
+    _id: string; name: string; cuisine: string; image: string; location: string;
+    address?: string; phone?: string; description?: string; priceRange?: string; hours?: string;
+  };
 };
 
 export type ConfirmedBooking = ReservationItem & {

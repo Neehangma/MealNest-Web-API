@@ -13,14 +13,13 @@ import {
   updateAdminUserAction as updateUser,
 } from "@/lib/actions/admin/user-action";
 import styles from "../admin.module.css";
-import { useLogout } from "@/app/_components/LogoutProvider";
+import DeleteConfirmationModal from "../_components/DeleteConfirmationModal";
 
 type IconName =
   | "grid"
   | "users"
   | "store"
   | "calendar"
-  | "star"
   | "settings"
   | "help"
   | "logout"
@@ -51,15 +50,6 @@ const emptyForm: FormState = {
   password: "",
   role: "user",
 };
-
-const navItems: { label: string; icon: IconName; active?: boolean; href: string }[] = [
-  { label: "Dashboard", icon: "grid", href: "/admin" },
-  { label: "Users", icon: "users", active: true, href: "/admin/users" },
-  { label: "Restaurants", icon: "store", href: "/admin/restaurants" },
-  { label: "Bookings", icon: "calendar", href: "/admin/bookings" },
-  { label: "Reviews", icon: "star", href: "/admin/reviews" },
-  { label: "Settings", icon: "settings", href: "/admin/settings" },
-];
 
 function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
   const props = {
@@ -109,7 +99,6 @@ function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
           <path d="M3 10h18" />
         </>
       )}
-      {name === "star" && <path d="m12 2 3.1 6.3 6.9 1-5 4.8 1.2 6.8L12 17.7 5.8 21 7 14.1 2 9.3l6.9-1L12 2Z" />}
       {name === "settings" && (
         <>
           <path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z" />
@@ -228,7 +217,6 @@ function validateForm(form: FormState, mode: "create" | "edit") {
 }
 
 export default function AdminUsersPage() {
-  const { requestLogout } = useLogout();
   const [users, setUsers] = useState<User[]>([]);
   const [meta, setMeta] = useState<PaginatedUsersResponse["meta"]>({
     page: 1,
@@ -396,42 +384,6 @@ export default function AdminUsersPage() {
 
   return (
     <div className={styles.adminRoot}>
-      <aside className={styles.sidebar}>
-        <div className={styles.brand}>
-          <Image className={styles.brandMark} src="/images/Logo.png" alt="MealNest logo" width={74} height={74} priority />
-          <div className={styles.brandText}>
-            <span className={styles.brandName}>MealNest</span>
-            <span className={styles.brandSub}>SYSTEM MANAGEMENT</span>
-          </div>
-        </div>
-
-        <nav className={styles.nav} aria-label="Admin navigation">
-          {navItems.map((item) => (
-            <a key={item.label} className={`${styles.navItem} ${item.active ? styles.navActive : ""}`} href={item.href}>
-              <Icon name={item.icon} size={24} />
-              <span className={styles.navLabel}>{item.label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <div className={styles.sidebarFooter}>
-          <button className={styles.addButton} type="button" onClick={openCreateModal}>
-            <Icon name="plus" size={21} />
-            Add New User
-          </button>
-          <div className={styles.supportLinks}>
-            <a className={styles.navItem} href="#">
-              <Icon name="help" size={24} />
-              <span>Support</span>
-            </a>
-            <button type="button" className={`${styles.navItem} ${styles.signOut}`} onClick={(event) => requestLogout(event.currentTarget)}>
-              <Icon name="logout" size={24} />
-              <span>Sign Out</span>
-            </button>
-          </div>
-        </div>
-      </aside>
-
       <main className={styles.main}>
         <header className={styles.topbar}>
           <button className={styles.menuButton} type="button" aria-label="Open menu">
@@ -681,24 +633,7 @@ export default function AdminUsersPage() {
         </div>
       )}
 
-      {deleteTarget && (
-        <div className={styles.modalBackdrop} role="dialog" aria-modal="true">
-          <section className={styles.confirmModal}>
-            <h2>Delete User</h2>
-            <p>
-              Are you sure you want to delete <strong>{deleteTarget.fullName}</strong>? This action cannot be undone.
-            </p>
-            <div className={styles.modalActions}>
-              <button className={styles.secondaryButton} type="button" onClick={() => setDeleteTarget(null)}>
-                Cancel
-              </button>
-              <button className={styles.dangerButton} type="button" disabled={submitting} onClick={handleDelete}>
-                {submitting ? "Deleting..." : "Delete User"}
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
+      <DeleteConfirmationModal open={Boolean(deleteTarget)} title="Delete User" name={deleteTarget?.fullName || "this user"} message="This action cannot be undone." confirmLabel="Delete User" deleting={submitting} onCancel={() => setDeleteTarget(null)} onConfirm={() => void handleDelete()} />
     </div>
   );
 }

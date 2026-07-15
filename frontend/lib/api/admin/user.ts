@@ -72,7 +72,7 @@ export async function adminRequest<T>(
   const response = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
-      "Content-Type": "application/json",
+      ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
       ...(token ? { Authorization: `Bearer ${decodeURIComponent(token)}` } : {}),
       ...options.headers,
     },

@@ -371,6 +371,37 @@
   font-size: 20px;
 }
 
+.sharedAdminLayout { min-height: 100vh; background: #fffaf6; }
+.sharedAdminSidebar { position: fixed; inset: 0 auto 0 0; z-index: 80; width: 260px; height: 100vh; display: flex; flex-direction: column; background: #fffdf9; border-right: 1px solid #ead8ca; }
+.sharedAdminBrand { display: flex; align-items: center; gap: 12px; min-height: 104px; padding: 18px 24px; border-bottom: 1px solid #f1e2d8; }
+.sharedAdminBrand img { object-fit: contain; }
+.sharedAdminBrand strong { display: block; color: #b43f08; font: 800 27px/1 Georgia, serif; }
+.sharedAdminBrand span { display: block; margin-top: 8px; color: #687184; font-size: 10px; font-weight: 800; letter-spacing: .08em; }
+.sharedAdminNav { flex: 1; display: grid; align-content: start; gap: 9px; padding: 24px 16px; }
+.sharedAdminNavItem { display: flex; align-items: center; gap: 15px; height: 52px; padding: 0 17px; border-radius: 10px; color: #263851; font-family: Georgia, serif; font-size: 16px; font-weight: 700; text-decoration: none; }
+.sharedAdminNavItem:hover { color: #c85213; background: #fff5ed; }
+.sharedAdminNavActive { color: #d34b09; background: #ffede1; }
+.sharedAdminFooter { padding: 20px; border-top: 1px solid #ead8ca; }
+.sharedAdminLogout { width: 100%; height: 52px; display: flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 8px; color: #fff; background: #f28c45; font-size: 15px; font-weight: 700; cursor: pointer; }
+.sharedAdminLogout:hover { background: #e9782f; }
+.sharedAdminMain { min-height: 100vh; margin-left: 260px; }
+.adminMobileMenu { display: none; }
+.adminSidebarOverlay { display: none; }
+.sharedPage { min-height: 100vh; }
+
+/* Legacy page shells retain only their content; navigation is owned by AdminShell. */
+.sharedAdminMain .adminRoot { display: block; min-height: 100vh; }
+.sharedAdminMain .adminRoot > .sidebar { display: none; }
+.sharedAdminMain .adminRoot > .main { width: 100%; }
+
+@media (max-width: 850px) {
+  .sharedAdminSidebar { transform: translateX(-100%); transition: transform 200ms ease; }
+  .sharedAdminSidebarOpen { transform: translateX(0); }
+  .sharedAdminMain { margin-left: 0; padding-top: 58px; }
+  .adminMobileMenu { position: fixed; top: 10px; left: 12px; z-index: 75; width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid #ead8ca; border-radius: 9px; color: #9f460a; background: #fffdf9; }
+  .adminSidebarOverlay { position: fixed; inset: 0; z-index: 79; display: block; border: 0; background: rgba(35, 24, 20, .45); }
+}
+
 .usersPanelActions {
   display: flex;
   align-items: center;
@@ -448,6 +479,59 @@
   height: 18px;
   margin: 0;
   accent-color: #d63d00;
+}
+
+.fileControl {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px dashed #d9aa90;
+  border-radius: 8px;
+  background: #fffaf6;
+  color: #27354b;
+  font: inherit;
+}
+
+.selectedFileName {
+  color: #687286;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.restaurantImagePreview {
+  display: block;
+  width: 210px;
+  margin-top: 4px;
+}
+
+.restaurantImagePreview img {
+  display: block;
+  width: 210px;
+  height: 140px;
+  border: 1px solid #ead5c8;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.bookingRestaurantCell { display: flex; align-items: center; gap: 12px; min-width: 210px; }
+.bookingRestaurantCell div { display: grid; gap: 4px; }
+.bookingRestaurantCell small, .tableSubtext { display: block; margin-top: 4px; color: #7b6b62; font-size: 12px; }
+.bookingStatus { display: inline-flex; padding: 6px 11px; border-radius: 999px; font-size: 12px; font-weight: 800; text-transform: capitalize; }
+.bookingStatusConfirmed { color: #17653a; background: #e5f6eb; }
+.bookingStatusPending { color: #8c5700; background: #fff2cf; }
+.bookingStatusCompleted { color: #48556b; background: #e9edf4; }
+.bookingStatusCancelled { color: #a72a2a; background: #fde8e8; }
+.viewBookingButton { min-width: 78px; padding: 9px 15px; border: 1px solid #e7b98f; border-radius: 9px; color: #9a4800; background: #fff1e4; font-weight: 800; cursor: pointer; }
+.viewBookingButton:hover { color: #7d3900; background: #fde3cb; border-color: #dca271; }
+.bookingDetailsModal { width: min(680px, calc(100vw - 32px)); }
+.bookingDetailImage { width: 100%; height: 230px; object-fit: cover; border-radius: 12px; }
+.adminBookingDetails { display: grid; grid-template-columns: 1fr 1fr; gap: 15px 22px; margin: 24px 0 0; }
+.adminBookingDetails div { padding-bottom: 11px; border-bottom: 1px solid #edddd2; }
+.adminBookingDetails dt { margin-bottom: 5px; color: #806d61; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+.adminBookingDetails dd { margin: 0; color: #2b1e18; overflow-wrap: anywhere; }
+
+@media (max-width: 650px) {
+  .adminBookingDetails { grid-template-columns: 1fr; }
 }
 
 .ghostButton {

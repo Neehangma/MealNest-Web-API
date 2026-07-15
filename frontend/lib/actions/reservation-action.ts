@@ -36,18 +36,13 @@ export async function createPaidReservationAction(payload: Record<string, unknow
 }
 
 export async function getReservationsAction(): Promise<ReservationItem[]> {
-  const response = await authedRequest<DashboardResponse & Partial<DashboardResponse["data"]>>(API.DASHBOARD.GET);
-  const dashboard = response.data || response;
-  return [
-    ...(dashboard.upcomingReservations || []),
-    ...(dashboard.recentHistory || []),
-    ...(dashboard.cancelledReservations || []),
-  ];
+  const response = await authedRequest<{ success: boolean; bookings: ReservationItem[]; data: ReservationItem[] }>(API.RESERVATIONS.MY_BOOKINGS);
+  return response.bookings || response.data || [];
 }
 
 export async function cancelReservationAction(reservationId: string) {
-  const result = await authedRequest<ReservationMutationResponse>(API.RESERVATIONS.BY_ID(reservationId), {
-    method: "DELETE",
+  const result = await authedRequest<ReservationMutationResponse>(API.RESERVATIONS.CANCEL(reservationId), {
+    method: "PATCH",
   });
   revalidatePath("/dashboard/user");
   revalidatePath("/dashboard/user/reservations");

@@ -19,12 +19,15 @@ function formatDisplayDate(dateValue) {
 }
 
 function formatReservationItem(reservation) {
+  const populatedRestaurant = reservation.restaurant && typeof reservation.restaurant === "object" && reservation.restaurant.name
+    ? reservation.restaurant
+    : null;
   return {
     _id: reservation._id?.toString(),
-    restaurantId: reservation.restaurantId?.toString(),
-    restaurantName: reservation.restaurantName,
-    cuisine: reservation.cuisine,
-    image: reservation.image,
+    restaurantId: (populatedRestaurant?._id || reservation.restaurant || reservation.restaurantId)?.toString(),
+    restaurantName: populatedRestaurant?.name || reservation.restaurantName,
+    cuisine: populatedRestaurant?.cuisine || reservation.cuisine,
+    image: populatedRestaurant?.image || reservation.image,
     reservationDate: reservation.reservationDate,
     date: reservation.date,
     time: reservation.time,
@@ -32,17 +35,24 @@ function formatReservationItem(reservation) {
     status: reservation.status,
     specialRequests: reservation.specialRequests,
     bookingReference: reservation.bookingReference,
-    location: reservation.location,
-    restaurantLocation: reservation.location,
-    restaurantAddress: reservation.restaurantAddress,
-    customerName: reservation.customerName,
-    customerEmail: reservation.customerEmail,
-    customerPhone: reservation.customerPhone,
+    location: populatedRestaurant?.location || reservation.location,
+    restaurantLocation: populatedRestaurant?.location || reservation.location,
+    restaurantAddress: populatedRestaurant?.address || reservation.restaurantAddress,
+    restaurantPhone: populatedRestaurant?.phone || "",
+    restaurant: populatedRestaurant ? {
+      _id: populatedRestaurant._id?.toString(), name: populatedRestaurant.name,
+      cuisine: populatedRestaurant.cuisine, image: populatedRestaurant.image,
+      location: populatedRestaurant.location, address: populatedRestaurant.address,
+      phone: populatedRestaurant.phone, description: populatedRestaurant.description,
+      priceRange: populatedRestaurant.priceRange, hours: populatedRestaurant.hours,
+    } : undefined,
     paymentMethod: reservation.paymentMethod,
     paymentStatus: reservation.paymentStatus,
     totalPaid: reservation.totalPaid,
     totalAmount: reservation.totalPaid,
     partySize: reservation.guests,
+    transactionId: reservation.transactionId || reservation.bookingReference,
+    createdAt: reservation.createdAt,
   };
 }
 
@@ -362,8 +372,33 @@ async function cancelReservation(userId, reservationId) {
   if (!reservation) {
     throw new HttpException(404, "Reservation not found");
   }
+  if (reservation.cancellationDenied) {
+    throw new HttpException(400, "This booking can no longer be cancelled");
+  }
 
   return formatReservationItem(reservation);
+}
+
+async function listMyReservations(userId) {
+  const reservations = await userRepository.listUserReservations(userId);
+  if (!reservations) throw new HttpException(404, "User not found");
+  return reservations.map(formatReservationItem);
+}
+
+async function listAdminReservations() {
+  const reservations = await userRepository.listAdminReservations();
+  return reservations.map((reservation) => {
+    const booking = formatReservationItem(reservation);
+    return {
+      ...booking,
+      customer: reservation.user ? {
+        _id: reservation.user._id?.toString(),
+        fullName: reservation.user.fullName,
+        email: reservation.user.email,
+        phoneNumber: reservation.user.phoneNumber,
+      } : null,
+    };
+  });
 }
 
 module.exports = {
@@ -378,6 +413,8 @@ module.exports = {
   getRestaurant,
   getUserByIdOrThrow,
   listAdminUsers,
+  listAdminReservations,
+  listMyReservations,
   listRestaurants,
   login,
   register,

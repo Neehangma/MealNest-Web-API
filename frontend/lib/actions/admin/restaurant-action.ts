@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { clearAuthCookies, getTokenCookie } from "@/lib/cookies";
-import { AdminApiError, createRestaurant, deleteRestaurant, getAdminRestaurants, updateRestaurant, type RestaurantListParams, type RestaurantPayload } from "@/lib/api/admin";
+import { AdminApiError, createRestaurant, deleteRestaurant, getAdminRestaurants, updateRestaurant, type RestaurantListParams } from "@/lib/api/admin";
 
 async function withAdminToken<T>(request: (token: string) => Promise<T>) {
   const token = await getTokenCookie();
@@ -22,10 +22,10 @@ async function withAdminToken<T>(request: (token: string) => Promise<T>) {
 export async function getAdminRestaurantsAction(params: RestaurantListParams = {}) {
   return withAdminToken((token) => getAdminRestaurants(params, token));
 }
-export async function createRestaurantAction(data: RestaurantPayload) {
+export async function createRestaurantAction(data: FormData) {
   return withAdminToken((token) => createRestaurant(data, token));
 }
-export async function updateRestaurantAction(id: string, data: Partial<RestaurantPayload>) {
+export async function updateRestaurantAction(id: string, data: FormData) {
   return withAdminToken((token) => updateRestaurant(id, data, token));
 }
 export async function deleteRestaurantAction(id: string) {

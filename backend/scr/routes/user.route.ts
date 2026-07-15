@@ -31,10 +31,14 @@ router.get("/favorites", authenticate, asyncHandler(userController.getDashboard)
 router.post("/favorites/:restaurantId", authenticate, asyncHandler(userController.toggleFavorite));
 router.delete("/favorites/:restaurantId", authenticate, asyncHandler(userController.toggleFavorite));
 router.post("/reservations", authenticate, asyncHandler(userController.createReservation));
+router.get("/reservations/my-bookings", authenticate, asyncHandler(userController.listMyReservations));
+router.get("/bookings/my-bookings", authenticate, asyncHandler(userController.listMyReservations));
+router.patch("/bookings/:reservationId/cancel", authenticate, asyncHandler(userController.cancelReservation));
 router.patch("/reservations/:reservationId", authenticate, asyncHandler(userController.updateReservation));
 router.delete("/reservations/:reservationId", authenticate, asyncHandler(userController.cancelReservation));
 
 router.get("/admin/users", authenticate, requireAdmin, asyncHandler(userController.listUsers));
+router.get("/admin/bookings", authenticate, requireAdmin, asyncHandler(userController.listAdminReservations));
 router.get("/admin/users/:id", authenticate, requireAdmin, asyncHandler(userController.getUser));
 router.post(
   "/admin/users",

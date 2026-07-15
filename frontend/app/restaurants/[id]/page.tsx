@@ -7,8 +7,8 @@ import { useEffect, useRef, useState } from "react";
 import { getRestaurantById, type RestaurantItem } from "@/lib/api/dashboard";
 import { getFavoritesAction, toggleFavoriteAction } from "@/lib/actions/dashboard-action";
 import { getStableRestaurantPrice } from "@/lib/restaurant-price";
+import { getRestaurantImage, RESTAURANT_FALLBACK_IMAGE } from "@/lib/restaurant-image";
 
-const FALLBACK_IMAGE = "/images/Register.jpg";
 const DEFAULT_TIME_SLOTS = ["11:00 AM", "12:30 PM", "2:00 PM", "5:30 PM", "7:00 PM", "8:30 PM"];
 
 export default function RestaurantDetailPage() {
@@ -17,7 +17,7 @@ export default function RestaurantDetailPage() {
   const [restaurant, setRestaurant] = useState<RestaurantItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [image, setImage] = useState(FALLBACK_IMAGE);
+  const [image, setImage] = useState(RESTAURANT_FALLBACK_IMAGE);
   const [selectedDate, setSelectedDate] = useState("");
   const dateInputRef = useRef<HTMLInputElement>(null);
   const [selectedTime, setSelectedTime] = useState("");
@@ -31,7 +31,7 @@ export default function RestaurantDetailPage() {
     getRestaurantById(id)
       .then(({ data }) => {
         setRestaurant(data);
-        setImage(data.image || FALLBACK_IMAGE);
+        setImage(getRestaurantImage(data.image));
       })
       .catch((reason: unknown) => {
         setRestaurant(null);
@@ -122,16 +122,13 @@ export default function RestaurantDetailPage() {
     <main className="restaurant-detail">
       <div className="hero-section">
         <div className="hero-image">
-          <Image src={image} onError={() => setImage(FALLBACK_IMAGE)} alt={restaurant.name} fill priority className="hero-img" />
+          <Image src={image} onError={() => setImage(RESTAURANT_FALLBACK_IMAGE)} alt={restaurant.name} fill priority className="hero-img" />
           <div className="hero-overlay" />
         </div>
         <div className="hero-content">
           <div className={`status-badge ${restaurant.isOpen ? "open" : "closed"}`}>{restaurant.isOpen ? "Open Now" : "Closed"}</div>
           <h1>{restaurant.name}</h1>
           <div className="hero-meta">
-            <span className="rating">
-              ★ {restaurant.rating} ({restaurant.reviewCount || 0})
-            </span>
             <span className="cuisine">{restaurant.cuisine}</span>
             <span className="location">{restaurant.location}</span>
             <span className="price">Rs. {getStableRestaurantPrice(restaurant)}</span>
