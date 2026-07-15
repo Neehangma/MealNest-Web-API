@@ -5346,9 +5346,11 @@ font-size:30px;
 }
 
 .dash-header-nav {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   gap: 28px;
-  margin-left: 8px;
 }
 
 .dash-header-nav a {
@@ -6353,6 +6355,7 @@ font-size:30px;
   line-height: 1.5;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .dashboard-quick-actions-section {
