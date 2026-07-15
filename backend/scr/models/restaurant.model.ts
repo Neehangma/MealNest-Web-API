@@ -10,8 +10,6 @@ const restaurantSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   cuisine: { type: String, required: true, trim: true },
   location: { type: String, required: true, trim: true },
-  rating: { type: Number, default: 5.0 },
-  reviewCount: { type: Number, default: 0 },
   priceRange: { type: String, trim: true, default: "$$" },
   price: { type: Number, min: 150, max: 500 },
   image: { type: String, default: "/images/Register.jpg" },

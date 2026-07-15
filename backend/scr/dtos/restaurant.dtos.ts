@@ -25,8 +25,6 @@ function createRestaurantDto(body) {
     location: text(body.location),
     description: text(body.description),
     image: text(body.image, "/images/Register.jpg"),
-    rating: 5,
-    reviewCount: Number(body.reviewCount ?? 0),
     priceRange: text(body.priceRange, "$$"),
     price: body.price === undefined || body.price === "" ? undefined : Number(body.price),
     isActive: booleanValue(body.isActive, true),
@@ -46,7 +44,6 @@ function createRestaurantUpdateDto(body) {
   for (const field of textFields) {
     if (body[field] !== undefined) dto[field] = text(body[field]);
   }
-  if (body.reviewCount !== undefined) dto.reviewCount = Number(body.reviewCount);
   if (body.price !== undefined && body.price !== "") dto.price = Number(body.price);
   if (body.isActive !== undefined) dto.isActive = booleanValue(body.isActive, true);
   if (body.isOpen !== undefined) dto.isOpen = booleanValue(body.isOpen, true);

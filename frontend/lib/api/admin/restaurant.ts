@@ -8,8 +8,6 @@ export interface AdminRestaurant {
   description: string;
   image: string;
   location: string;
-  rating: number;
-  reviewCount: number;
   priceRange: string;
   price?: number;
   isActive: boolean;
@@ -24,7 +22,7 @@ export interface AdminRestaurant {
   updatedAt: string;
 }
 
-export type RestaurantPayload = Omit<AdminRestaurant, "_id" | "createdAt" | "updatedAt" | "reviewCount" | "rating" | "image"> & { image?: string };
+export type RestaurantPayload = Omit<AdminRestaurant, "_id" | "createdAt" | "updatedAt" | "image"> & { image?: string };
 export type RestaurantListParams = { page?: number; limit?: number; search?: string; cuisine?: string; available?: "true" | "false" };
 export type RestaurantsResponse = { success: boolean; data: AdminRestaurant[]; meta: { page: number; limit: number; total: number; totalPages: number; availableTotal: number; cuisineTypes: number } };
 

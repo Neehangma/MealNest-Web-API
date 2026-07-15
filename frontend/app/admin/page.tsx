@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getAuthenticatedUser } from "@/lib/auth-session";
 import styles from "./admin.module.css";
 
-type IconName = "grid" | "users" | "store" | "calendar" | "star" | "settings" | "arrow";
+type IconName = "grid" | "users" | "store" | "calendar" | "settings" | "arrow";
 
 function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
   const props = {
@@ -52,7 +52,6 @@ function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
           <path d="M3 10h18" />
         </>
       )}
-      {name === "star" && <path d="m12 2 3.1 6.3 6.9 1-5 4.8 1.2 6.8L12 17.7 5.8 21 7 14.1 2 9.3l6.9-1L12 2Z" />}
       {name === "settings" && (
         <>
           <path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z" />
@@ -69,27 +68,16 @@ function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
   );
 }
 
-const navItems: { label: string; icon: IconName; active?: boolean; href: string }[] = [
-  { label: "Dashboard", icon: "grid", active: true, href: "/admin" },
-  { label: "Users", icon: "users", href: "/admin/users" },
-  { label: "Restaurants", icon: "store", href: "/admin/restaurants" },
-  { label: "Bookings", icon: "calendar", href: "/admin/bookings" },
-  { label: "Reviews", icon: "star", href: "/admin/reviews" },
-  { label: "Settings", icon: "settings", href: "/admin/settings" },
-];
-
 const stats = [
   { label: "Total Users", value: "128", trend: "Manage customer accounts", icon: "users" as const, tone: styles.orange },
   { label: "Restaurants", value: "42", trend: "Approved dining partners", icon: "store" as const, tone: styles.blue },
   { label: "Bookings", value: "316", trend: "Reservations this month", icon: "calendar" as const, tone: styles.green },
-  { label: "Reviews", value: "89", trend: "Awaiting moderation", icon: "star" as const, tone: styles.amber },
 ];
 
 const activities = [
   { title: "New user registered", text: "A customer account was created.", time: "Just now", icon: "users" as const },
   { title: "Restaurant updated", text: "Partner profile details changed.", time: "12 min ago", icon: "store" as const },
   { title: "Booking created", text: "A reservation was added.", time: "26 min ago", icon: "calendar" as const },
-  { title: "Review submitted", text: "A review is ready for approval.", time: "1 hr ago", icon: "star" as const },
 ];
 
 export default async function AdminDashboardPage() {
@@ -97,24 +85,6 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className={styles.adminRoot}>
-      <aside className={styles.sidebar}>
-        <div className={styles.brand}>
-          <div className={styles.brandText}>
-            <span className={styles.brandName}>MealNest</span>
-            <span className={styles.brandSub}>SYSTEM MANAGEMENT</span>
-          </div>
-        </div>
-
-        <nav className={styles.nav} aria-label="Admin navigation">
-          {navItems.map((item) => (
-            <Link key={item.label} className={`${styles.navItem} ${item.active ? styles.navActive : ""}`} href={item.href}>
-              <Icon name={item.icon} size={24} />
-              <span className={styles.navLabel}>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-      </aside>
-
       <main className={styles.main}>
         <header className={styles.topbar}>
           <div>
@@ -136,7 +106,7 @@ export default async function AdminDashboardPage() {
           <div className={styles.heroRow}>
             <div>
               <h2 className={styles.title}>System Overview</h2>
-              <p className={styles.subtitle}>Admin-only tools for users, restaurants, bookings, and reviews.</p>
+              <p className={styles.subtitle}>Admin-only tools for users, restaurants, and bookings.</p>
             </div>
             <Link className={styles.dateButton} href="/admin/users">
               <Icon name="arrow" size={18} />

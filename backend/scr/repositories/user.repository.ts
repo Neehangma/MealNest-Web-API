@@ -4,6 +4,7 @@ declare const module: any;
 const mongoose = require("mongoose");
 const User = require("../models/user.model");
 const Restaurant = require("../models/restaurant.model");
+const Reservation = require("../models/reservation.model");
 const { ensureRestaurantPrices } = require("./restaurant.repository");
 const { parsePagination } = require("../utils/apihelper.utils");
 
@@ -136,7 +137,8 @@ async function getDashboardData(userId) {
     return { user: null, stats: { bookings: 0, favorites: 0, averageRating: 0 }, favorites: [], upcomingReservations: [], recentHistory: [], cancelledReservations: [] };
   }
 
-  const sortedReservations = [...(user.reservations || [])].sort((a, b) => new Date(a.reservationDate) - new Date(b.reservationDate));
+  await migrateLegacyReservations(user);
+  const sortedReservations = await Reservation.find({ user: userId }).sort({ createdAt: -1 });
   const now = new Date();
 
   const upcomingReservations = sortedReservations.filter((reservation) => {
@@ -198,11 +200,15 @@ async function createReservation(userId, payload) {
   const user = await User.findById(userId);
   if (!user) return null;
 
-  const reservation = {
-    restaurantId: payload.restaurantId,
+  const restaurant = await Restaurant.findById(payload.restaurantId);
+  if (!restaurant) return null;
+
+  return Reservation.create({
+    user: userId,
+    restaurant: restaurant._id,
     restaurantName: payload.restaurantName,
-    cuisine: payload.cuisine || "",
-    image: payload.image || "",
+    cuisine: restaurant.cuisine || payload.cuisine || "",
+    image: restaurant.image || payload.image || "",
     reservationDate: new Date(payload.reservationDate),
     date: payload.date,
     time: payload.time,
@@ -210,26 +216,17 @@ async function createReservation(userId, payload) {
     status: "confirmed",
     specialRequests: payload.specialRequests || "",
     bookingReference: `MN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
-    location: payload.location || "",
-    restaurantAddress: payload.restaurantAddress || "",
-    customerName: user.fullName || payload.customerName,
-    customerEmail: user.email,
-    customerPhone: user.phoneNumber || payload.customerPhone,
+    location: restaurant.location || payload.location || "",
+    restaurantAddress: restaurant.address || payload.restaurantAddress || "",
     paymentMethod: payload.paymentMethod,
     paymentStatus: payload.paymentStatus,
+    transactionId: payload.transactionId || "",
     totalPaid: payload.totalPaid,
-  };
-
-  user.reservations.unshift(reservation);
-  await user.save();
-  return reservation;
+  });
 }
 
 async function updateReservation(userId, reservationId, payload) {
-  const user = await User.findById(userId);
-  if (!user) return null;
-
-  const reservation = user.reservations.id(reservationId);
+  const reservation = await Reservation.findOne({ _id: reservationId, user: userId });
   if (!reservation) return null;
 
   if (payload.date !== undefined) reservation.date = payload.date;
@@ -238,20 +235,63 @@ async function updateReservation(userId, reservationId, payload) {
   if (payload.specialRequests !== undefined) reservation.specialRequests = payload.specialRequests;
   if (payload.reservationDate !== undefined) reservation.reservationDate = new Date(payload.reservationDate);
 
-  await user.save();
+  await reservation.save();
   return reservation;
 }
 
 async function cancelReservation(userId, reservationId) {
+  const reservation = await Reservation.findOne({ _id: reservationId, user: userId });
+  if (!reservation) return null;
+  if (!["pending", "confirmed"].includes(reservation.status)) return { cancellationDenied: true };
+  const datePart = new Date(reservation.reservationDate);
+  const timeMatch = String(reservation.time || "").match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (timeMatch) {
+    let hours = Number(timeMatch[1]);
+    const minutes = Number(timeMatch[2]);
+    const meridiem = timeMatch[3]?.toUpperCase();
+    if (meridiem === "PM" && hours < 12) hours += 12;
+    if (meridiem === "AM" && hours === 12) hours = 0;
+    datePart.setHours(hours, minutes, 0, 0);
+  }
+  if (datePart.getTime() <= Date.now()) return { cancellationDenied: true };
+  reservation.status = "cancelled";
+  await reservation.save();
+  return reservation;
+}
+
+async function migrateLegacyReservations(user) {
+  const legacy = user?.reservations || [];
+  if (!legacy.length) return;
+  await Promise.all(legacy.map((item) => Reservation.updateOne(
+    { legacyId: `${user._id}:${item._id}` },
+    { $setOnInsert: {
+      user: user._id, restaurant: item.restaurantId, restaurantName: item.restaurantName,
+      cuisine: item.cuisine, image: item.image, location: item.location,
+      restaurantAddress: item.restaurantAddress, reservationDate: item.reservationDate,
+      date: item.date, time: item.time, guests: item.guests, status: item.status,
+      paymentMethod: item.paymentMethod, paymentStatus: item.paymentStatus,
+      bookingReference: item.bookingReference || `MN-LEGACY-${item._id}`,
+      specialRequests: item.specialRequests, totalPaid: item.totalPaid,
+      legacyId: `${user._id}:${item._id}`,
+    } },
+    { upsert: true }
+  )));
+}
+
+async function listUserReservations(userId) {
   const user = await User.findById(userId);
   if (!user) return null;
+  await migrateLegacyReservations(user);
+  return Reservation.find({ user: userId }).populate("restaurant").sort({ createdAt: -1 });
+}
 
-  const reservation = user.reservations.id(reservationId);
-  if (!reservation) return null;
-
-  reservation.status = "cancelled";
-  await user.save();
-  return reservation;
+async function listAdminReservations() {
+  const usersWithLegacyReservations = await User.find({ "reservations.0": { $exists: true } });
+  await Promise.all(usersWithLegacyReservations.map(migrateLegacyReservations));
+  return Reservation.find()
+    .populate("user", "fullName email phoneNumber role")
+    .populate("restaurant")
+    .sort({ createdAt: -1 });
 }
 
 module.exports = {
@@ -264,6 +304,8 @@ module.exports = {
   getDashboardData,
   getRestaurantById,
   listRestaurants,
+  listAdminReservations,
+  listUserReservations,
   listUsers,
   toggleFavorite,
   updateReservation,

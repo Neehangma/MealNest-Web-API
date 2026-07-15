@@ -83,7 +83,6 @@ export default function FavoritesPage() {
                 <div className="favorite-content">
                   <div className="favorite-header">
                     <h3>{restaurant.name}</h3>
-                    <div className="rating">★ {restaurant.rating}</div>
                   </div>
                   <p className="cuisine">{restaurant.cuisine}</p>
                   <p className="location">{restaurant.location}</p>

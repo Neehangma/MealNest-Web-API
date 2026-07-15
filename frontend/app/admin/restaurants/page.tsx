@@ -6,10 +6,8 @@ import styles from "../admin.module.css";
 import { createRestaurantAction, deleteRestaurantAction, getAdminRestaurantsAction, updateRestaurantAction } from "@/lib/actions/admin/restaurant-action";
 import type { AdminRestaurant, RestaurantsResponse } from "@/lib/api/admin";
 import { getRestaurantImage, RESTAURANT_FALLBACK_IMAGE } from "@/lib/restaurant-image";
+import DeleteConfirmationModal from "../_components/DeleteConfirmationModal";
 
-const NAV = [
-  ["Dashboard", "/admin"], ["Users", "/admin/users"], ["Restaurants", "/admin/restaurants"], ["Bookings", "/admin/booking"],
-];
 const CUISINES = ["Italian", "Japanese", "Indian", "Chinese", "Thai", "Korean", "Nepali"];
 const SLOTS = ["11:00 AM", "12:30 PM", "2:00 PM", "5:30 PM", "7:00 PM", "8:30 PM"];
 
@@ -110,21 +108,13 @@ export default function AdminRestaurantsPage() {
   const to = meta.total ? Math.min(meta.page * meta.limit, meta.total) : 0;
 
   return <div className={styles.adminRoot}>
-    <aside className={styles.sidebar}>
-      <div className={styles.brand}><span className={styles.brandName}>MealNest</span><span className={styles.brandSub}>ADMIN</span></div>
-      <nav className={styles.nav} aria-label="Admin navigation">
-        {NAV.map(([label, href]) => <a key={label} href={href} className={`${styles.navItem} ${label === "Restaurants" ? styles.navActive : ""}`}><span aria-hidden>{label === "Dashboard" ? "▦" : label === "Users" ? "♙" : label === "Restaurants" ? "⌂" : "▣"}</span><span className={styles.navLabel}>{label}</span></a>)}
-      </nav>
-      <button type="button" className={styles.addButton} onClick={openCreate}>＋ Add New Restaurant</button>
-    </aside>
-
     <main className={styles.main}>
       <header className={styles.topbar}><div className={styles.search}><span>⌕</span><input className={styles.searchInput} type="search" placeholder="Search by name or location..." value={search} onChange={(event) => setSearch(event.target.value)} /></div></header>
       <section className={styles.content}>
         <div className={styles.pageHeading}><div><p className={styles.eyebrow}>Restaurant directory</p><h1>Admin Restaurant Management</h1><p className={styles.subtitle}>View, search, create, edit, and delete MealNest restaurants.</p></div><button className={styles.dateButton} type="button" onClick={openCreate}>＋ New Restaurant</button></div>
 
         <div className={styles.statsGrid}>
-          {[ ["Total Restaurants", meta.total], ["Available Restaurants", meta.availableTotal], ["Cuisine Types", meta.cuisineTypes], ["Current Page", meta.page || 1] ].map(([label, value]) => <article key={label} className={`${styles.card} ${styles.statCard}`}><div><p className={styles.statLabel}>{label}</p><p className={styles.statValue}>{value}</p></div></article>)}
+          {[ ["Total Restaurants", meta.total], ["Available Restaurants", meta.availableTotal], ["Cuisine Types", CUISINES.length], ["Current Page", meta.page || 1] ].map(([label, value]) => <article key={label} className={`${styles.card} ${styles.statCard}`}><div><p className={styles.statLabel}>{label}</p><p className={styles.statValue}>{value}</p></div></article>)}
         </div>
 
         <section className={`${styles.card} ${styles.panel}`}>
@@ -164,6 +154,6 @@ export default function AdminRestaurantsPage() {
       {formError && <div className={`${styles.errorBanner} ${styles.fullField}`}>{formError}</div>}<div className={`${styles.modalActions} ${styles.fullField}`}><button className={styles.secondaryButton} type="button" onClick={closeForm}>Cancel</button><button className={styles.primaryButton} type="submit" disabled={submitting}>{submitting ? "Saving…" : "Save Restaurant"}</button></div>
     </form></section></div>}
 
-    {deleteTarget && <div className={styles.modalBackdrop} role="dialog" aria-modal="true" aria-labelledby="delete-restaurant-title"><section className={styles.confirmModal}><h2 id="delete-restaurant-title">Delete Restaurant</h2><p>Are you sure you want to delete <strong>{deleteTarget.name}</strong>? This removes it from both admin and user dashboards.</p><div className={styles.modalActions}><button className={styles.secondaryButton} type="button" onClick={() => setDeleteTarget(null)} disabled={submitting}>Cancel</button><button className={styles.dangerButton} type="button" onClick={() => void remove()} disabled={submitting}>{submitting ? "Deleting…" : "Delete Restaurant"}</button></div></section></div>}
+    <DeleteConfirmationModal open={Boolean(deleteTarget)} title="Delete Restaurant" name={deleteTarget?.name || "this restaurant"} message="This removes it from both admin and user dashboards." confirmLabel="Delete Restaurant" deleting={submitting} onCancel={() => setDeleteTarget(null)} onConfirm={() => void remove()} />
   </div>;
 }

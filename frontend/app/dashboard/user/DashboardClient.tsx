@@ -123,7 +123,6 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
     }
   };
 
-  const averageRatingDisplay = Number(stats.averageRating || 0).toFixed(1);
 
   return (
     <div className="dash-shell">
@@ -176,14 +175,6 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
                   loading={loading}
                 />
 
-                <StatsCard
-                  icon="star"
-                  value={averageRatingDisplay}
-                  label="Average Rating"
-                  description="Your dining score"
-                  tone="violet"
-                  loading={loading}
-                />
               </section>
 
               <section className="dashboard-restaurants-section" id="restaurants">

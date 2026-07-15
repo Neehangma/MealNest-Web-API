@@ -129,9 +129,6 @@ export default function RestaurantDetailPage() {
           <div className={`status-badge ${restaurant.isOpen ? "open" : "closed"}`}>{restaurant.isOpen ? "Open Now" : "Closed"}</div>
           <h1>{restaurant.name}</h1>
           <div className="hero-meta">
-            <span className="rating">
-              ★ {restaurant.rating} ({restaurant.reviewCount || 0})
-            </span>
             <span className="cuisine">{restaurant.cuisine}</span>
             <span className="location">{restaurant.location}</span>
             <span className="price">Rs. {getStableRestaurantPrice(restaurant)}</span>

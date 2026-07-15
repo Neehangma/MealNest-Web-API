@@ -35,10 +35,6 @@ export default function FavoriteRestaurantCard({
           <Link href={`/dashboard/user/restaurants/${favorite._id}`}>
             <h3>{favorite.name}</h3>
           </Link>
-          <span className="dash-rating">
-            <Icon name="star" size={14} />
-            {favorite.rating}
-          </span>
         </div>
         <p className="dash-favorite-cuisine">{favorite.cuisine}</p>
         <p className="dash-favorite-location">

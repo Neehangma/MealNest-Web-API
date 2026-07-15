@@ -21,10 +21,13 @@ export const API = {
     },
     RESERVATIONS: {
         CREATE: "/api/v1/reservations",
+        MY_BOOKINGS: "/api/v1/bookings/my-bookings",
+        CANCEL: (reservationId: string) => `/api/v1/bookings/${reservationId}/cancel`,
         BY_ID: (reservationId: string) => `/api/v1/reservations/${reservationId}`,
     },
     ADMIN: {
         USERS: "/api/v1/admin/users",
+        BOOKINGS: "/api/v1/admin/bookings",
         USER_BY_ID: (id: string) => `/api/v1/admin/users/${id}`,
     }
 }

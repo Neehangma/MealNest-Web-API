@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getDashboardPathForRole } from "@/lib/auth-routing";
 import { getAuthenticatedUser } from "@/lib/auth-session";
 import styles from "./admin.module.css";
+import AdminShell from "./_components/AdminShell";
 
 export const metadata: Metadata = {
   title: "MealNest Admin",
@@ -24,5 +25,5 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
-  return <div className={styles.adminShell}>{children}</div>;
+  return <div className={styles.adminShell}><AdminShell>{children}</AdminShell></div>;
 }

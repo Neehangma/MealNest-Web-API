@@ -211,10 +211,6 @@ export default function Home() {
                   <div className="restaurant-content">
                     <div className="restaurant-header">
                       <h3>{restaurant.name}</h3>
-                      <div className="rating">
-                        <span>★</span>
-                        <span>{restaurant.rating}</span>
-                      </div>
                     </div>
                     <p className="cuisine">{restaurant.cuisine}</p>
                     <p className="location">{restaurant.location}</p>
