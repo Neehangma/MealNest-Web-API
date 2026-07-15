@@ -601,6 +601,7 @@ async function listRestaurants(queryParams) {
   const search = String(queryParams.search || "").trim();
   const cuisine = String(queryParams.cuisine || "").trim();
   const location = String(queryParams.location || "").trim();
+  const available = String(queryParams.available || "").trim().toLowerCase();
 
   let filter = {
     isActive: { $ne: false },
@@ -628,13 +629,18 @@ async function listRestaurants(queryParams) {
     };
   }
 
-  const [restaurants, total] = await Promise.all([
+  if (available === "true") filter.isOpen = true;
+  if (available === "false") filter.isOpen = false;
+
+  const [restaurants, total, availableTotal, cuisineTypes] = await Promise.all([
     Restaurant.find(filter)
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 }),
 
     Restaurant.countDocuments(filter),
+    Restaurant.countDocuments({ ...filter, isOpen: true }),
+    Restaurant.distinct("cuisine", filter),
   ]);
 
   await ensureRestaurantPrices(restaurants);
@@ -646,6 +652,8 @@ async function listRestaurants(queryParams) {
       limit,
       total,
       totalPages: Math.ceil(total / limit),
+      availableTotal,
+      cuisineTypes: cuisineTypes.length,
     },
   };
 }

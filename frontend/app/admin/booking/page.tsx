@@ -153,7 +153,7 @@ const navItems: { label: string; icon: IconName; active?: boolean; href: string 
   { label: "Dashboard", icon: "grid", href: "/admin" },
   { label: "Users", icon: "users", href: "/admin/users" },
   { label: "Bookings", icon: "calendar", active: true, href: "/admin/booking" },
-  { label: "Restaurants", icon: "store", href: "/admin/restaurant" },
+  { label: "Restaurants", icon: "store", href: "/admin/restaurants" },
   { label: "Favorites", icon: "star", href: "/admin/favourite" },
   { label: "Profile", icon: "profile", href: "/admin/profile" },
 ];

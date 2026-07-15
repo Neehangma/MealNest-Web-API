@@ -6370,9 +6370,12 @@ font-size:30px;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 28px;
+  justify-content: space-between;
+  gap: 18px;
+  width: 100%;
   max-width: 100%;
-  padding: 8px 2px 10px;
+  box-sizing: border-box;
+  padding: 8px 16px 10px;
   overflow-x: auto;
   scrollbar-width: thin;
 }
@@ -6414,7 +6417,8 @@ font-size:30px;
 
 .dashboard-cuisine-chip.is-active {
   border-bottom-color: var(--dash-brand);
-  color: var(--dash-brand);
+  background: #fff1e6;
+  color: #8e4500;
   font-weight: 700;
 }
 

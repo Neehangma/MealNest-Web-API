@@ -371,6 +371,85 @@
   font-size: 20px;
 }
 
+.usersPanelActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pageSizeControl {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #536077;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.pageSizeControl select {
+  width: auto;
+  height: 36px;
+  margin: 0;
+  padding: 0 28px 0 10px;
+  border: 1px solid #e7cfc2;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #27232a;
+  font: inherit;
+}
+
+.restaurantFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.restaurantFilters select {
+  width: auto;
+  min-width: 160px;
+  height: 40px;
+  margin: 0;
+  padding: 0 32px 0 12px;
+  border: 1px solid #e7cfc2;
+  border-radius: 7px;
+  background: #fff;
+  color: #27354b;
+  font: inherit;
+  font-size: 13px;
+}
+
+.restaurantThumbnail {
+  display: block;
+  width: 58px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #f0dcd2;
+}
+
+.restaurantModal {
+  max-width: 720px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.checkboxField {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #27354b;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.checkboxField input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #d63d00;
+}
+
 .ghostButton {
   display: inline-flex;
   align-items: center;

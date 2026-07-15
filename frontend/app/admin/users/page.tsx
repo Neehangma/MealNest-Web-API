@@ -2,14 +2,16 @@
 
 import Image from "next/image";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import {
-  createUser,
-  deleteUser,
-  getUsers,
-  updateUser,
-  type PaginatedUsersResponse,
-  type User,
+import type {
+  PaginatedUsersResponse,
+  User,
 } from "@/lib/api/admin";
+import {
+  createAdminUserAction as createUser,
+  deleteAdminUserAction as deleteUser,
+  getAdminUsersAction as getUsers,
+  updateAdminUserAction as updateUser,
+} from "@/lib/actions/admin/user-action";
 import styles from "../admin.module.css";
 import { useLogout } from "@/app/_components/LogoutProvider";
 
@@ -527,10 +529,18 @@ export default function AdminUsersPage() {
                   Showing {showingFrom}-{showingTo} of {meta.total}
                 </p>
               </div>
-              <button className={styles.ghostButton} type="button" onClick={openCreateModal}>
-                <Icon name="plus" size={16} />
-                New User
-              </button>
+              <div className={styles.usersPanelActions}>
+                <label className={styles.pageSizeControl}>
+                  Page size
+                  <select value={meta.limit} onChange={(event) => { setMeta((current) => ({ ...current, limit: Number(event.target.value) })); setPage(1); }} disabled={loading}>
+                    {[10, 20, 50].map((size) => <option key={size} value={size}>{size}</option>)}
+                  </select>
+                </label>
+                <button className={styles.ghostButton} type="button" onClick={openCreateModal}>
+                  <Icon name="plus" size={16} />
+                  New User
+                </button>
+              </div>
             </div>
 
             {error && <div className={styles.errorBanner}>{error}</div>}
@@ -552,6 +562,12 @@ export default function AdminUsersPage() {
                     <tr>
                       <td colSpan={6}>
                         <div className={styles.emptyState}>Loading users...</div>
+                      </td>
+                    </tr>
+                  ) : error ? (
+                    <tr>
+                      <td colSpan={6}>
+                        <div className={styles.emptyState}>Unable to display users.</div>
                       </td>
                     </tr>
                   ) : users.length === 0 ? (

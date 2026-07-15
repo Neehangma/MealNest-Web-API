@@ -1,94 +1,44 @@
-interface RestaurantDto {
-  name: string;
-  cuisine: string;
-  location: string;
-  address: string;
-  description: string;
-  image: string;
-  phoneNumber: string;
-  email: string;
-  openingTime: string;
-  closingTime: string;
-  averageCost: number;
-  rating: number;
-  totalTables: number;
-  availableTables: number;
-  isActive: boolean;
+function text(value, fallback = "") {
+  return String(value ?? fallback).trim();
 }
 
-function createRestaurantDto(body: Partial<RestaurantDto>): RestaurantDto {
+function createRestaurantDto(body) {
   return {
-    name: String(body.name || "").trim(),
-    cuisine: String(body.cuisine || "").trim(),
-    location: String(body.location || "").trim(),
-    address: String(body.address || "").trim(),
-    description: String(body.description || "").trim(),
-    image: String(body.image || "").trim(),
-    phoneNumber: String(body.phoneNumber || "").trim(),
-    email: String(body.email || "").trim().toLowerCase(),
-    openingTime: String(body.openingTime || "").trim(),
-    closingTime: String(body.closingTime || "").trim(),
-    averageCost: Number(body.averageCost || 0),
-    rating: Number(body.rating || 5),
-    totalTables: Number(body.totalTables || 10),
-    availableTables: Number(body.availableTables || 10),
-    isActive:
-      body.isActive !== undefined ? Boolean(body.isActive) : true,
+    name: text(body.name),
+    cuisine: text(body.cuisine),
+    location: text(body.location),
+    description: text(body.description),
+    image: text(body.image, "/images/Register.jpg"),
+    rating: Number(body.rating ?? 5),
+    reviewCount: Number(body.reviewCount ?? 0),
+    priceRange: text(body.priceRange, "$$"),
+    price: body.price === undefined || body.price === "" ? undefined : Number(body.price),
+    isActive: body.isActive !== undefined ? Boolean(body.isActive) : true,
+    isOpen: body.isOpen !== undefined ? Boolean(body.isOpen) : true,
+    address: text(body.address, body.location),
+    phone: text(body.phone, "+977 1-0000000"),
+    hours: text(body.hours, "Mon-Sun: 11:00 AM - 10:00 PM"),
+    featured: body.featured !== undefined ? Boolean(body.featured) : false,
+    availableTimeSlots: Array.isArray(body.availableTimeSlots) ? body.availableTimeSlots.map((slot) => text(slot)).filter(Boolean) : [],
+    features: Array.isArray(body.features) ? body.features.map((feature) => text(feature)).filter(Boolean) : [],
   };
 }
 
-function createRestaurantUpdateDto(body: Partial<RestaurantDto>): Partial<RestaurantDto> {
-  const dto: Partial<RestaurantDto> = {};
-
-  if (body.name !== undefined)
-    dto.name = String(body.name || "").trim();
-
-  if (body.cuisine !== undefined)
-    dto.cuisine = String(body.cuisine || "").trim();
-
-  if (body.location !== undefined)
-    dto.location = String(body.location || "").trim();
-
-  if (body.address !== undefined)
-    dto.address = String(body.address || "").trim();
-
-  if (body.description !== undefined)
-    dto.description = String(body.description || "").trim();
-
-  if (body.image !== undefined)
-    dto.image = String(body.image || "").trim();
-
-  if (body.phoneNumber !== undefined)
-    dto.phoneNumber = String(body.phoneNumber || "").trim();
-
-  if (body.email !== undefined)
-    dto.email = String(body.email || "").trim().toLowerCase();
-
-  if (body.openingTime !== undefined)
-    dto.openingTime = String(body.openingTime || "").trim();
-
-  if (body.closingTime !== undefined)
-    dto.closingTime = String(body.closingTime || "").trim();
-
-  if (body.averageCost !== undefined)
-    dto.averageCost = Number(body.averageCost);
-
-  if (body.rating !== undefined)
-    dto.rating = Number(body.rating);
-
-  if (body.totalTables !== undefined)
-    dto.totalTables = Number(body.totalTables);
-
-  if (body.availableTables !== undefined)
-    dto.availableTables = Number(body.availableTables);
-
-  if (body.isActive !== undefined)
-    dto.isActive = Boolean(body.isActive);
-
+function createRestaurantUpdateDto(body) {
+  const dto = {};
+  const textFields = ["name", "cuisine", "location", "description", "image", "priceRange", "address", "phone", "hours"];
+  for (const field of textFields) {
+    if (body[field] !== undefined) dto[field] = text(body[field]);
+  }
+  if (body.rating !== undefined) dto.rating = Number(body.rating);
+  if (body.reviewCount !== undefined) dto.reviewCount = Number(body.reviewCount);
+  if (body.price !== undefined && body.price !== "") dto.price = Number(body.price);
+  if (body.isActive !== undefined) dto.isActive = Boolean(body.isActive);
+  if (body.isOpen !== undefined) dto.isOpen = Boolean(body.isOpen);
+  if (body.featured !== undefined) dto.featured = Boolean(body.featured);
+  if (Array.isArray(body.availableTimeSlots)) dto.availableTimeSlots = body.availableTimeSlots.map((slot) => text(slot)).filter(Boolean);
+  if (Array.isArray(body.features)) dto.features = body.features.map((feature) => text(feature)).filter(Boolean);
   return dto;
 }
 
-module.exports = {
-  createRestaurantDto,
-  createRestaurantUpdateDto,
-};
+module.exports = { createRestaurantDto, createRestaurantUpdateDto };

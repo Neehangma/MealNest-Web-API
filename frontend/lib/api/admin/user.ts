@@ -46,6 +46,13 @@ export interface UserListParams {
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8088";
 
+export class AdminApiError extends Error {
+  constructor(message: string, public status: number) {
+    super(message);
+    this.name = "AdminApiError";
+  }
+}
+
 function getBrowserAuthToken() {
   if (typeof document === "undefined") return "";
 
@@ -74,7 +81,7 @@ export async function adminRequest<T>(
   const body = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(body?.message || "Admin request failed");
+    throw new AdminApiError(body?.message || "Admin request failed", response.status);
   }
 
   return body as T;
