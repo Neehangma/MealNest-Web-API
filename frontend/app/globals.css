@@ -6329,6 +6329,74 @@ font-size:30px;
   color: var(--dash-muted);
 }
 
+.dashboard-cuisine-filter {
+  margin-bottom: 24px;
+}
+
+.dashboard-cuisine-filter h3,
+.dashboard-restaurants-results-title {
+  margin: 0 0 14px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20px;
+  color: var(--dash-ink);
+}
+
+.dashboard-cuisine-options {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 28px;
+  max-width: 100%;
+  padding: 8px 2px 10px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.dashboard-cuisine-chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  width: auto;
+  height: auto;
+  min-width: max-content;
+  padding: 5px 0 8px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--dash-ink);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.dashboard-cuisine-chip span {
+  font-size: 19px;
+  line-height: 1;
+}
+
+.dashboard-cuisine-chip:hover {
+  color: var(--dash-brand);
+}
+
+.dashboard-cuisine-chip:focus-visible {
+  outline: 3px solid rgba(164, 81, 0, 0.2);
+  outline-offset: 2px;
+}
+
+.dashboard-cuisine-chip.is-active {
+  border-bottom-color: var(--dash-brand);
+  color: var(--dash-brand);
+  font-weight: 700;
+}
+
+.dashboard-restaurants-results-title {
+  margin-bottom: 18px;
+}
+
 .dashboard-restaurant-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

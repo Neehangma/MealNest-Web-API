@@ -9,7 +9,7 @@ const RESTAURANT_PRICES = {
   Roja: 200, Roma: 325, "Sakura Omakase": 500, "Sakura Restaurant": 325,
   Sarang: 275, Sensa: 450, "Seoul Kitchen": 300,
   "The Golden Truffle": 500, "The Mahal": 375, "The Spice Route": 250,
-  Patio: 320, Trials: 450,
+  Patio: 320, Trials: 450, Trattoria: 350, Sapori: 450, Tavola: 325,
 };
 
 const NEW_RESTAURANTS = [
@@ -33,7 +33,7 @@ const NEW_RESTAURANTS = [
   },
   {
     name: "Trials",
-    cuisine: "Contemporary Nepali",
+    cuisine: "Nepali",
     location: "Jhamsikhel",
     description: "Contemporary Nepali cuisine presented in an intimate modern setting with locally sourced ingredients.",
     rating: 4.8,
@@ -48,6 +48,63 @@ const NEW_RESTAURANTS = [
     featured: true,
     availableTimeSlots: ["12:00 PM", "2:00 PM", "6:00 PM", "7:30 PM", "9:00 PM"],
     features: ["Local Ingredients", "Chef Tasting Menu", "Reservations"],
+  },
+  {
+    name: "Trattoria",
+    cuisine: "Italian",
+    location: "Kathmandu",
+    description: "A cosy Italian trattoria serving handmade pasta, wood-fired pizza, risotto, and traditional regional dishes.",
+    rating: 4.7,
+    reviewCount: 96,
+    image: "/images/Trattoria.jpg",
+    priceRange: "$$",
+    price: 350,
+    isActive: true,
+    isOpen: true,
+    address: "Thamel, Kathmandu, Nepal",
+    phone: "+977 1-4701122",
+    hours: "Mon-Sun: 11:00 AM - 10:00 PM",
+    featured: false,
+    availableTimeSlots: ["11:00 AM", "12:30 PM", "2:00 PM", "5:30 PM", "7:00 PM", "8:30 PM"],
+    features: ["Handmade Pasta", "Wood-Fired Pizza", "Risotto", "Family Friendly"],
+  },
+  {
+    name: "Sapori",
+    cuisine: "Italian",
+    location: "Lalitpur",
+    description: "A modern Italian restaurant offering fresh pasta, artisan pizza, seafood, and elegant Italian dining.",
+    rating: 4.8,
+    reviewCount: 108,
+    image: "/images/sapori.jpg",
+    priceRange: "$$$",
+    price: 450,
+    isActive: true,
+    isOpen: true,
+    address: "Jhamsikhel, Lalitpur, Nepal",
+    phone: "+977 1-5422188",
+    hours: "Mon-Sun: 11:00 AM - 10:00 PM",
+    featured: true,
+    availableTimeSlots: ["11:00 AM", "12:30 PM", "2:00 PM", "5:30 PM", "7:00 PM", "8:30 PM"],
+    features: ["Fresh Pasta", "Artisan Pizza", "Seafood", "Elegant Dining"],
+  },
+  {
+    name: "Tavola",
+    cuisine: "Italian",
+    location: "Kathmandu",
+    description: "A welcoming Italian restaurant known for pasta, pizza, antipasti, and relaxed family-style dining.",
+    rating: 4.6,
+    reviewCount: 84,
+    image: "/images/tavola.jpg",
+    priceRange: "$$",
+    price: 325,
+    isActive: true,
+    isOpen: true,
+    address: "Lazimpat, Kathmandu, Nepal",
+    phone: "+977 1-4423190",
+    hours: "Mon-Sun: 11:00 AM - 10:00 PM",
+    featured: false,
+    availableTimeSlots: ["11:00 AM", "12:30 PM", "2:00 PM", "5:30 PM", "7:00 PM", "8:30 PM"],
+    features: ["Pasta", "Pizza", "Antipasti", "Family Friendly"],
   },
 ];
 
@@ -77,6 +134,9 @@ async function ensureNewRestaurants() {
       },
     })),
   );
+
+  // Keep the existing Trials record compatible with exact cuisine filtering.
+  await Restaurant.updateOne({ name: "Trials" }, { $set: { cuisine: "Nepali" } });
 }
 
 function getStableRestaurantPrice(restaurant) {

@@ -27,12 +27,25 @@ type DashboardUser = {
   role?: string;
 };
 
+const CUISINES = [
+  { label: "All", icon: "🍽️" },
+  { label: "Italian", icon: "🍝" },
+  { label: "Japanese", icon: "🍣" },
+  { label: "Indian", icon: "🍛" },
+  { label: "Chinese", icon: "🥟" },
+  { label: "Korean", icon: "🍜" },
+  { label: "Nepali", icon: "🍲" },
+  { label: "French", icon: "🥐" },
+  { label: "Thai", icon: "🥘" },
+];
+
 export default function DashboardClient({ user }: { user: DashboardUser }) {
   const [stats, setStats] = useState<DashboardStats>({ bookings: 0, favorites: 0, averageRating: 0 });
   const [favorites, setFavorites] = useState<FavoriteRestaurant[]>([]);
   const [upcomingReservations, setUpcomingReservations] = useState<ReservationItem[]>([]);
   const [recentHistory, setRecentHistory] = useState<ReservationItem[]>([]);
-  const [recommendations, setRecommendations] = useState<RestaurantItem[]>([]);
+  const [restaurantResults, setRestaurantResults] = useState<RestaurantItem[]>([]);
+  const [selectedCuisine, setSelectedCuisine] = useState("All");
   const [loading, setLoading] = useState(true);
   const [recommendationsLoading, setRecommendationsLoading] = useState(true);
   const [recommendationsError, setRecommendationsError] = useState(false);
@@ -44,13 +57,24 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
   const today = useMemo(() => formatToday(), []);
 
   const favoriteIds = useMemo(() => new Set(favorites.map((favorite) => favorite._id)), [favorites]);
-  const filteredRecommendations = useMemo(() => {
+  const restaurants = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    if (!query) return recommendations;
-    return recommendations.filter((restaurant) =>
-      [restaurant.name, restaurant.cuisine, restaurant.location].some((value) => value.toLowerCase().includes(query)),
+    if (!query) return restaurantResults;
+    return restaurantResults.filter((restaurant) =>
+      [restaurant.name, restaurant.cuisine, restaurant.location].some((value) => value?.toLowerCase().includes(query)),
     );
-  }, [recommendations, searchQuery]);
+  }, [restaurantResults, searchQuery]);
+
+  const filteredRestaurants = useMemo(
+    () =>
+      selectedCuisine === "All"
+        ? restaurants
+        : restaurants.filter(
+            (restaurant) =>
+              restaurant.cuisine?.toLowerCase() === selectedCuisine.toLowerCase(),
+          ),
+    [restaurants, selectedCuisine],
+  );
 
   const applyDashboard = useCallback((data: DashboardData) => {
     setStats(data.stats);
@@ -76,7 +100,7 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
     (async () => {
       try {
         const response = await getRestaurants();
-        if (active) setRecommendations(response.data);
+        if (active) setRestaurantResults(response.data);
       } catch {
         if (active) setRecommendationsError(true);
       } finally {
@@ -171,13 +195,35 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
                   <Link href="/dashboard/user/discover" className="dash-btn dash-btn-outline">View All Restaurants</Link>
                 </div>
 
+                <section className="dashboard-cuisine-filter" aria-labelledby="cuisine-filter-title">
+                  <h3 id="cuisine-filter-title">Browse by Cuisine</h3>
+                  <div className="dashboard-cuisine-options">
+                    {CUISINES.map((cuisine) => (
+                      <button
+                        key={cuisine.label}
+                        type="button"
+                        className={`dashboard-cuisine-chip${selectedCuisine === cuisine.label ? " is-active" : ""}`}
+                        aria-pressed={selectedCuisine === cuisine.label}
+                        onClick={() => setSelectedCuisine(cuisine.label)}
+                      >
+                        <span aria-hidden="true">{cuisine.icon}</span>
+                        {cuisine.label}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                <h3 className="dashboard-restaurants-results-title">
+                  {selectedCuisine === "All" ? "All Restaurants" : `${selectedCuisine} Restaurants`}
+                </h3>
+
                 {recommendationsLoading ? (
                   <p>Loading restaurants...</p>
                 ) : recommendationsError ? (
                   <p className="profile-action-message error">Unable to load restaurants. Please try again.</p>
-                ) : filteredRecommendations.length > 0 ? (
+                ) : filteredRestaurants.length > 0 ? (
                   <div className="dashboard-restaurant-grid">
-                    {filteredRecommendations.map((restaurant) => (
+                    {filteredRestaurants.map((restaurant) => (
                       <RecommendationCard
                         key={restaurant._id}
                         restaurant={restaurant}
@@ -187,7 +233,13 @@ export default function DashboardClient({ user }: { user: DashboardUser }) {
                     ))}
                   </div>
                 ) : (
-                  <EmptyState icon="utensils" title="No restaurants found" message="Try a different search or explore restaurants again shortly." actionLabel="View All Restaurants" actionHref="/dashboard/user/discover" />
+                  <EmptyState
+                    icon="utensils"
+                    title="No restaurants found"
+                    message={selectedCuisine === "All" ? "Try a different search or explore restaurants again shortly." : "No restaurants found for this cuisine."}
+                    actionLabel="View All Restaurants"
+                    actionHref="/dashboard/user/discover"
+                  />
                 )}
               </section>
 
