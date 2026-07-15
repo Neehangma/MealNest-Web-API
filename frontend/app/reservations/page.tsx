@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { ReservationItem } from "@/lib/api/dashboard";
 import { cancelReservationAction, getReservationsAction } from "@/lib/actions/reservation-action";
+import { getRestaurantImage } from "@/lib/restaurant-image";
 
 export default function ReservationsPage() {
   const [reservations, setReservations] = useState<ReservationItem[]>([]);
@@ -112,7 +113,7 @@ export default function ReservationsPage() {
               <div key={reservation._id} className={`reservation-card ${reservation.status}`}>
                 <div className="reservation-image">
                   <Image
-                    src={reservation.image || "/images/Register.jpg"}
+                    src={getRestaurantImage(reservation.image)}
                     alt={reservation.restaurantName}
                     fill
                     className="reservation-img"

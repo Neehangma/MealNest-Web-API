@@ -10,7 +10,7 @@ export interface AdminRestaurant {
   location: string;
   rating: number;
   reviewCount: number;
-  priceRange: "$" | "$$" | "$$$" | "$$$$";
+  priceRange: string;
   price?: number;
   isActive: boolean;
   isOpen: boolean;
@@ -24,7 +24,7 @@ export interface AdminRestaurant {
   updatedAt: string;
 }
 
-export type RestaurantPayload = Omit<AdminRestaurant, "_id" | "createdAt" | "updatedAt" | "reviewCount"> & { reviewCount?: number };
+export type RestaurantPayload = Omit<AdminRestaurant, "_id" | "createdAt" | "updatedAt" | "reviewCount" | "rating" | "image"> & { image?: string };
 export type RestaurantListParams = { page?: number; limit?: number; search?: string; cuisine?: string; available?: "true" | "false" };
 export type RestaurantsResponse = { success: boolean; data: AdminRestaurant[]; meta: { page: number; limit: number; total: number; totalPages: number; availableTotal: number; cuisineTypes: number } };
 
@@ -34,12 +34,12 @@ export function getAdminRestaurants(params: RestaurantListParams = {}, token?: s
   return adminRequest<RestaurantsResponse>(`${API.RESTAURANTS.LIST}?${query}`, {}, token);
 }
 
-export function createRestaurant(data: RestaurantPayload, token?: string) {
-  return adminRequest<{ success: boolean; data: AdminRestaurant; message: string }>(API.RESTAURANTS.LIST, { method: "POST", body: JSON.stringify(data) }, token);
+export function createRestaurant(data: FormData, token?: string) {
+  return adminRequest<{ success: boolean; data: AdminRestaurant; message: string }>(API.RESTAURANTS.LIST, { method: "POST", body: data }, token);
 }
 
-export function updateRestaurant(id: string, data: Partial<RestaurantPayload>, token?: string) {
-  return adminRequest<{ success: boolean; data: AdminRestaurant; message: string }>(API.RESTAURANTS.BY_ID(id), { method: "PUT", body: JSON.stringify(data) }, token);
+export function updateRestaurant(id: string, data: FormData, token?: string) {
+  return adminRequest<{ success: boolean; data: AdminRestaurant; message: string }>(API.RESTAURANTS.BY_ID(id), { method: "PUT", body: data }, token);
 }
 
 export function deleteRestaurant(id: string, token?: string) {

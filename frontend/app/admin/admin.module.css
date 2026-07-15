@@ -450,6 +450,38 @@
   accent-color: #d63d00;
 }
 
+.fileControl {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px dashed #d9aa90;
+  border-radius: 8px;
+  background: #fffaf6;
+  color: #27354b;
+  font: inherit;
+}
+
+.selectedFileName {
+  color: #687286;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.restaurantImagePreview {
+  display: block;
+  width: 210px;
+  margin-top: 4px;
+}
+
+.restaurantImagePreview img {
+  display: block;
+  width: 210px;
+  height: 140px;
+  border: 1px solid #ead5c8;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
 .ghostButton {
   display: inline-flex;
   align-items: center;

@@ -4,16 +4,8 @@ import Link from "next/link";
 import type { RestaurantItem } from "@/lib/api/dashboard";
 import Icon from "./Icon";
 import { getStableRestaurantPrice } from "@/lib/restaurant-price";
+import { getRestaurantImage, RESTAURANT_FALLBACK_IMAGE } from "@/lib/restaurant-image";
 
-const FALLBACK_IMAGE = "/images/Register.jpg";
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8088";
-
-const getImageUrl = (image?: string) => {
-  if (!image) return FALLBACK_IMAGE;
-  if (image.startsWith("http") || image.startsWith("data:")) return image;
-  if (image.startsWith("/images/")) return image;
-  return `${API_BASE_URL}${image.startsWith("/") ? "" : "/"}${image}`;
-};
 
 export default function RecommendationCard({
   restaurant,
@@ -27,7 +19,7 @@ export default function RecommendationCard({
   return (
     <article className="dash-recommend-card dash-fade-in">
       <Link href={`/dashboard/user/restaurants/${restaurant._id}`} className="dash-recommend-media">
-        <img src={getImageUrl(restaurant.image)} alt={restaurant.name} onError={(event) => { event.currentTarget.src = FALLBACK_IMAGE; }} />
+        <img src={getRestaurantImage(restaurant.image)} alt={restaurant.name} onError={(event) => { event.currentTarget.src = RESTAURANT_FALLBACK_IMAGE; }} />
       </Link>
       <button
         type="button"

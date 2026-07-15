@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import type { ReservationItem } from "@/lib/api/dashboard";
+import { getRestaurantImage } from "@/lib/restaurant-image";
 import Icon from "./Icon";
 import { formatDisplayDate, statusLabelOf, statusToneOf } from "./helpers";
-
-const FALLBACK_IMAGE = "/images/Register.jpg";
 
 export type EditForm = {
   date: string;
@@ -39,7 +38,7 @@ export default function ReservationCard({
   return (
     <article className="dash-reservation-card dash-fade-in">
       <div className="dash-reservation-media">
-        <img src={reservation.image || FALLBACK_IMAGE} alt={reservation.restaurantName} />
+        <img src={getRestaurantImage(reservation.image)} alt={reservation.restaurantName} />
       </div>
 
       <div className="dash-reservation-info">

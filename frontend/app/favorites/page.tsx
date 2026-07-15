@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import type { FavoriteRestaurant } from "@/lib/api/dashboard";
 import { getFavoritesAction, toggleFavoriteAction } from "@/lib/actions/dashboard-action";
 import { getStableRestaurantPrice } from "@/lib/restaurant-price";
+import { getRestaurantImage } from "@/lib/restaurant-image";
 
 export default function FavoritesPage() {
   const [favorites, setFavorites] = useState<FavoriteRestaurant[]>([]);
@@ -62,7 +63,7 @@ export default function FavoritesPage() {
               <div key={restaurant._id} className="favorite-card">
                 <div className="favorite-image">
                   <Image
-                    src={restaurant.image}
+                    src={getRestaurantImage(restaurant.image)}
                     alt={restaurant.name}
                     fill
                     className="favorite-img"

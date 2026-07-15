@@ -3,6 +3,7 @@ require("dotenv").config({ quiet: true });
 const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
+const path = require("path");
 
 const { PORT } = require("./config/constant");
 const { connectMongo } = require("./database/mongodb");
@@ -16,6 +17,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json({ limit: "5mb" }));
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.get("/", (_req, res) => {
   res.send("MealNest Backend Running");
@@ -36,7 +38,8 @@ app.use((_req, _res, next) => {
 });
 
 app.use((error, _req, res, _next) => {
-  const status = error.status || 500;
+  const isUploadError = error.name === "MulterError" || String(error.message || "").includes("Only JPG, PNG, and WEBP");
+  const status = isUploadError ? 400 : error.status || 500;
   const message = error.message || "Internal server error";
 
   if (status >= 500) {
