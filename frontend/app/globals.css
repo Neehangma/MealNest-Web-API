@@ -1102,6 +1102,31 @@ font-size:30px;
   border-color: #a45100;
 }
 
+.logout-confirmation-overlay {
+  z-index: 1000;
+}
+
+.logout-confirmation-modal .profile-modal-actions form {
+  width: 100%;
+  margin: 0;
+}
+
+.logout-confirmation-modal .profile-modal-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+}
+
+.logout-confirmation-modal .profile-modal-button {
+  width: 100%;
+  height: 52px;
+}
+
+.logout-confirmation-modal .profile-modal-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
 .profile-modal-large {
   max-width: 500px;
 }

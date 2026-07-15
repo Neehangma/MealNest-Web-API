@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { logoutAction } from "@/lib/actions/profile-action";
+import { useLogout } from "@/app/_components/LogoutProvider";
 import Icon from "./Icon";
 
 type HeaderUser = {
@@ -35,6 +35,7 @@ export default function DashboardHeader({
   const avatar = user?.profilePicture;
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { requestLogout } = useLogout();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -116,16 +117,23 @@ export default function DashboardHeader({
                 <Icon name="card" size={18} />
                 <span>Payment Methods</span>
               </Link>
-              <form action={logoutAction}>
-                <button type="submit" role="menuitem" className="dash-profile-menu-logout">
-                  <Icon name="logout" size={18} />
-                  <span>Logout</span>
-                </button>
-              </form>
+              <button
+                type="button"
+                role="menuitem"
+                className="dash-profile-menu-logout"
+                onClick={(event) => {
+                  setMenuOpen(false);
+                  requestLogout(event.currentTarget);
+                }}
+              >
+                <Icon name="logout" size={18} />
+                <span>Logout</span>
+              </button>
             </div>
           )}
         </div>
       </div>
+
     </header>
   );
 }

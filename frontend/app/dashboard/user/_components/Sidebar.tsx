@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { logoutAction } from "@/lib/actions/profile-action";
+import { useLogout } from "@/app/_components/LogoutProvider";
 import Icon, { type IconName } from "./Icon";
 
 const NAV_ITEMS: Array<{ label: string; href: string; icon: IconName }> = [
@@ -15,6 +15,7 @@ const NAV_ITEMS: Array<{ label: string; href: string; icon: IconName }> = [
 
 export default function Sidebar({ open, onNavigate }: { open: boolean; onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { requestLogout } = useLogout();
   return (
     <aside className={`dash-sidebar ${open ? "is-open" : ""}`} aria-label="User dashboard navigation">
       <nav className="dash-sidebar-nav">
@@ -25,9 +26,9 @@ export default function Sidebar({ open, onNavigate }: { open: boolean; onNavigat
           </Link>;
         })}
       </nav>
-      <form action={logoutAction} className="dash-sidebar-logout-form">
-        <button type="submit" className="dash-sidebar-link dash-sidebar-logout"><Icon name="logout" size={20} /><span>Log Out</span></button>
-      </form>
+      <div className="dash-sidebar-logout-form">
+        <button type="button" className="dash-sidebar-link dash-sidebar-logout" onClick={(event) => requestLogout(event.currentTarget)}><Icon name="logout" size={20} /><span>Log Out</span></button>
+      </div>
     </aside>
   );
 }

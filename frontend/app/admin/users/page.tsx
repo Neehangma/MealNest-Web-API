@@ -11,6 +11,7 @@ import {
   type User,
 } from "@/lib/api/admin";
 import styles from "../admin.module.css";
+import { useLogout } from "@/app/_components/LogoutProvider";
 
 type IconName =
   | "grid"
@@ -225,6 +226,7 @@ function validateForm(form: FormState, mode: "create" | "edit") {
 }
 
 export default function AdminUsersPage() {
+  const { requestLogout } = useLogout();
   const [users, setUsers] = useState<User[]>([]);
   const [meta, setMeta] = useState<PaginatedUsersResponse["meta"]>({
     page: 1,
@@ -420,10 +422,10 @@ export default function AdminUsersPage() {
               <Icon name="help" size={24} />
               <span>Support</span>
             </a>
-            <a className={`${styles.navItem} ${styles.signOut}`} href="#">
+            <button type="button" className={`${styles.navItem} ${styles.signOut}`} onClick={(event) => requestLogout(event.currentTarget)}>
               <Icon name="logout" size={24} />
               <span>Sign Out</span>
-            </a>
+            </button>
           </div>
         </div>
       </aside>
