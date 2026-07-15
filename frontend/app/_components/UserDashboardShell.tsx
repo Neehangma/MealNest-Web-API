@@ -26,6 +26,14 @@ export default function UserDashboardShell({ children }: { children: React.React
     if (isUserRoute) void getUserData().then(setUser);
   }, [isUserRoute]);
 
+  useEffect(() => {
+    const handleUserUpdate = (event: Event) => {
+      setUser((event as CustomEvent<AuthUser>).detail);
+    };
+    window.addEventListener("mealnest:user-updated", handleUserUpdate);
+    return () => window.removeEventListener("mealnest:user-updated", handleUserUpdate);
+  }, []);
+
   if (!isUserRoute) return children;
 
   return <UserDashboardContext.Provider value={{ searchQuery, setSearchQuery }}>

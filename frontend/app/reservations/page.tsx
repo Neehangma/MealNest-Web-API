@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { cancelReservation, getDashboardData, type ReservationItem } from "@/lib/api/dashboard";
+import type { ReservationItem } from "@/lib/api/dashboard";
+import { cancelReservationAction, getReservationsAction } from "@/lib/actions/reservation-action";
 
 export default function ReservationsPage() {
   const [reservations, setReservations] = useState<ReservationItem[]>([]);
@@ -19,8 +20,7 @@ export default function ReservationsPage() {
     try {
       setLoading(true);
       setError("");
-      const response = await getDashboardData();
-      setReservations([...(response.data.upcomingReservations || []), ...(response.data.recentHistory || [])]);
+      setReservations(await getReservationsAction());
     } catch {
       setError("We could not load your reservations right now.");
     } finally {
@@ -41,7 +41,7 @@ export default function ReservationsPage() {
     }
 
     try {
-      await cancelReservation(id);
+      await cancelReservationAction(id);
       await loadReservations();
     } catch {
       setError("Unable to cancel this reservation right now.");
@@ -102,7 +102,7 @@ export default function ReservationsPage() {
             <div className="empty-state">
               <div className="empty-icon">📅</div>
               <h2>No reservations found</h2>
-              <p>You don't have any {filter === "cancelled" ? "cancelled" : filter} reservations.</p>
+              <p>You do not have any {filter === "cancelled" ? "cancelled" : filter} reservations.</p>
               <Link href="/" className="browse-button">
                 Browse Restaurants
               </Link>

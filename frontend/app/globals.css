@@ -3325,6 +3325,17 @@ font-size:30px;
   margin-top: auto;
 }
 
+.reservation-actions > .action-button {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+}
+
 .action-button {
   padding: 10px 20px;
   border-radius: 8px;
@@ -4734,7 +4745,8 @@ font-size:30px;
   letter-spacing: 0.05em;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
   padding: 14px 18px;
   border: 1px solid #dfbda9;
   border-radius: 8px;
@@ -4743,7 +4755,8 @@ font-size:30px;
   transition: all 0.3s;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
   outline: none;
   border-color: #a45100;
   box-shadow: 0 0 0 3px rgba(164, 81, 0, 0.1);
@@ -4833,6 +4846,13 @@ font-size:30px;
 
 .payment-checkout-footer {
   margin-top: 48px;
+}
+
+.pay-button:disabled,
+.cancel-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
 }
 
 @media(max-width:700px) {
@@ -5326,9 +5346,11 @@ font-size:30px;
 }
 
 .dash-header-nav {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   gap: 28px;
-  margin-left: 8px;
 }
 
 .dash-header-nav a {
@@ -6307,6 +6329,74 @@ font-size:30px;
   color: var(--dash-muted);
 }
 
+.dashboard-cuisine-filter {
+  margin-bottom: 24px;
+}
+
+.dashboard-cuisine-filter h3,
+.dashboard-restaurants-results-title {
+  margin: 0 0 14px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20px;
+  color: var(--dash-ink);
+}
+
+.dashboard-cuisine-options {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 28px;
+  max-width: 100%;
+  padding: 8px 2px 10px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.dashboard-cuisine-chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  width: auto;
+  height: auto;
+  min-width: max-content;
+  padding: 5px 0 8px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--dash-ink);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.dashboard-cuisine-chip span {
+  font-size: 19px;
+  line-height: 1;
+}
+
+.dashboard-cuisine-chip:hover {
+  color: var(--dash-brand);
+}
+
+.dashboard-cuisine-chip:focus-visible {
+  outline: 3px solid rgba(164, 81, 0, 0.2);
+  outline-offset: 2px;
+}
+
+.dashboard-cuisine-chip.is-active {
+  border-bottom-color: var(--dash-brand);
+  color: var(--dash-brand);
+  font-weight: 700;
+}
+
+.dashboard-restaurants-results-title {
+  margin-bottom: 18px;
+}
+
 .dashboard-restaurant-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -6333,6 +6423,7 @@ font-size:30px;
   line-height: 1.5;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .dashboard-quick-actions-section {

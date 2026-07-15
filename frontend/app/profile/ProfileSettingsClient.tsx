@@ -1,7 +1,7 @@
 "use client";
 
-import { logoutAction, updateProfileAction } from "@/lib/actions/profile-action";
-import { useActionState, useRef, useState } from "react";
+import { logoutAction, updateProfileAction, type ProfileActionState } from "@/lib/actions/profile-action";
+import { FormEvent, useRef, useState } from "react";
 
 type ProfileUser = {
   fullName: string;
@@ -23,7 +23,7 @@ type IconName =
   | "globe"
   | "share";
 
-const emptyState = {
+const emptyState: ProfileActionState = {
   success: false,
   message: "",
 };
@@ -104,15 +104,45 @@ function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
 }
 
 export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
-  const [profileState, profileFormAction, isUpdatingProfile] = useActionState(updateProfileAction, emptyState);
+  const [profileState, setProfileState] = useState<ProfileActionState>(emptyState);
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [profile, setProfile] = useState(user);
   const [avatar, setAvatar] = useState(user.profilePicture);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-  const [notificationSettings, setNotificationSettings] = useState({
-    reservationUpdates: true,
-    promotions: false,
-    pushNotifications: false,
-  });
+  const [showProfileUpdateDialog, setShowProfileUpdateDialog] = useState(false);
+  const [pendingProfileData, setPendingProfileData] = useState<FormData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function requestProfileUpdate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPendingProfileData(new FormData(event.currentTarget));
+    setShowProfileUpdateDialog(true);
+  }
+
+  async function confirmProfileUpdate() {
+    if (!pendingProfileData) return;
+    setShowProfileUpdateDialog(false);
+    setIsUpdatingProfile(true);
+    const result = await updateProfileAction(emptyState, pendingProfileData);
+    setProfileState(result);
+
+    if (result.success && result.user) {
+      setProfile((current) => ({
+        ...current,
+        fullName: result.user?.fullName || current.fullName,
+        email: result.user?.email || current.email,
+        phoneNumber: result.user?.phoneNumber || "",
+        profilePicture: result.user?.profilePicture || current.profilePicture,
+        location: result.user?.location || "",
+        bio: result.user?.bio || "",
+      }));
+      if (result.user.profilePicture) setAvatar(result.user.profilePicture);
+      window.dispatchEvent(new CustomEvent("mealnest:user-updated", { detail: result.user }));
+      setPendingProfileData(null);
+    }
+
+    setIsUpdatingProfile(false);
+  }
 
   function handlePhotoChange(file: File | undefined) {
     if (!file) return;
@@ -141,7 +171,7 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
         <div className="profile-settings-layout">
           <section className="profile-panel profile-info-panel">
             <h2>Personal Information</h2>
-            <form action={profileFormAction} className="profile-form">
+            <form className="profile-form" onSubmit={requestProfileUpdate}>
               <input type="hidden" name="profilePicture" value={avatar} />
               <div className="profile-photo-column">
                 <h3>Profile Photo</h3>
@@ -166,25 +196,26 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
               <div className="profile-fields">
                 <label>
                   <span>Full Name</span>
-                  <input name="fullName" defaultValue={user.fullName} required />
+                  <input name="fullName" value={profile.fullName} onChange={(event) => setProfile((current) => ({ ...current, fullName: event.target.value }))} required />
                 </label>
                 <label>
                   <span>Email Address</span>
-                  <input type="email" name="email" defaultValue={user.email} required />
+                  <input type="email" name="email" value={profile.email} onChange={(event) => setProfile((current) => ({ ...current, email: event.target.value }))} required />
                 </label>
                 <label>
                   <span>Phone Number</span>
-                  <input name="phoneNumber" defaultValue={user.phoneNumber} />
+                  <input name="phoneNumber" value={profile.phoneNumber} onChange={(event) => setProfile((current) => ({ ...current, phoneNumber: event.target.value }))} />
                 </label>
                 <label>
                   <span>Location</span>
-                  <input name="location" defaultValue={user.location} />
+                  <input name="location" value={profile.location} onChange={(event) => setProfile((current) => ({ ...current, location: event.target.value }))} />
                 </label>
                 <label>
                   <span>Bio</span>
                   <textarea
                     name="bio"
-                    defaultValue={user.bio}
+                    value={profile.bio}
+                    onChange={(event) => setProfile((current) => ({ ...current, bio: event.target.value }))}
                     rows={4}
                   />
                 </label>
@@ -204,7 +235,7 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
             <section className="profile-panel profile-overview-card">
               <h2>Profile Overview</h2>
               <img src={avatar} alt="" />
-              <h3>{user.fullName}</h3>
+              <h3>{profile.fullName}</h3>
               <span>Premium Member</span>
               <div className="profile-overview-stats">
                 <div>
@@ -290,6 +321,19 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
                   Logout
                 </button>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showProfileUpdateDialog && (
+        <div className="profile-modal-overlay" onClick={() => setShowProfileUpdateDialog(false)}>
+          <div className="profile-modal" onClick={(event) => event.stopPropagation()}>
+            <h2>Confirm Profile Update</h2>
+            <p>Are you sure you want to save these profile changes?</p>
+            <div className="profile-modal-actions">
+              <button type="button" className="profile-modal-button secondary" onClick={() => setShowProfileUpdateDialog(false)}>Cancel</button>
+              <button type="button" className="profile-modal-button primary" onClick={() => void confirmProfileUpdate()}>Update Profile</button>
             </div>
           </div>
         </div>

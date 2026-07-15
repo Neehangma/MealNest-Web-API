@@ -6,10 +6,13 @@ import { clearAuthCookies, getTokenCookie, storeUserData } from "@/lib/cookies";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-type ActionState = {
+export type ProfileActionState = {
   success: boolean;
   message: string;
+  user?: AuthUser;
 };
+
+type ActionState = ProfileActionState;
 
 type ProfileUpdateResponse = {
   success: boolean;
@@ -82,7 +85,7 @@ export async function updateProfileAction(_prevState: ActionState, formData: For
     revalidatePath("/profile");
     revalidatePath("/dashboard/user");
 
-    return { success: true, message: result.message || "Profile updated successfully" };
+    return { success: true, message: result.message || "Profile updated successfully", user: result.user };
   } catch (error) {
     return {
       success: false,

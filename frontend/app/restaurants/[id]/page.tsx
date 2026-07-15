@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { createReservation, getRestaurantById, toggleFavorite, type RestaurantItem } from "@/lib/api/dashboard";
+import { getRestaurantById, type RestaurantItem } from "@/lib/api/dashboard";
+import { getFavoritesAction, toggleFavoriteAction } from "@/lib/actions/dashboard-action";
 import { getStableRestaurantPrice } from "@/lib/restaurant-price";
 
 const FALLBACK_IMAGE = "/images/Register.jpg";
@@ -39,42 +40,44 @@ export default function RestaurantDetailPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  useEffect(() => {
+    if (!id) return;
+    getFavoritesAction()
+      .then((favorites) => setIsFavorite(favorites.some((favorite) => favorite._id === id)))
+      .catch(() => setIsFavorite(false));
+  }, [id]);
+
   const today = new Date().toLocaleDateString("en-CA");
 
-  async function reserve() {
+  function reserve() {
     if (!restaurant || !selectedDate || !selectedTime) {
       setError("Please select a date and time.");
       return;
     }
 
+    const guests = Number(partySize);
+    const price = getStableRestaurantPrice(restaurant);
+    const payload = {
+      restaurantId: restaurant._id,
+      restaurantName: restaurant.name,
+      cuisine: restaurant.cuisine,
+      image: restaurant.image,
+      reservationDate: selectedDate,
+      date: selectedDate,
+      time: selectedTime,
+      guests,
+      status: "confirmed",
+      location: restaurant.location,
+      restaurantAddress: restaurant.address,
+      price,
+      totalAmount: price * guests,
+    };
+
     setBooking(true);
     setError("");
-    try {
-      const payload = {
-        restaurantId: restaurant._id,
-        restaurantName: restaurant.name,
-        cuisine: restaurant.cuisine,
-        image: restaurant.image,
-        reservationDate: selectedDate,
-        date: selectedDate,
-        time: selectedTime,
-        guests: Number(partySize),
-        status: "confirmed",
-      };
-      await createReservation(payload);
-      sessionStorage.setItem(
-        "mealnest_booking",
-        JSON.stringify({
-          ...payload,
-          location: restaurant.location,
-          priceRange: restaurant.priceRange,
-        }),
-      );
-      router.push("/dashboard/user/payment");
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Unable to complete reservation.");
-      setBooking(false);
-    }
+    sessionStorage.removeItem("confirmedBooking");
+    sessionStorage.setItem("mealnest_booking", JSON.stringify(payload));
+    router.push("/dashboard/user/payment");
   }
 
   async function handleFavoriteToggle() {
@@ -82,8 +85,8 @@ export default function RestaurantDetailPage() {
 
     try {
       setError("");
-      await toggleFavorite(restaurant._id);
-      setIsFavorite((value) => !value);
+      const favorites = await toggleFavoriteAction(restaurant._id);
+      setIsFavorite(favorites.some((favorite) => favorite._id === restaurant._id));
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Unable to update favorites.");
     }
