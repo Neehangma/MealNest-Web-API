@@ -67,7 +67,7 @@ export default function ReservationsPage() {
             <h1>My Reservations</h1>
             <p>Manage your upcoming and past dining reservations</p>
           </div>
-          <Link href="/" className="new-reservation-button">
+          <Link href="/dashboard/user#restaurants" className="new-reservation-button">
             + New Reservation
           </Link>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { logoutAction, updateProfileAction, type ProfileActionState } from "@/lib/actions/profile-action";
+import { updateProfileAction, type ProfileActionState } from "@/lib/actions/profile-action";
+import { useLogout } from "@/app/_components/LogoutProvider";
 import { FormEvent, useRef, useState } from "react";
 
 type ProfileUser = {
@@ -108,10 +109,10 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [profile, setProfile] = useState(user);
   const [avatar, setAvatar] = useState(user.profilePicture);
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showProfileUpdateDialog, setShowProfileUpdateDialog] = useState(false);
   const [pendingProfileData, setPendingProfileData] = useState<FormData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { requestLogout } = useLogout();
 
   function requestProfileUpdate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -264,7 +265,7 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
               <button
                 className="profile-logout-link"
                 type="button"
-                onClick={() => setShowLogoutDialog(true)}
+                onClick={(event) => requestLogout(event.currentTarget)}
               >
                 <Icon name="logout" />
                 <span>Logout</span>
@@ -302,29 +303,6 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
           <p>&copy; 2024 MealNest. All rights reserved.</p>
         </div>
       </footer>
-
-      {showLogoutDialog && (
-        <div className="profile-modal-overlay" onClick={() => setShowLogoutDialog(false)}>
-          <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Confirm Logout</h2>
-            <p>Are you sure you want to logout?</p>
-            <div className="profile-modal-actions">
-              <button
-                type="button"
-                className="profile-modal-button secondary"
-                onClick={() => setShowLogoutDialog(false)}
-              >
-                Cancel
-              </button>
-              <form action={logoutAction}>
-                <button type="submit" className="profile-modal-button primary">
-                  Logout
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
 
       {showProfileUpdateDialog && (
         <div className="profile-modal-overlay" onClick={() => setShowProfileUpdateDialog(false)}>
