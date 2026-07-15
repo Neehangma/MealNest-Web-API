@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getAuthenticatedUser } from "@/lib/auth-session";
+import { getAdminDashboardStatsAction } from "@/lib/actions/admin/dashboard-action";
+import type { AdminActivity } from "@/lib/api/admin/dashboard";
 import styles from "./admin.module.css";
 
 type IconName = "grid" | "users" | "store" | "calendar" | "settings" | "arrow";
@@ -68,40 +69,28 @@ function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
   );
 }
 
-const stats = [
-  { label: "Total Users", value: "128", trend: "Manage customer accounts", icon: "users" as const, tone: styles.orange },
-  { label: "Restaurants", value: "42", trend: "Approved dining partners", icon: "store" as const, tone: styles.blue },
-  { label: "Bookings", value: "316", trend: "Reservations this month", icon: "calendar" as const, tone: styles.green },
-];
-
-const activities = [
-  { title: "New user registered", text: "A customer account was created.", time: "Just now", icon: "users" as const },
-  { title: "Restaurant updated", text: "Partner profile details changed.", time: "12 min ago", icon: "store" as const },
-  { title: "Booking created", text: "A reservation was added.", time: "26 min ago", icon: "calendar" as const },
-];
+function relativeTime(value: string) {
+  const seconds = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 1000));
+  if (seconds < 60) return "Just now";
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hr ago`;
+  return new Date(value).toLocaleDateString();
+}
 
 export default async function AdminDashboardPage() {
-  const user = await getAuthenticatedUser();
+  let dashboard: Awaited<ReturnType<typeof getAdminDashboardStatsAction>> | null = null;
+  let loadError = false;
+  try { dashboard = await getAdminDashboardStatsAction(); } catch { loadError = true; }
+  const stats = [
+    { label: "Total Users", value: dashboard?.stats.totalUsers ?? "—", trend: "Accounts stored in MongoDB", icon: "users" as const, tone: styles.orange },
+    { label: "Restaurants", value: dashboard?.stats.totalRestaurants ?? "—", trend: "Restaurants stored in MongoDB", icon: "store" as const, tone: styles.blue },
+    { label: "Bookings", value: dashboard?.stats.totalBookings ?? "—", trend: "Total reservations created", icon: "calendar" as const, tone: styles.green },
+  ];
+  const activities = dashboard?.activities || [];
 
   return (
     <div className={styles.adminRoot}>
       <main className={styles.main}>
-        <header className={styles.topbar}>
-          <div>
-            <h1 className={styles.title}>Admin Dashboard</h1>
-            <p className={styles.subtitle}>Signed in as {user?.email}. Manage MealNest system data here.</p>
-          </div>
-          <div className={styles.topActions}>
-            <div className={styles.profile}>
-              <span className={styles.profileAvatar}>{user?.fullName?.charAt(0).toUpperCase() || "A"}</span>
-              <div>
-                <div className={styles.profileName}>{user?.fullName || "Admin"}</div>
-                <div className={styles.profileRole}>System Admin</div>
-              </div>
-            </div>
-          </div>
-        </header>
-
         <section className={styles.content}>
           <div className={styles.heroRow}>
             <div>
@@ -113,6 +102,8 @@ export default async function AdminDashboardPage() {
               Manage Users
             </Link>
           </div>
+
+          {loadError && <div className={styles.errorBanner}>Unable to load dashboard statistics.</div>}
 
           <div className={styles.statsGrid}>
             {stats.map((stat) => (
@@ -137,15 +128,15 @@ export default async function AdminDashboardPage() {
               </div>
             </div>
             <div className={styles.activityGrid}>
-              {activities.map((activity) => (
-                <article className={styles.activityItem} key={activity.title}>
+              {activities.length === 0 ? <div className={styles.emptyState}>{loadError ? "Recent activity is unavailable." : "No recent activity yet."}</div> : activities.map((activity: AdminActivity, index) => (
+                <article className={styles.activityItem} key={`${activity.type}-${activity.createdAt}-${index}`}>
                   <div className={`${styles.activityIcon} ${styles.orange}`}>
-                    <Icon name={activity.icon} size={22} />
+                    <Icon name={activity.type === "user" ? "users" : activity.type === "restaurant" ? "store" : "calendar"} size={22} />
                   </div>
                   <div>
                     <p className={styles.activityTitle}>{activity.title}</p>
                     <p className={styles.activityText}>{activity.text}</p>
-                    <p className={styles.activityTime}>{activity.time}</p>
+                    <p className={styles.activityTime}>{relativeTime(activity.createdAt)}</p>
                   </div>
                 </article>
               ))}

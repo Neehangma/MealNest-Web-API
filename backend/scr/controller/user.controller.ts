@@ -157,6 +157,11 @@ async function getAdminProfile(req, res) {
   return sendSuccess(res, 200, { admin });
 }
 
+async function getAdminDashboardStats(_req, res) {
+  const result = await userService.getAdminDashboardStats();
+  return sendSuccess(res, 200, result);
+}
+
 async function updateAdminProfile(req, res) {
   const payload = createProfileUpdateDto(req.body);
   if (req.file) payload.profilePicture = `/uploads/profiles/${req.file.filename}`;
@@ -173,6 +178,7 @@ module.exports = {
   deleteUser,
   getDashboard,
   getAdminProfile,
+  getAdminDashboardStats,
   getRestaurant,
   getUser,
   getRestaurants,

@@ -29,6 +29,7 @@ export const API = {
         USERS: "/api/v1/admin/users",
         BOOKINGS: "/api/v1/admin/bookings",
         PROFILE: "/api/v1/admin/profile",
+        DASHBOARD_STATS: "/api/v1/admin/dashboard/stats",
         USER_BY_ID: (id: string) => `/api/v1/admin/users/${id}`,
     }
 }

@@ -405,6 +405,16 @@ async function listAdminReservations() {
   });
 }
 
+async function getAdminDashboardStats() {
+  const result = await userRepository.getAdminDashboardStats();
+  const activities = [
+    ...result.recentUsers.map((user) => ({ type: "user", title: "User registered", text: `${user.fullName || "A user"} joined MealNest.`, createdAt: user.createdAt })),
+    ...result.recentRestaurants.map((restaurant) => ({ type: "restaurant", title: "Restaurant updated", text: `${restaurant.name} was updated.`, createdAt: restaurant.updatedAt })),
+    ...result.recentBookings.map((booking) => ({ type: "booking", title: "Booking created", text: `${booking.user?.fullName || "A user"} booked ${booking.restaurant?.name || booking.restaurantName || "a restaurant"}.`, createdAt: booking.createdAt })),
+  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 6);
+  return { stats: { totalUsers: result.totalUsers, totalRestaurants: result.totalRestaurants, totalBookings: result.totalBookings }, activities };
+}
+
 module.exports = {
   cancelReservation,
   changePassword,
@@ -413,6 +423,7 @@ module.exports = {
   createToken,
   deleteAdminUser,
   getCurrentUser,
+  getAdminDashboardStats,
   getDashboard,
   getRestaurant,
   getUserByIdOrThrow,
