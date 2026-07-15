@@ -177,6 +177,10 @@ async function updateAdminUser(id, payload) {
 async function updateProfile(userId, payload) {
   const user = await getUserByIdOrThrow(userId);
 
+  if (payload.fullName !== undefined && !payload.fullName) throw new HttpException(400, "Full name is required");
+  if (payload.email !== undefined && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) throw new HttpException(400, "Enter a valid email address");
+  if (payload.phoneNumber && !/^[0-9+()\-\s]{7,20}$/.test(payload.phoneNumber)) throw new HttpException(400, "Enter a valid phone number");
+
   if (payload.email && payload.email !== user.email) {
     const existingUser = await userRepository.findByEmail(payload.email);
     if (existingUser && existingUser._id.toString() !== user._id.toString()) {

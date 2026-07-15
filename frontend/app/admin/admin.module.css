@@ -385,6 +385,15 @@
 .sharedAdminLogout { width: 100%; height: 52px; display: flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 8px; color: #fff; background: #f28c45; font-size: 15px; font-weight: 700; cursor: pointer; }
 .sharedAdminLogout:hover { background: #e9782f; }
 .sharedAdminMain { min-height: 100vh; margin-left: 260px; }
+.sharedAdminHeader { height: 82px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 32px; border-bottom: 1px solid #ead8ca; background: rgba(255, 253, 249, .94); }
+.sharedAdminHeader > div:first-child { display: grid; gap: 4px; }
+.sharedAdminHeader > div:first-child span { color: #9b7764; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.sharedAdminHeader > div:first-child strong { color: #283950; font: 700 17px Georgia, serif; }
+.sharedAdminIdentity { display: flex; align-items: center; gap: 11px; }
+.sharedAdminIdentity > img, .sharedAdminIdentity > span { width: 42px; height: 42px; border: 2px solid #ed8a43; border-radius: 50%; object-fit: cover; display: grid; place-items: center; color: #fff; background: #e9782f; font-weight: 800; }
+.sharedAdminIdentity div { display: grid; gap: 2px; }
+.sharedAdminIdentity strong { color: #283950; font-size: 14px; }
+.sharedAdminIdentity small { color: #7e7068; font-size: 11px; }
 .adminMobileMenu { display: none; }
 .adminSidebarOverlay { display: none; }
 .sharedPage { min-height: 100vh; }
@@ -393,13 +402,47 @@
 .sharedAdminMain .adminRoot { display: block; min-height: 100vh; }
 .sharedAdminMain .adminRoot > .sidebar { display: none; }
 .sharedAdminMain .adminRoot > .main { width: 100%; }
+.sharedAdminMain .adminRoot > .main > .topbar { display: none; }
+
+.profileLoading { padding: 60px; text-align: center; color: #76655b; }
+.adminProfileCard { max-width: 920px; margin: 0 auto; padding: 32px 40px; border: 1px solid #e9c9b3; border-radius: 20px; background: #fffdfb; box-shadow: 0 18px 44px rgba(78, 43, 23, .09); }
+.adminProfileCard > header { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.adminProfileCard > header h2 { margin: 0; color: #25374e; font: 800 27px Georgia, serif; }
+.adminProfileAvatar { width: 130px; height: 130px; margin: 28px auto; overflow: hidden; display: grid; place-items: center; border: 4px solid #ed8a43; border-radius: 50%; color: white; background: #c65a13; font-size: 38px; font-weight: 800; box-shadow: 0 8px 24px rgba(198, 90, 19, .18); }
+.adminProfileAvatar img { width: 100%; height: 100%; object-fit: cover; }
+.adminProfileFields { display: grid; gap: 18px; }
+.adminProfileFields > div { display: grid; gap: 8px; }
+.adminProfileFields span, .adminProfileCard > footer span { color: #526177; font-size: 13px; font-weight: 800; }
+.adminProfileFields strong { min-height: 48px; display: flex; align-items: center; padding: 0 16px; border: 1px solid #e2d7d0; border-radius: 9px; color: #26374e; background: #f8f7f6; font-weight: 600; }
+.adminProfileCard > footer { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 28px; padding-top: 24px; border-top: 1px solid #eadfd8; }
+.adminProfileCard > footer div { display: flex; align-items: center; gap: 10px; }
+.adminProfileCard > footer strong { color: #26374e; }
+.fieldError { color: #b42424; font-size: 12px; }
+.profileEditPreview, .profileEditFallback { width: 190px; height: 190px; margin-top: 10px; overflow: hidden; display: grid; place-items: center; border: 3px solid #ed8a43; border-radius: 50%; color: #fff; background: #c65a13; font-size: 38px; font-weight: 800; }
+.profileEditPreview img { width: 100%; height: 100%; object-fit: cover; }
+.profileSuccessModal { width: min(440px, calc(100vw - 32px)); padding: 34px; text-align: center; border-radius: 18px; background: #fffdf9; box-shadow: 0 24px 70px rgba(35, 24, 20, .25); }
+.profileSuccessIcon { width: 64px; height: 64px; margin: 0 auto 18px; display: grid; place-items: center; border-radius: 50%; color: white; background: #db7b34; font-size: 34px; font-weight: 900; }
+.profileSuccessModal h2 { margin: 0 0 10px; color: #26374e; font: 800 27px Georgia, serif; }
+.profileSuccessModal p { color: #6e5d53; }
+.profileSuccessModal > div:nth-of-type(2) { display: grid; grid-template-columns: auto 1fr; gap: 9px 18px; margin: 24px 0; padding: 18px; text-align: left; border-radius: 10px; background: #fff2e8; }
+.profileSuccessModal span { color: #806958; }
+.profileSuccessModal strong { color: #26374e; overflow-wrap: anywhere; }
 
 @media (max-width: 850px) {
   .sharedAdminSidebar { transform: translateX(-100%); transition: transform 200ms ease; }
   .sharedAdminSidebarOpen { transform: translateX(0); }
   .sharedAdminMain { margin-left: 0; padding-top: 58px; }
+  .sharedAdminHeader { height: 68px; padding: 0 16px 0 68px; }
+  .sharedAdminHeader > div:first-child { display: none; }
   .adminMobileMenu { position: fixed; top: 10px; left: 12px; z-index: 75; width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid #ead8ca; border-radius: 9px; color: #9f460a; background: #fffdf9; }
   .adminSidebarOverlay { position: fixed; inset: 0; z-index: 79; display: block; border: 0; background: rgba(35, 24, 20, .45); }
+}
+
+@media (max-width: 600px) {
+  .adminProfileCard { padding: 24px 18px; }
+  .adminProfileCard > header { align-items: stretch; flex-direction: column; }
+  .adminProfileCard > footer { grid-template-columns: 1fr; }
+  .sharedAdminIdentity div { display: none; }
 }
 
 .usersPanelActions {

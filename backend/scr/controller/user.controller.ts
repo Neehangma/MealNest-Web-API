@@ -152,6 +152,18 @@ async function listAdminReservations(_req, res) {
   return sendSuccess(res, 200, { data: bookings, total: bookings.length });
 }
 
+async function getAdminProfile(req, res) {
+  const admin = await userService.getCurrentUser(req.user._id);
+  return sendSuccess(res, 200, { admin });
+}
+
+async function updateAdminProfile(req, res) {
+  const payload = createProfileUpdateDto(req.body);
+  if (req.file) payload.profilePicture = `/uploads/profiles/${req.file.filename}`;
+  const admin = await userService.updateProfile(req.user._id, payload);
+  return sendSuccess(res, 200, { message: "Profile updated successfully", admin });
+}
+
 module.exports = {
   cancelReservation,
   changePassword,
@@ -160,6 +172,7 @@ module.exports = {
   current,
   deleteUser,
   getDashboard,
+  getAdminProfile,
   getRestaurant,
   getUser,
   getRestaurants,
@@ -170,6 +183,7 @@ module.exports = {
   register,
   toggleFavorite,
   updateProfile,
+  updateAdminProfile,
   updateReservation,
   updateUser,
 };

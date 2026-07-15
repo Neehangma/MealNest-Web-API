@@ -10,6 +10,7 @@ const {
   validateRegister,
 } = require("../middleware/validation");
 const { asyncHandler } = require("../utils/apihelper.utils");
+const { uploadProfileImage } = require("../middleware/profile-upload");
 
 const router = express.Router();
 
@@ -39,6 +40,8 @@ router.delete("/reservations/:reservationId", authenticate, asyncHandler(userCon
 
 router.get("/admin/users", authenticate, requireAdmin, asyncHandler(userController.listUsers));
 router.get("/admin/bookings", authenticate, requireAdmin, asyncHandler(userController.listAdminReservations));
+router.get("/admin/profile", authenticate, requireAdmin, asyncHandler(userController.getAdminProfile));
+router.put("/admin/profile", authenticate, requireAdmin, uploadProfileImage.single("profileImage"), asyncHandler(userController.updateAdminProfile));
 router.get("/admin/users/:id", authenticate, requireAdmin, asyncHandler(userController.getUser));
 router.post(
   "/admin/users",
