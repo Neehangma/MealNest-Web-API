@@ -371,6 +371,33 @@
   font-size: 20px;
 }
 
+.usersPanelActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pageSizeControl {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #536077;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.pageSizeControl select {
+  width: auto;
+  height: 36px;
+  margin: 0;
+  padding: 0 28px 0 10px;
+  border: 1px solid #e7cfc2;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #27232a;
+  font: inherit;
+}
+
 .ghostButton {
   display: inline-flex;
   align-items: center;

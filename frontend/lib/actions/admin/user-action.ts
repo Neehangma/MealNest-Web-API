@@ -8,35 +8,53 @@ import {
   updateUser,
   type UserListParams,
   type UserPayload,
+  AdminApiError,
 } from "@/lib/api/admin";
-import { getTokenCookie } from "@/lib/cookies";
+import { clearAuthCookies, getTokenCookie } from "@/lib/cookies";
+import { redirect } from "next/navigation";
 
 async function getAdminToken() {
   const token = await getTokenCookie();
 
   if (!token) {
-    throw new Error("You must be logged in as an admin.");
+    await clearAuthCookies();
+    redirect("/login");
   }
 
-  return token;
+  return token as string;
+}
+
+async function runAdminRequest<T>(request: (token: string) => Promise<T>) {
+  try {
+    return await request(await getAdminToken());
+  } catch (error) {
+    if (error instanceof AdminApiError && error.status === 401) {
+      await clearAuthCookies();
+      redirect("/login");
+    }
+    if (error instanceof AdminApiError && error.status === 403) {
+      throw new Error("Admin access required");
+    }
+    throw error;
+  }
 }
 
 export async function getAdminUsersAction(params: UserListParams = {}) {
-  return getUsers(params, await getAdminToken());
+  return runAdminRequest((token) => getUsers(params, token));
 }
 
 export async function getAdminUserByIdAction(id: string) {
-  return getUserById(id, await getAdminToken());
+  return runAdminRequest((token) => getUserById(id, token));
 }
 
 export async function createAdminUserAction(data: UserPayload & { password: string }) {
-  return createUser(data, await getAdminToken());
+  return runAdminRequest((token) => createUser(data, token));
 }
 
 export async function updateAdminUserAction(id: string, data: Partial<UserPayload>) {
-  return updateUser(id, data, await getAdminToken());
+  return runAdminRequest((token) => updateUser(id, data, token));
 }
 
 export async function deleteAdminUserAction(id: string) {
-  return deleteUser(id, await getAdminToken());
+  return runAdminRequest((token) => deleteUser(id, token));
 }
