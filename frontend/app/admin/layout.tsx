@@ -25,5 +25,5 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
-  return <div className={styles.adminShell}><AdminShell>{children}</AdminShell></div>;
+  return <div className={styles.adminShell}><AdminShell initialAdmin={user}>{children}</AdminShell></div>;
 }

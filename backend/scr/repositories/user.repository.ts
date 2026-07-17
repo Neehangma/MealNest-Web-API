@@ -225,6 +225,10 @@ async function createReservation(userId, payload) {
   });
 }
 
+function getReservationWithDetails(reservationId, userId) {
+  return Reservation.findOne({ _id: reservationId, user: userId }).populate("restaurant");
+}
+
 async function updateReservation(userId, reservationId, payload) {
   const reservation = await Reservation.findOne({ _id: reservationId, user: userId });
   if (!reservation) return null;
@@ -294,6 +298,20 @@ async function listAdminReservations() {
     .sort({ createdAt: -1 });
 }
 
+async function getAdminDashboardStats() {
+  const usersWithLegacyReservations = await User.find({ "reservations.0": { $exists: true } });
+  await Promise.all(usersWithLegacyReservations.map(migrateLegacyReservations));
+  const [totalUsers, totalRestaurants, totalBookings, recentUsers, recentRestaurants, recentBookings] = await Promise.all([
+    User.countDocuments({}),
+    Restaurant.countDocuments({}),
+    Reservation.countDocuments({}),
+    User.find({}).sort({ createdAt: -1 }).limit(3).select("fullName createdAt").lean(),
+    Restaurant.find({}).sort({ updatedAt: -1 }).limit(3).select("name updatedAt").lean(),
+    Reservation.find({}).sort({ createdAt: -1 }).limit(3).populate("user", "fullName").populate("restaurant", "name").lean(),
+  ]);
+  return { totalUsers, totalRestaurants, totalBookings, recentUsers, recentRestaurants, recentBookings };
+}
+
 module.exports = {
   cancelReservation,
   createReservation,
@@ -302,7 +320,9 @@ module.exports = {
   findByEmail,
   findById,
   getDashboardData,
+  getAdminDashboardStats,
   getRestaurantById,
+  getReservationWithDetails,
   listRestaurants,
   listAdminReservations,
   listUserReservations,

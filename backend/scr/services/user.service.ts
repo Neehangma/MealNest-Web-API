@@ -177,6 +177,10 @@ async function updateAdminUser(id, payload) {
 async function updateProfile(userId, payload) {
   const user = await getUserByIdOrThrow(userId);
 
+  if (payload.fullName !== undefined && !payload.fullName) throw new HttpException(400, "Full name is required");
+  if (payload.email !== undefined && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) throw new HttpException(400, "Enter a valid email address");
+  if (payload.phoneNumber && !/^[0-9+()\-\s]{7,20}$/.test(payload.phoneNumber)) throw new HttpException(400, "Enter a valid phone number");
+
   if (payload.email && payload.email !== user.email) {
     const existingUser = await userRepository.findByEmail(payload.email);
     if (existingUser && existingUser._id.toString() !== user._id.toString()) {
@@ -338,16 +342,29 @@ async function createReservation(userId, payload) {
     throw new HttpException(404, "User not found");
   }
 
-  const booking = formatReservationItem(reservation);
+  const reservationWithDetails = await userRepository.getReservationWithDetails(reservation._id, userId) || reservation;
+  const booking = formatReservationItem(reservationWithDetails);
   const user = await userRepository.findById(userId);
+  booking.customerName = String(payload.customerName || "").trim() || booking.customerName || user?.fullName?.trim() || user?.name?.trim() || "Guest";
+  booking.customerEmail = user?.email || "";
+  booking.customerPhone = user?.phoneNumber?.trim() || String(payload.customerPhone || "").trim();
   let emailSent = false;
 
-  if (user?.email && booking.status === "confirmed" && booking.paymentStatus === "simulated_success") {
+  const authenticatedEmail = String(user?.email || "").trim().toLowerCase();
+  const validAuthenticatedEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(authenticatedEmail);
+  if (!validAuthenticatedEmail) {
+    console.warn(`Booking ${reservation.bookingReference} saved; confirmation email skipped because the authenticated account has no valid email.`);
+  } else if (booking.status === "confirmed" && booking.paymentStatus === "simulated_success") {
     try {
       await sendBookingConfirmationEmail({
-        recipientEmail: user.email,
-        customerName: user.fullName || booking.customerName,
-        booking,
+        recipientEmail: authenticatedEmail,
+        customerName: booking.customerName,
+        booking: {
+          ...booking,
+          customerName: booking.customerName,
+          customerEmail: authenticatedEmail,
+          customerPhone: booking.customerPhone || "",
+        },
       });
       emailSent = true;
     } catch (error) {
@@ -401,6 +418,16 @@ async function listAdminReservations() {
   });
 }
 
+async function getAdminDashboardStats() {
+  const result = await userRepository.getAdminDashboardStats();
+  const activities = [
+    ...result.recentUsers.map((user) => ({ type: "user", title: "User registered", text: `${user.fullName || "A user"} joined MealNest.`, createdAt: user.createdAt })),
+    ...result.recentRestaurants.map((restaurant) => ({ type: "restaurant", title: "Restaurant updated", text: `${restaurant.name} was updated.`, createdAt: restaurant.updatedAt })),
+    ...result.recentBookings.map((booking) => ({ type: "booking", title: "Booking created", text: `${booking.user?.fullName || "A user"} booked ${booking.restaurant?.name || booking.restaurantName || "a restaurant"}.`, createdAt: booking.createdAt })),
+  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 6);
+  return { stats: { totalUsers: result.totalUsers, totalRestaurants: result.totalRestaurants, totalBookings: result.totalBookings }, activities };
+}
+
 module.exports = {
   cancelReservation,
   changePassword,
@@ -409,6 +436,7 @@ module.exports = {
   createToken,
   deleteAdminUser,
   getCurrentUser,
+  getAdminDashboardStats,
   getDashboard,
   getRestaurant,
   getUserByIdOrThrow,
