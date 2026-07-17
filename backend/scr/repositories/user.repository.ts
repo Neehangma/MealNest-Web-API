@@ -225,6 +225,10 @@ async function createReservation(userId, payload) {
   });
 }
 
+function getReservationWithDetails(reservationId, userId) {
+  return Reservation.findOne({ _id: reservationId, user: userId }).populate("restaurant");
+}
+
 async function updateReservation(userId, reservationId, payload) {
   const reservation = await Reservation.findOne({ _id: reservationId, user: userId });
   if (!reservation) return null;
@@ -318,6 +322,7 @@ module.exports = {
   getDashboardData,
   getAdminDashboardStats,
   getRestaurantById,
+  getReservationWithDetails,
   listRestaurants,
   listAdminReservations,
   listUserReservations,

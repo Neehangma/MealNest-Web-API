@@ -342,16 +342,29 @@ async function createReservation(userId, payload) {
     throw new HttpException(404, "User not found");
   }
 
-  const booking = formatReservationItem(reservation);
+  const reservationWithDetails = await userRepository.getReservationWithDetails(reservation._id, userId) || reservation;
+  const booking = formatReservationItem(reservationWithDetails);
   const user = await userRepository.findById(userId);
+  booking.customerName = String(payload.customerName || "").trim() || booking.customerName || user?.fullName?.trim() || user?.name?.trim() || "Guest";
+  booking.customerEmail = user?.email || "";
+  booking.customerPhone = user?.phoneNumber?.trim() || String(payload.customerPhone || "").trim();
   let emailSent = false;
 
-  if (user?.email && booking.status === "confirmed" && booking.paymentStatus === "simulated_success") {
+  const authenticatedEmail = String(user?.email || "").trim().toLowerCase();
+  const validAuthenticatedEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(authenticatedEmail);
+  if (!validAuthenticatedEmail) {
+    console.warn(`Booking ${reservation.bookingReference} saved; confirmation email skipped because the authenticated account has no valid email.`);
+  } else if (booking.status === "confirmed" && booking.paymentStatus === "simulated_success") {
     try {
       await sendBookingConfirmationEmail({
-        recipientEmail: user.email,
-        customerName: user.fullName || booking.customerName,
-        booking,
+        recipientEmail: authenticatedEmail,
+        customerName: booking.customerName,
+        booking: {
+          ...booking,
+          customerName: booking.customerName,
+          customerEmail: authenticatedEmail,
+          customerPhone: booking.customerPhone || "",
+        },
       });
       emailSent = true;
     } catch (error) {
