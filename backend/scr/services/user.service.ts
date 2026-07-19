@@ -459,7 +459,7 @@ async function getAdminDashboardStats() {
     ...result.recentRestaurants.map((restaurant) => ({ type: "restaurant", title: "Restaurant updated", text: `${restaurant.name} was updated.`, createdAt: restaurant.updatedAt })),
     ...result.recentBookings.map((booking) => ({ type: "booking", title: "Booking created", text: `${booking.user?.fullName || "A user"} booked ${booking.restaurant?.name || booking.restaurantName || "a restaurant"}.`, createdAt: booking.createdAt })),
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 6);
-  return { stats: { totalUsers: result.totalUsers, totalRestaurants: result.totalRestaurants, totalBookings: result.totalBookings }, activities };
+  return { stats: { totalUsers: result.totalUsers, totalRestaurants: result.totalRestaurants, totalBookings: result.totalBookings, totalRevenue: result.totalRevenue }, activities };
 }
 
 module.exports = {
