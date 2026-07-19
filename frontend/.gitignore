@@ -14,6 +14,8 @@
 /coverage
 /test-results
 /playwright-report
+/test-results
+/playwright-report
 
 # next.js
 /.next/
@@ -28,6 +30,7 @@
 
 # debug
 npm-debug.log*
+*.log
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
