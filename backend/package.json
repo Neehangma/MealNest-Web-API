@@ -7,8 +7,11 @@
     "start": "tsx index.ts",
     "dev": "tsx watch index.ts",
     "test": "jest --runInBand",
+    "test:verbose": "jest --runInBand --verbose",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage --runInBand"
+    "test:coverage": "jest --coverage --runInBand",
+    "test:integration": "jest scr/__tests__/integration --runInBand --verbose",
+    "test:unit": "jest scr/__tests__ --runInBand --verbose"
   },
   "keywords": [],
   "author": "",
