@@ -190,7 +190,7 @@ export default function Home() {
             {filteredRestaurants.length === 0 ? (
               <div className="no-results">
                 <p>No restaurants found matching your search.</p>
-                <button onClick={() => { handleSearch(""); setSelectedCuisine("All"); }}>
+                <button onClick={() => { setSearchQuery(""); setSelectedCuisine("All"); filterRestaurants("", "All"); }}>
                   Clear Filters
                 </button>
               </div>
