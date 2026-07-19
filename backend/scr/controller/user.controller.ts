@@ -152,6 +152,15 @@ async function getReservation(req, res) {
   return sendSuccess(res, 200, { booking, data: booking });
 }
 
+async function sendReservationConfirmation(req, res) {
+  const booking = await userService.sendReservationConfirmation(req.user._id, req.body.bookingId);
+  return sendSuccess(res, 200, {
+    message: "Booking confirmation email sent successfully",
+    emailSent: true,
+    booking,
+  });
+}
+
 async function listAdminReservations(_req, res) {
   const bookings = await userService.listAdminReservations();
   return sendSuccess(res, 200, { data: bookings, total: bookings.length });
@@ -193,6 +202,7 @@ module.exports = {
   listUsers,
   login,
   register,
+  sendReservationConfirmation,
   toggleFavorite,
   updateProfile,
   updateAdminProfile,
