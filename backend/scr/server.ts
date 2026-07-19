@@ -32,6 +32,7 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/v1/restaurants", restaurantRoutes);
 app.use("/api/v1", userRoutes);
 app.use("/api", userRoutes);
+app.use("/api/restaurants", restaurantRoutes);
 
 app.use((_req, _res, next) => {
   next(new HttpException(404, "Route not found"));

@@ -30,6 +30,19 @@ async function getRestaurants(req, res) {
   });
 }
 
+async function getRestaurantsByCuisine(req, res) {
+  const result = await restaurantRepository.listRestaurants({ cuisine: req.params.cuisine, limit: 100 });
+  const cuisine = String(req.params.cuisine).toLowerCase();
+  const restaurants = result.restaurants.filter((restaurant) => restaurant.cuisine.toLowerCase() === cuisine);
+  if (!restaurants.length) {
+    throw new HttpException(404, "No restaurants found");
+  }
+  return sendSuccess(res, 200, {
+    count: restaurants.length,
+    restaurants,
+  });
+}
+
 async function getRestaurantById(req, res) {
   const restaurant = await restaurantRepository.findRestaurantById(req.params.id);
   if (!restaurant) {
@@ -51,7 +64,7 @@ async function createRestaurant(req, res) {
   );
   return sendSuccess(res, 201, {
     message: "Restaurant created successfully",
-    data: restaurant,
+    restaurant,
   });
 }
 
@@ -91,5 +104,6 @@ module.exports = {
   deleteRestaurant,
   getRestaurantById,
   getRestaurants,
+  getRestaurantsByCuisine,
   updateRestaurant,
 };

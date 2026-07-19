@@ -7,6 +7,7 @@ const { uploadRestaurantImage } = require("../middleware/restaurant-upload");
 const router = express.Router();
 
 router.get("/", asyncHandler(restaurantController.getRestaurants));
+router.get("/cuisine/:cuisine", asyncHandler(restaurantController.getRestaurantsByCuisine));
 router.get("/:id", asyncHandler(restaurantController.getRestaurantById));
 router.post("/", authenticate, requireAdmin, uploadRestaurantImage.single("image"), asyncHandler(restaurantController.createRestaurant));
 router.put("/:id", authenticate, requireAdmin, uploadRestaurantImage.single("image"), asyncHandler(restaurantController.updateRestaurant));
