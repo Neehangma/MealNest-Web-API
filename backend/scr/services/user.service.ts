@@ -402,6 +402,13 @@ async function listMyReservations(userId) {
   return reservations.map(formatReservationItem);
 }
 
+async function getReservation(userId, reservationId) {
+  if (!isValidObjectId(reservationId)) throw new HttpException(400, "Invalid reservation id");
+  const reservation = await userRepository.getReservationWithDetails(reservationId, userId);
+  if (!reservation) throw new HttpException(404, "Reservation not found");
+  return formatReservationItem(reservation);
+}
+
 async function listAdminReservations() {
   const reservations = await userRepository.listAdminReservations();
   return reservations.map((reservation) => {
@@ -439,6 +446,7 @@ module.exports = {
   getAdminDashboardStats,
   getDashboard,
   getRestaurant,
+  getReservation,
   getUserByIdOrThrow,
   listAdminUsers,
   listAdminReservations,
