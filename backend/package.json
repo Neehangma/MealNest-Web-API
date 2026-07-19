@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "tsx index.ts",
-    "dev": "tsx watch index.ts"
+    "dev": "tsx watch index.ts",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --runInBand"
   },
   "keywords": [],
   "author": "",
@@ -22,10 +25,13 @@
     "nodemailer": "^7.0.10"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^26.1.0",
+    "@types/supertest": "^7.2.1",
     "jest": "^30.4.2",
     "mongodb-memory-server": "^11.2.0",
     "supertest": "^7.2.2",
+    "ts-jest": "^29.4.11",
     "tsx": "^4.23.0"
   }
 }
