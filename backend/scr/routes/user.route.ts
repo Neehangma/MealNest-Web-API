@@ -32,8 +32,10 @@ router.get("/favorites", authenticate, asyncHandler(userController.getDashboard)
 router.post("/favorites/:restaurantId", authenticate, asyncHandler(userController.toggleFavorite));
 router.delete("/favorites/:restaurantId", authenticate, asyncHandler(userController.toggleFavorite));
 router.post("/reservations", authenticate, asyncHandler(userController.createReservation));
+router.post("/bookings", authenticate, asyncHandler(userController.createReservation));
 router.get("/reservations/my-bookings", authenticate, asyncHandler(userController.listMyReservations));
 router.get("/bookings/my-bookings", authenticate, asyncHandler(userController.listMyReservations));
+router.get("/bookings/:reservationId", authenticate, asyncHandler(userController.getReservation));
 router.patch("/bookings/:reservationId/cancel", authenticate, asyncHandler(userController.cancelReservation));
 router.patch("/reservations/:reservationId", authenticate, asyncHandler(userController.updateReservation));
 router.delete("/reservations/:reservationId", authenticate, asyncHandler(userController.cancelReservation));

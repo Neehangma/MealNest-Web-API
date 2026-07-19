@@ -147,6 +147,11 @@ async function listMyReservations(req, res) {
   return sendSuccess(res, 200, { bookings, data: bookings });
 }
 
+async function getReservation(req, res) {
+  const booking = await userService.getReservation(req.user._id, req.params.reservationId);
+  return sendSuccess(res, 200, { booking, data: booking });
+}
+
 async function listAdminReservations(_req, res) {
   const bookings = await userService.listAdminReservations();
   return sendSuccess(res, 200, { data: bookings, total: bookings.length });
@@ -180,6 +185,7 @@ module.exports = {
   getAdminProfile,
   getAdminDashboardStats,
   getRestaurant,
+  getReservation,
   getUser,
   getRestaurants,
   listMyReservations,
