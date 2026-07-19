@@ -39,6 +39,7 @@ router.get("/bookings/:reservationId", authenticate, asyncHandler(userController
 router.patch("/bookings/:reservationId/cancel", authenticate, asyncHandler(userController.cancelReservation));
 router.patch("/reservations/:reservationId", authenticate, asyncHandler(userController.updateReservation));
 router.delete("/reservations/:reservationId", authenticate, asyncHandler(userController.cancelReservation));
+router.post("/email/send-confirmation", authenticate, asyncHandler(userController.sendReservationConfirmation));
 
 router.get("/admin/users", authenticate, requireAdmin, asyncHandler(userController.listUsers));
 router.get("/admin/bookings", authenticate, requireAdmin, asyncHandler(userController.listAdminReservations));

@@ -301,15 +301,19 @@ async function listAdminReservations() {
 async function getAdminDashboardStats() {
   const usersWithLegacyReservations = await User.find({ "reservations.0": { $exists: true } });
   await Promise.all(usersWithLegacyReservations.map(migrateLegacyReservations));
-  const [totalUsers, totalRestaurants, totalBookings, recentUsers, recentRestaurants, recentBookings] = await Promise.all([
+  const [totalUsers, totalRestaurants, totalBookings, revenue, recentUsers, recentRestaurants, recentBookings] = await Promise.all([
     User.countDocuments({}),
     Restaurant.countDocuments({}),
     Reservation.countDocuments({}),
+    Reservation.aggregate([
+      { $match: { paymentStatus: "simulated_success" } },
+      { $group: { _id: null, total: { $sum: "$totalPaid" } } },
+    ]),
     User.find({}).sort({ createdAt: -1 }).limit(3).select("fullName createdAt").lean(),
     Restaurant.find({}).sort({ updatedAt: -1 }).limit(3).select("name updatedAt").lean(),
     Reservation.find({}).sort({ createdAt: -1 }).limit(3).populate("user", "fullName").populate("restaurant", "name").lean(),
   ]);
-  return { totalUsers, totalRestaurants, totalBookings, recentUsers, recentRestaurants, recentBookings };
+  return { totalUsers, totalRestaurants, totalBookings, totalRevenue: revenue[0]?.total || 0, recentUsers, recentRestaurants, recentBookings };
 }
 
 module.exports = {

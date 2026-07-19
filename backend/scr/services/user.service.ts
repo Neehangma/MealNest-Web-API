@@ -409,6 +409,33 @@ async function getReservation(userId, reservationId) {
   return formatReservationItem(reservation);
 }
 
+async function sendReservationConfirmation(userId, reservationId) {
+  if (!isValidObjectId(reservationId)) throw new HttpException(400, "Invalid reservation id");
+  const reservation = await userRepository.getReservationWithDetails(reservationId, userId);
+  if (!reservation) throw new HttpException(404, "Reservation not found");
+
+  const booking = formatReservationItem(reservation);
+  if (booking.status !== "confirmed" || booking.paymentStatus !== "simulated_success") {
+    throw new HttpException(400, "Only confirmed paid bookings can receive a confirmation email");
+  }
+
+  const user = await userRepository.findById(userId);
+  const authenticatedEmail = String(user?.email || "").trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(authenticatedEmail)) {
+    throw new HttpException(400, "Authenticated user email is invalid");
+  }
+
+  booking.customerName = user?.fullName?.trim() || "Guest";
+  booking.customerEmail = authenticatedEmail;
+  booking.customerPhone = user?.phoneNumber?.trim() || "";
+  await sendBookingConfirmationEmail({
+    recipientEmail: authenticatedEmail,
+    customerName: booking.customerName,
+    booking,
+  });
+  return booking;
+}
+
 async function listAdminReservations() {
   const reservations = await userRepository.listAdminReservations();
   return reservations.map((reservation) => {
@@ -432,7 +459,7 @@ async function getAdminDashboardStats() {
     ...result.recentRestaurants.map((restaurant) => ({ type: "restaurant", title: "Restaurant updated", text: `${restaurant.name} was updated.`, createdAt: restaurant.updatedAt })),
     ...result.recentBookings.map((booking) => ({ type: "booking", title: "Booking created", text: `${booking.user?.fullName || "A user"} booked ${booking.restaurant?.name || booking.restaurantName || "a restaurant"}.`, createdAt: booking.createdAt })),
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 6);
-  return { stats: { totalUsers: result.totalUsers, totalRestaurants: result.totalRestaurants, totalBookings: result.totalBookings }, activities };
+  return { stats: { totalUsers: result.totalUsers, totalRestaurants: result.totalRestaurants, totalBookings: result.totalBookings, totalRevenue: result.totalRevenue }, activities };
 }
 
 module.exports = {
@@ -454,6 +481,7 @@ module.exports = {
   listRestaurants,
   login,
   register,
+  sendReservationConfirmation,
   toggleFavorite,
   updateAdminUser,
   updateProfile,
