@@ -5,7 +5,7 @@ module.exports = {
   globalSetup: "<rootDir>/scr/__tests__/global-setup.js",
   globalTeardown: "<rootDir>/scr/__tests__/global-teardown.js",
   setupFilesAfterEnv: ["<rootDir>/scr/__tests__/setup.ts"],
-  testMatch: ["<rootDir>/scr/__tests__/integration/**/*.test.ts"],
+  testMatch: ["<rootDir>/scr/__tests__/**/*.test.ts"],
   collectCoverageFrom: [
     "scr/controller/**/*.ts",
     "scr/routes/**/*.ts",
@@ -19,6 +19,6 @@ module.exports = {
   coverageDirectory: "coverage",
   coverageReporters: ["text", "html", "lcov"],
   transform: {
-    "^.+\\.tsx?$": ["ts-jest", { tsconfig: "<rootDir>/tsconfig.json", diagnostics: false }],
+    "^.+\\.tsx?$": ["ts-jest", { tsconfig: "<rootDir>/tsconfig.test.json", diagnostics: false }],
   },
 };

@@ -2,6 +2,10 @@ const fs = require("fs");
 const path = require("path");
 const mongoose = require("mongoose");
 
+jest.mock("../services/emailService", () => ({
+  sendBookingConfirmationEmail: jest.fn().mockResolvedValue({ messageId: "cw2-test-email" }),
+}));
+
 const stateFile = path.join(__dirname, ".memory-server.json");
 const { uri } = JSON.parse(fs.readFileSync(stateFile, "utf8"));
 if (!/^mongodb:\/\/127\.0\.0\.1:/.test(uri) || !uri.includes("mealnest_cw2_test")) {
