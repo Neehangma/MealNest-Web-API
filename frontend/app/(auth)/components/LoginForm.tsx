@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { handleLoginUser } from "@/lib/actions/auth-action";
 import { getDashboardPathForRole } from "@/lib/auth-routing";
+import PasswordInput from "@/app/_components/PasswordInput";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -59,7 +60,7 @@ export default function LoginForm() {
                 <label htmlFor="password">Password</label>
                 <Link href="/ResetPassword">Forgot Password?</Link>
               </div>
-              <input id="password" name="password" type="password" placeholder="Enter password" required />
+              <PasswordInput id="password" name="password" placeholder="Enter password" required />
 
               <div className="checkbox-row">
                 <input id="remember" type="checkbox" />

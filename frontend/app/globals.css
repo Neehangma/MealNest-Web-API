@@ -287,6 +287,52 @@ input:focus {
 
 /* Password row */
 
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 18px;
+}
+
+.password-input-wrapper--flush {
+  margin-bottom: 0;
+}
+
+.password-input-wrapper input {
+  margin-bottom: 0;
+  padding-right: 48px;
+}
+
+.password-visibility-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #6c5b50;
+  cursor: pointer;
+}
+
+.password-visibility-toggle:hover {
+  background: rgba(164, 81, 0, 0.08);
+  color: #a45100;
+  transform: translateY(-50%);
+}
+
+.password-visibility-toggle:focus-visible {
+  outline: 2px solid #a45100;
+  outline-offset: 1px;
+}
+
 .label-row {
 
   display: flex;
