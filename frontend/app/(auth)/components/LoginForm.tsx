@@ -30,8 +30,7 @@ export default function LoginForm() {
       return;
     }
 
-    router.push(getDashboardPathForRole(result.data.user.role));
-    router.refresh();
+    router.replace(getDashboardPathForRole(result.data.user.role));
   }
 
   return (

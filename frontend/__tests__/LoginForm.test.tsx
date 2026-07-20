@@ -21,7 +21,17 @@ test("sends the login payload and follows current navigation", async () => {
   await userEvent.type(screen.getByLabelText("Password"), "secret123");
   await userEvent.click(screen.getByRole("button", { name: "Sign In" }));
   await waitFor(() => expect(login).toHaveBeenCalledWith({ email: "user@example.com", password: "secret123" }));
-  expect(navigationMocks.push).toHaveBeenCalledWith("/dashboard/user");
+  expect(navigationMocks.replace).toHaveBeenCalledWith("/dashboard/user");
+  expect(navigationMocks.refresh).not.toHaveBeenCalled();
+});
+
+test("preserves the admin dashboard redirect", async () => {
+  login.mockResolvedValue({ success: true, message: "Login successful", data: { success: true, message: "Login successful", token: "token", user: { id: "2", email: "admin@example.com", role: "admin" } } });
+  render(<LoginForm />);
+  await userEvent.type(screen.getByLabelText("Email"), "admin@example.com");
+  await userEvent.type(screen.getByLabelText("Password"), "AdminStrong1!");
+  await userEvent.click(screen.getByRole("button", { name: "Sign In" }));
+  await waitFor(() => expect(navigationMocks.replace).toHaveBeenCalledWith("/admin/dashboard"));
 });
 
 test("displays the current API error", async () => {

@@ -76,7 +76,7 @@ export default function RestaurantDetailPage() {
     setError("");
     sessionStorage.removeItem("confirmedBooking");
     sessionStorage.setItem("mealnest_booking", JSON.stringify(payload));
-    router.push("/dashboard/user/payment");
+    router.push("/payment-checkout");
   }
 
   async function handleFavoriteToggle() {

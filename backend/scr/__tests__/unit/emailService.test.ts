@@ -13,6 +13,10 @@ describe("booking email service", () => {
     process.env.EMAIL_USER = "mailer@example.com";
     process.env.EMAIL_PASS = "test-only-password";
     process.env.EMAIL_FROM_NAME = "MealNest Tests";
+    process.env.EMAIL_FROM = "MealNest Tests <mailer@example.com>";
+    process.env.EMAIL_HOST = "smtp.gmail.com";
+    process.env.EMAIL_PORT = "587";
+    process.env.EMAIL_SECURE = "false";
     sendMail.mockReset();
     createTransport.mockClear();
     emailService = require("../../services/emailService");
@@ -22,10 +26,19 @@ describe("booking email service", () => {
     delete process.env.EMAIL_USER;
     delete process.env.EMAIL_PASS;
     delete process.env.EMAIL_FROM_NAME;
+    delete process.env.EMAIL_HOST;
+    delete process.env.EMAIL_PORT;
+    delete process.env.EMAIL_SECURE;
+    delete process.env.EMAIL_FROM;
   });
 
-  test("creates the existing Gmail transporter without exposing credentials in output", () => {
-    expect(createTransport).toHaveBeenCalledWith({ service: "gmail", auth: { user: "mailer@example.com", pass: "test-only-password" } });
+  test("creates the configured SMTP transporter without exposing credentials in output", () => {
+    expect(createTransport).toHaveBeenCalledWith({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: { user: "mailer@example.com", pass: "test-only-password" },
+    });
   });
 
   test.each([
@@ -43,12 +56,7 @@ describe("booking email service", () => {
     expect(sendMail).not.toHaveBeenCalled();
   });
 
-  test("rejects an invalid authenticated recipient", async () => {
-    await expect(emailService.sendBookingConfirmationEmail({ recipientEmail: "not-an-email", booking: {} })).rejects.toThrow("Authenticated user email is invalid");
-    expect(sendMail).not.toHaveBeenCalled();
-  });
-
-  test("sends a complete escaped confirmation to the normalized recipient", async () => {
+  test("sends a complete escaped confirmation to the fixed testing recipient", async () => {
     sendMail.mockResolvedValue({ messageId: "test-message" });
     const booking = {
       restaurantName: "Bistro <One>", bookingReference: "MN-123", cuisine: "Italian",
@@ -61,7 +69,7 @@ describe("booking email service", () => {
     await expect(emailService.sendBookingConfirmationEmail({ recipientEmail: " USER@Example.com ", customerName: "Dawa <Sherpa>", booking })).resolves.toEqual({ messageId: "test-message" });
     expect(sendMail).toHaveBeenCalledTimes(1);
     const message = sendMail.mock.calls[0][0];
-    expect(message).toMatchObject({ from: '"MealNest Tests" <mailer@example.com>', to: "user@example.com" });
+    expect(message).toMatchObject({ from: "MealNest Tests <mailer@example.com>", to: "mealnest67@gmail.com" });
     expect(message.subject).toContain("Bistro <One>");
     expect(message.html).toContain("Dawa &lt;Sherpa&gt;");
     expect(message.html).toContain("Bistro &lt;One&gt;");

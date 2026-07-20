@@ -1,0 +1,15 @@
+
+> backend@1.0.0 dev
+> tsx watch index.ts
+
+Server running port 8088
+Local API base URL: http://127.0.0.1:8088/api
+Flutter Android emulator API base URL: http://10.0.2.2:8088/api
+Database connected: mealnest
+Email service is ready
+8:44:44 PM [tsx] change in ./scr\services\emailService.js Restarting...
+cServer running port 8088
+Local API base URL: http://127.0.0.1:8088/api
+Flutter Android emulator API base URL: http://10.0.2.2:8088/api
+Database connected: mealnest
+Email service is ready

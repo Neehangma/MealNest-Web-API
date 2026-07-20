@@ -1,0 +1,48 @@
+
+> frontend@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.11:3000
+✓ Ready in 2.2s
+
+ GET / 200 in 936ms (next.js: 98ms, proxy.ts: 654ms, application-code: 184ms)
+ GET /payment-checkout 200 in 665ms (next.js: 622ms, application-code: 43ms)
+ GET / 200 in 84ms (next.js: 7ms, proxy.ts: 12ms, application-code: 66ms)
+ GET / 200 in 103ms (next.js: 6ms, proxy.ts: 10ms, application-code: 87ms)
+ GET /login 200 in 214ms (next.js: 106ms, proxy.ts: 18ms, application-code: 90ms)
+ POST /login 200 in 609ms (next.js: 8ms, proxy.ts: 12ms, application-code: 590ms)
+  └─ ƒ handleLoginUser({"email":"neehangmarai3@gmail.com","password":"Softwarica@1"}) in 510ms lib/actions/auth-action.ts
+ GET /dashboard/user 200 in 280ms (next.js: 155ms, proxy.ts: 10ms, application-code: 115ms)
+ GET /dashboard/user 200 in 115ms (next.js: 10ms, proxy.ts: 26ms, application-code: 79ms)
+ POST /dashboard/user 200 in 124ms (next.js: 14ms, proxy.ts: 14ms, application-code: 96ms)
+  └─ ƒ getUserDashboardAction() in 78ms lib/actions/dashboard-action.ts
+ POST /dashboard/user 200 in 60ms (next.js: 19ms, proxy.ts: 16ms, application-code: 24ms)
+  └─ ƒ getUserData() in 5ms lib/cookies.ts
+ POST /dashboard/user 200 in 87ms (next.js: 17ms, proxy.ts: 17ms, application-code: 54ms)
+  └─ ƒ getUserDashboardAction() in 30ms lib/actions/dashboard-action.ts
+ GET /dashboard/user/restaurants/6a573be2b9289753909ff0e2 200 in 497ms (next.js: 425ms, proxy.ts: 9ms, application-code: 63ms)
+ POST /dashboard/user/restaurants/6a573be2b9289753909ff0e2 200 in 144ms (next.js: 37ms, proxy.ts: 19ms, application-code: 89ms)
+  └─ ƒ getFavoritesAction() in 70ms lib/actions/dashboard-action.ts
+ POST /dashboard/user/restaurants/6a573be2b9289753909ff0e2 200 in 76ms (next.js: 12ms, proxy.ts: 9ms, application-code: 55ms)
+  └─ ƒ getFavoritesAction() in 42ms lib/actions/dashboard-action.ts
+ GET /payment-checkout 200 in 60ms (next.js: 10ms, application-code: 51ms)
+ POST /payment-checkout 200 in 102ms (next.js: 7ms, application-code: 95ms)
+  └─ ƒ createPaidReservationAction({"bankAccountNumber":"1202546987458555","cuisine":"Chinese","customerPhone":"9845713659","...":"15 items not stringified"}) in 35ms lib/actions/reservation-action.ts
+ GET /dashboard/user/booking-confirmation 200 in 187ms (next.js: 80ms, proxy.ts: 9ms, application-code: 98ms)
+ GET /dashboard/user 200 in 123ms (next.js: 9ms, proxy.ts: 12ms, application-code: 102ms)
+ POST /dashboard/user 200 in 138ms (next.js: 6ms, proxy.ts: 7ms, application-code: 125ms)
+  └─ ƒ getUserDashboardAction() in 109ms lib/actions/dashboard-action.ts
+ POST /dashboard/user 200 in 103ms (next.js: 14ms, proxy.ts: 11ms, application-code: 77ms)
+  └─ ƒ getUserDashboardAction() in 50ms lib/actions/dashboard-action.ts
+ GET /dashboard/user/restaurants/6a5737b7b9289753909ff0db 200 in 92ms (next.js: 31ms, proxy.ts: 10ms, application-code: 51ms)
+ POST /dashboard/user/restaurants/6a5737b7b9289753909ff0db 200 in 73ms (next.js: 15ms, proxy.ts: 7ms, application-code: 50ms)
+  └─ ƒ getFavoritesAction() in 35ms lib/actions/dashboard-action.ts
+ POST /dashboard/user/restaurants/6a5737b7b9289753909ff0db 200 in 83ms (next.js: 12ms, proxy.ts: 10ms, application-code: 60ms)
+  └─ ƒ getFavoritesAction() in 49ms lib/actions/dashboard-action.ts
+ GET /payment-checkout 200 in 59ms (next.js: 8ms, application-code: 51ms)
+ POST /payment-checkout 200 in 3.9s (next.js: 8ms, application-code: 3.9s)
+  └─ ƒ createPaidReservationAction({"cuisine":"Indian","customerPhone":"9874563214","date":"2026-07-28","...":"15 items not stringified"}) in 3848ms lib/actions/reservation-action.ts
+ GET /dashboard/user/booking-confirmation 200 in 95ms (next.js: 10ms, proxy.ts: 8ms, application-code: 77ms)
+[?25h
