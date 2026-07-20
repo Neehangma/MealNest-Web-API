@@ -41,18 +41,35 @@ export type CurrentUserResponse = {
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8088";
 
 async function authRequest<T>(path: string, data: AuthRequest) {
-  const response = await fetch(`${BASE_URL}${path}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+  const endpoint = `${BASE_URL}${path}`;
+  let response: Response;
+
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("Authentication API connection failed", {
+        endpoint,
+        error: error instanceof Error ? error.message : "Unknown network error",
+      });
+    }
+    throw new Error("Unable to connect to the server. Please make sure the backend is running and try again.");
+  }
 
   const body = await response.json().catch(() => null);
 
   if (!response.ok) {
     throw new Error(body?.message || "Authentication failed");
+  }
+
+  if (!body) {
+    throw new Error("The server returned an invalid response. Please try again.");
   }
 
   return body as T;

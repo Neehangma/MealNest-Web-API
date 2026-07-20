@@ -8,7 +8,7 @@ function bookingPayload(restaurant, overrides = {}) {
     restaurantId: restaurant._id.toString(),
     restaurantName: restaurant.name,
     customerName: "CW2 Booking User",
-    customerPhone: "9800000000",
+    customerPhone: "9800000000", esewaId: "9800000000",
     date: "2030-07-26",
     reservationDate: "2030-07-26T13:15:00.000Z",
     time: "7:00 PM",

@@ -45,5 +45,6 @@ export function bookingData(item: { _id: string; name: string }) {
     paymentStatus: "simulated_success",
     totalPaid: 500,
     transactionId: reference,
+    esewaId: "9800000000",
   };
 }
