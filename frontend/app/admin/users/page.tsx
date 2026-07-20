@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type {
   PaginatedUsersResponse,
@@ -16,7 +15,7 @@ import styles from "../admin.module.css";
 import PasswordInput from "@/app/_components/PasswordInput";
 import PasswordRequirements from "@/app/_components/PasswordRequirements";
 import { isPasswordValid, PASSWORD_POLICY_MESSAGE } from "@/lib/password-policy";
-import { isOptionalPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
+import { isOptionalPhoneNumberValid, isPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
 import DeleteConfirmationModal from "../_components/DeleteConfirmationModal";
 
 type IconName =
@@ -212,8 +211,9 @@ function initials(name: string) {
 
 function validateForm(form: FormState, mode: "create" | "edit") {
   if (!form.fullName.trim()) return "Name is required.";
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return "Enter a valid email address.";
-  if (!isOptionalPhoneNumberValid(form.phoneNumber)) return PHONE_VALIDATION_MESSAGE;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return "Please enter a valid email address.";
+  if (mode === "create" && !isPhoneNumberValid(form.phoneNumber)) return PHONE_VALIDATION_MESSAGE;
+  if (mode === "edit" && !isOptionalPhoneNumberValid(form.phoneNumber)) return PHONE_VALIDATION_MESSAGE;
   if (mode === "create" && !isPasswordValid(form.password)) return PASSWORD_POLICY_MESSAGE;
   if (mode === "edit" && form.password && !isPasswordValid(form.password)) {
     return PASSWORD_POLICY_MESSAGE;
@@ -236,6 +236,7 @@ export default function AdminUsersPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
@@ -302,6 +303,7 @@ export default function AdminUsersPage() {
     setForm(emptyForm);
     setSelectedUser(null);
     setFormError("");
+    setSuccessMessage("");
     setModalMode("create");
   }
 
@@ -340,14 +342,20 @@ export default function AdminUsersPage() {
       setFormError("");
 
       if (modalMode === "create") {
-        await createUser({
+        const result = await createUser({
           fullName: form.fullName.trim(),
-          email: form.email.trim(),
+          email: form.email.trim().toLowerCase(),
           phoneNumber: form.phoneNumber.trim(),
           password: form.password,
           role: form.role,
         });
+        if (!result.success) {
+          setForm((current) => ({ ...current, password: "" }));
+          setFormError(result.message);
+          return;
+        }
         await refreshUsers(1);
+        setSuccessMessage(result.message || "User created successfully.");
       } else if (selectedUser) {
         await updateUser(selectedUser.id, {
           fullName: form.fullName.trim(),
@@ -501,6 +509,7 @@ export default function AdminUsersPage() {
             </div>
 
             {error && <div className={styles.errorBanner}>{error}</div>}
+            {successMessage && <div className={styles.successBanner}>{successMessage}</div>}
 
             <div className={styles.tableWrap}>
               <table className={styles.usersTable}>
@@ -631,7 +640,7 @@ export default function AdminUsersPage() {
                 <button className={styles.secondaryButton} type="button" onClick={closeFormModal}>
                   Cancel
                 </button>
-                <button className={styles.primaryButton} type="submit" disabled={submitting || !isOptionalPhoneNumberValid(form.phoneNumber) || (modalMode === "create" ? !isPasswordValid(form.password) : Boolean(form.password) && !isPasswordValid(form.password))}>
+                <button className={styles.primaryButton} type="submit" disabled={submitting || (modalMode === "create" ? !isPhoneNumberValid(form.phoneNumber) || !isPasswordValid(form.password) : !isOptionalPhoneNumberValid(form.phoneNumber) || Boolean(form.password) && !isPasswordValid(form.password))}>
                   {submitting ? "Saving..." : "Save User"}
                 </button>
               </div>

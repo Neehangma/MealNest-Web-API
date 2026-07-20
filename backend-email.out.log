@@ -13,3 +13,15 @@ Local API base URL: http://127.0.0.1:8088/api
 Flutter Android emulator API base URL: http://10.0.2.2:8088/api
 Database connected: mealnest
 Email service is ready
+9:23:24 PM [tsx] change in ./scr\controller\user.controller.ts Restarting...
+cServer running port 8088
+Local API base URL: http://127.0.0.1:8088/api
+Flutter Android emulator API base URL: http://10.0.2.2:8088/api
+9:24:00 PM [tsx] change in ./scr\services\user.service.ts Rerunning...
+cServer running port 8088
+Local API base URL: http://127.0.0.1:8088/api
+Flutter Android emulator API base URL: http://10.0.2.2:8088/api
+9:24:34 PM [tsx] change in ./scr\services\user.service.ts Rerunning...
+cServer running port 8088
+Local API base URL: http://127.0.0.1:8088/api
+Flutter Android emulator API base URL: http://10.0.2.2:8088/api

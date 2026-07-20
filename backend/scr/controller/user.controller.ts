@@ -53,7 +53,7 @@ async function getUser(req, res) {
 async function createUser(req, res) {
   const user = await userService.createAdminUser(createAdminUserDto(req.body));
   return sendSuccess(res, 201, {
-    message: "User created successfully",
+    message: "User created successfully.",
     data: user,
   });
 }

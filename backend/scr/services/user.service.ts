@@ -135,14 +135,22 @@ async function createAdminUser(payload) {
 
   const existingUser = await userRepository.findByEmail(payload.email);
   if (existingUser) {
-    throw new HttpException(409, "Email already exists");
+    throw new HttpException(409, "A user with this email already exists.");
   }
 
   const hashedPassword = await bcrypt.hash(payload.password, BCRYPT_SALT_ROUNDS);
-  const user = await userRepository.createUser({
-    ...payload,
-    password: hashedPassword,
-  });
+  let user;
+  try {
+    user = await userRepository.createUser({
+      ...payload,
+      password: hashedPassword,
+    });
+  } catch (error) {
+    if (error?.code === 11000) {
+      throw new HttpException(409, "A user with this email already exists.");
+    }
+    throw error;
+  }
 
   return toSafeUser(user);
 }

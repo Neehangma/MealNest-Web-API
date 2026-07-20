@@ -24,7 +24,7 @@ function createAdminUserDto(body) {
     email: normalizeEmail(body.email),
     phoneNumber: String(body.phoneNumber || "").trim(),
     password: String(body.password || ""),
-    role: body.role || "user",
+    role: String(body.role || "user").trim().toLowerCase(),
   };
 }
 
