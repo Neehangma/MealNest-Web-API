@@ -13,6 +13,7 @@ import {
   updateAdminUserAction as updateUser,
 } from "@/lib/actions/admin/user-action";
 import styles from "../admin.module.css";
+import PasswordInput from "@/app/_components/PasswordInput";
 import DeleteConfirmationModal from "../_components/DeleteConfirmationModal";
 
 type IconName =
@@ -617,7 +618,7 @@ export default function AdminUsersPage() {
               </label>
               <label className={`${styles.field} ${styles.fullField}`}>
                 Password {modalMode === "edit" ? "(leave blank to keep current)" : ""}
-                <input className={styles.inputControl} type="password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
+                <PasswordInput className={styles.inputControl} wrapperClassName="password-input-wrapper--flush" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
               </label>
               {formError && <div className={`${styles.errorBanner} ${styles.fullField}`}>{formError}</div>}
               <div className={`${styles.modalActions} ${styles.fullField}`}>

@@ -1,8 +1,9 @@
 "use client";
 
 import { changePasswordAction } from "@/lib/actions/profile-action";
-import { useActionState, useRef, useEffect, useState } from "react";
+import { useActionState, useRef, useEffect } from "react";
 import Link from "next/link";
+import PasswordInput from "@/app/_components/PasswordInput";
 
 type IconName = "lock" | "chevron";
 
@@ -64,18 +65,16 @@ export default function ChangePasswordClient() {
             <form ref={passwordFormRef} action={passwordFormAction} className="change-password-form">
               <label>
                 <span>Current Password</span>
-                <input
+                <PasswordInput
                   name="currentPassword"
-                  type="password"
                   required
                   placeholder="Enter your current password"
                 />
               </label>
               <label>
                 <span>New Password</span>
-                <input
+                <PasswordInput
                   name="newPassword"
-                  type="password"
                   minLength={6}
                   required
                   placeholder="Enter your new password"
@@ -84,9 +83,8 @@ export default function ChangePasswordClient() {
               </label>
               <label>
                 <span>Confirm Password</span>
-                <input
+                <PasswordInput
                   name="confirmPassword"
-                  type="password"
                   minLength={6}
                   required
                   placeholder="Confirm your new password"

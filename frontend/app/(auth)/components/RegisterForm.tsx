@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { handleRegisterUser } from "@/lib/actions/auth-action";
+import PasswordInput from "@/app/_components/PasswordInput";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -69,10 +70,10 @@ export default function RegisterForm() {
               <input id="phoneNumber" name="phoneNumber" type="tel" placeholder="Enter phone number" />
 
               <label htmlFor="registerPassword">Password</label>
-              <input id="registerPassword" name="password" type="password" placeholder="Enter password" required minLength={6} />
+              <PasswordInput id="registerPassword" name="password" placeholder="Enter password" required minLength={6} />
 
               <label htmlFor="confirmPassword">Confirm Password</label>
-              <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Confirm password" required minLength={6} />
+              <PasswordInput id="confirmPassword" name="confirmPassword" placeholder="Confirm password" required minLength={6} />
 
               <div className="checkbox-row">
                 <input id="terms" type="checkbox" required />
