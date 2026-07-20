@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createPaidReservationAction } from "@/lib/actions/reservation-action";
 import { isPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
+import PasswordInput from "@/app/_components/PasswordInput";
 
 type PaymentMethod = "esewa" | "mobile_banking";
 type IconName = "chevron" | "check" | "bank";
@@ -54,6 +55,9 @@ export default function PaymentCheckoutPage() {
   const [bankName, setBankName] = useState("");
   const [accountHolderName, setAccountHolderName] = useState("");
   const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [pinOpen, setPinOpen] = useState(false);
+  const [transactionPin, setTransactionPin] = useState("");
+  const [pinError, setPinError] = useState("");
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
   const submissionStarted = useRef(false);
@@ -64,6 +68,9 @@ export default function PaymentCheckoutPage() {
   function selectPaymentMethod(method: PaymentMethod) {
     setPaymentMethod(method);
     setError("");
+    setPinOpen(false);
+    setTransactionPin("");
+    setPinError("");
   }
 
   function validateDetails() {
@@ -82,12 +89,41 @@ export default function PaymentCheckoutPage() {
       return;
     }
     setError("");
+    if (paymentMethod === "esewa") {
+      setTransactionPin("");
+      setPinError("");
+      setPinOpen(true);
+      return;
+    }
+    setConfirmationOpen(true);
+  }
+
+  function closePin() {
+    setPinOpen(false);
+    setTransactionPin("");
+    setPinError("");
+  }
+
+  function continueWithPin() {
+    if (!transactionPin) {
+      setPinError("Transaction PIN is required.");
+      return;
+    }
+    if (!/^\d{4}$/.test(transactionPin)) {
+      setPinError("Transaction PIN must contain exactly 4 digits.");
+      return;
+    }
+    setTransactionPin("");
+    setPinError("");
+    setPinOpen(false);
     setConfirmationOpen(true);
   }
 
   async function confirmPayment() {
     if (!booking || submissionStarted.current) return;
     submissionStarted.current = true;
+    setTransactionPin("");
+    setPinError("");
     setProcessing(true);
     setError("");
 
@@ -173,6 +209,36 @@ export default function PaymentCheckoutPage() {
     </main>
 
     <footer className="customer-footer payment-checkout-footer"><div><h2>MealNest</h2><p>Premium dining logistics and reservations for the modern connoisseur.</p></div><nav aria-label="Platform links"><h3>Platform</h3><a href="#">About Us</a><a href="#">Press</a><a href="#">Careers</a></nav><nav aria-label="Support links"><h3>Support</h3><a href="#">Privacy Policy</a><a href="#">Terms of Service</a><a href="#">Contact</a></nav><div><h3>Connect</h3><div className="social-row"><Icon name="check"/><Icon name="check"/><Icon name="check"/></div><p>&copy; 2024 MealNest. All rights reserved.</p></div></footer>
+
+    {pinOpen && <div className="payment-success-modal" role="dialog" aria-modal="true" aria-labelledby="transaction-pin-title" aria-describedby="transaction-pin-description">
+      <div className="payment-success-modal-content">
+        <h2 id="transaction-pin-title">Enter Transaction PIN</h2>
+        <p id="transaction-pin-description">Enter your 4-digit eSewa transaction PIN to continue.</p>
+        <div className="form-group">
+          <label htmlFor="transaction-pin">Transaction PIN</label>
+          <PasswordInput
+            id="transaction-pin"
+            inputMode="numeric"
+            maxLength={4}
+            autoComplete="off"
+            value={transactionPin}
+            onChange={(event) => {
+              const sanitizedPin = event.target.value.replace(/\D/g, "").slice(0, 4);
+              setTransactionPin(sanitizedPin);
+              if (/^\d{4}$/.test(sanitizedPin)) setPinError("");
+              else if (pinError) setPinError(sanitizedPin ? "Transaction PIN must contain exactly 4 digits." : "Transaction PIN is required.");
+            }}
+            onBlur={() => setPinError(transactionPin ? (/^\d{4}$/.test(transactionPin) ? "" : "Transaction PIN must contain exactly 4 digits.") : "Transaction PIN is required.")}
+            required
+          />
+          {pinError && <small className="phone-validation-error">{pinError}</small>}
+        </div>
+        <div className="payment-actions">
+          <button type="button" className="cancel-button" onClick={closePin}>Cancel</button>
+          <button type="button" className="pay-button" onClick={continueWithPin} disabled={!/^\d{4}$/.test(transactionPin)}>Continue</button>
+        </div>
+      </div>
+    </div>}
 
     {confirmationOpen && booking && <div className="payment-success-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-payment-title">
       <div className="payment-success-modal-content">
