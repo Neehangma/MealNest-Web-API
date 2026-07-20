@@ -57,6 +57,7 @@ function createPasswordChangeDto(body) {
   return {
     currentPassword: String(body.currentPassword || ""),
     newPassword: String(body.newPassword || ""),
+    confirmPassword: String(body.confirmPassword || ""),
   };
 }
 

@@ -77,7 +77,7 @@ async function updateProfile(req, res) {
 async function changePassword(req, res) {
   await userService.changePassword(req.user._id, createPasswordChangeDto(req.body));
   return sendSuccess(res, 200, {
-    message: "Password changed successfully",
+    message: "Password changed successfully. Please log in again using your new password.",
   });
 }
 

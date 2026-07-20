@@ -208,7 +208,7 @@ async function changePassword(userId, payload) {
 
   const passwordMatches = await bcrypt.compare(payload.currentPassword, user.password);
   if (!passwordMatches) {
-    throw new HttpException(401, "Current password is incorrect");
+    throw new HttpException(401, "Current password is incorrect.");
   }
 
   user.password = await bcrypt.hash(payload.newPassword, BCRYPT_SALT_ROUNDS);

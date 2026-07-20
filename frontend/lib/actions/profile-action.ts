@@ -113,8 +113,12 @@ export async function changePasswordAction(_prevState: ActionState, formData: Fo
     return { success: false, message: PASSWORD_POLICY_MESSAGE };
   }
 
+  if (currentPassword === newPassword) {
+    return { success: false, message: "New password must be different from the current password." };
+  }
+
   if (newPassword !== confirmPassword) {
-    return { success: false, message: "Passwords do not match" };
+    return { success: false, message: "New password and confirm password do not match." };
   }
 
   try {
@@ -123,14 +127,16 @@ export async function changePasswordAction(_prevState: ActionState, formData: Fo
       body: JSON.stringify({
         currentPassword,
         newPassword,
+        confirmPassword,
       }),
     });
 
-    return { success: true, message: result.message || "Password changed successfully" };
+    await clearAuthCookies();
+    return { success: true, message: result.message || "Password changed successfully. Please log in again using your new password." };
   } catch (error) {
     return {
       success: false,
-      message: getErrorMessage(error, "Unable to change password"),
+      message: getErrorMessage(error, "Password could not be changed. Please try again."),
     };
   }
 }

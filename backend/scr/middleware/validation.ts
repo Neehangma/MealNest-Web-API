@@ -120,7 +120,7 @@ const validateProfileUpdate = (req, _res, next) => {
 };
 
 const validatePasswordChange = (req, _res, next) => {
-  const { currentPassword, newPassword } = req.body;
+  const { currentPassword, newPassword, confirmPassword } = req.body;
 
   if (!currentPassword || typeof currentPassword !== "string") {
     return next(new HttpException(400, "Current password is required"));
@@ -131,7 +131,11 @@ const validatePasswordChange = (req, _res, next) => {
   }
 
   if (currentPassword === newPassword) {
-    return next(new HttpException(400, "New password must be different"));
+    return next(new HttpException(400, "New password must be different from the current password."));
+  }
+
+  if (newPassword !== confirmPassword) {
+    return next(new HttpException(400, "New password and confirm password do not match."));
   }
 
   return next();
