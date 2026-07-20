@@ -8,9 +8,9 @@ import type { AdminRestaurant, RestaurantsResponse } from "@/lib/api/admin";
 import { getRestaurantImage, RESTAURANT_FALLBACK_IMAGE } from "@/lib/restaurant-image";
 import DeleteConfirmationModal from "../_components/DeleteConfirmationModal";
 import { isPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
+import { RESERVATION_TIME_SLOTS } from "@/lib/reservation-time";
 
 const CUISINES = ["Italian", "Japanese", "Indian", "Chinese", "Thai", "Korean", "Nepali"];
-const SLOTS = ["11:00 AM", "12:30 PM", "2:00 PM", "5:30 PM", "7:00 PM", "8:30 PM"];
 
 type FormState = {
   name: string; cuisine: string; description: string; image: string; location: string;
@@ -32,7 +32,7 @@ function payload(form: FormState, imageFile: File | null) {
   data.append("priceRange", form.priceRange); data.append("hours", `Mon-Sun: ${form.openingTime} - ${form.closingTime}`);
   data.append("address", form.address.trim() || form.location.trim()); data.append("phone", form.phone);
   data.append("description", form.description.trim()); data.append("features", form.features);
-  data.append("availableTimeSlots", JSON.stringify(SLOTS));
+  data.append("availableTimeSlots", JSON.stringify(RESERVATION_TIME_SLOTS));
   if (imageFile) data.append("image", imageFile);
   return data;
 }

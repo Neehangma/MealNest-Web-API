@@ -8,8 +8,7 @@ import { getRestaurantById, type RestaurantItem } from "@/lib/api/dashboard";
 import { getFavoritesAction, toggleFavoriteAction } from "@/lib/actions/dashboard-action";
 import { getStableRestaurantPrice } from "@/lib/restaurant-price";
 import { getRestaurantImage, RESTAURANT_FALLBACK_IMAGE } from "@/lib/restaurant-image";
-
-const DEFAULT_TIME_SLOTS = ["11:00 AM", "12:30 PM", "2:00 PM", "5:30 PM", "7:00 PM", "8:30 PM"];
+import { RESERVATION_TIME_SLOTS } from "@/lib/reservation-time";
 
 export default function RestaurantDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -116,8 +115,6 @@ export default function RestaurantDetailPage() {
     );
   }
 
-  const slots = restaurant.availableTimeSlots?.length ? restaurant.availableTimeSlots : DEFAULT_TIME_SLOTS;
-
   return (
     <main className="restaurant-detail">
       <div className="hero-section">
@@ -181,7 +178,7 @@ export default function RestaurantDetailPage() {
                 Time
                 <select value={selectedTime} onChange={(event) => setSelectedTime(event.target.value)}>
                   <option value="">Select time</option>
-                  {slots.map((time) => (
+                  {RESERVATION_TIME_SLOTS.map((time) => (
                     <option key={time} value={time}>
                       {time}
                     </option>
