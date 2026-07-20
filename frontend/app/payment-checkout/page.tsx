@@ -90,13 +90,9 @@ export default function PaymentCheckoutPage() {
       return;
     }
     setError("");
-    if (paymentMethod === "esewa") {
-      setTransactionPin("");
-      setPinError("");
-      setPinOpen(true);
-      return;
-    }
-    setConfirmationOpen(true);
+    setTransactionPin("");
+    setPinError("");
+    setPinOpen(true);
   }
 
   function closePin() {
@@ -214,7 +210,11 @@ export default function PaymentCheckoutPage() {
     {pinOpen && <div className="payment-success-modal" role="dialog" aria-modal="true" aria-labelledby="transaction-pin-title" aria-describedby="transaction-pin-description">
       <div className="payment-success-modal-content">
         <h2 id="transaction-pin-title">Enter Transaction PIN</h2>
-        <p id="transaction-pin-description">Enter your 4-digit eSewa transaction PIN to continue.</p>
+        <p id="transaction-pin-description">
+          {paymentMethod === "esewa"
+            ? "Enter your 4-digit eSewa transaction PIN to continue."
+            : "Enter your 4-digit mobile banking transaction PIN to continue."}
+        </p>
         <div className="form-group">
           <label htmlFor="transaction-pin">Transaction PIN</label>
           <PasswordInput

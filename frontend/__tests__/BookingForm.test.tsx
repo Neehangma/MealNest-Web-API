@@ -16,6 +16,10 @@ beforeEach(() => {
 test("validates booking date and time", async () => {
   render(<RestaurantDetailPage />);
   await screen.findByRole("heading", { name: "Tavola" });
+  const timeOptions = screen.getAllByRole("option").filter((option) => option.closest("select") === screen.getByLabelText("Time"));
+  expect(timeOptions).toHaveLength(26);
+  expect(timeOptions[1]).toHaveTextContent("10:00 AM");
+  expect(timeOptions.at(-1)).toHaveTextContent("10:00 PM");
   await userEvent.click(screen.getByRole("button", { name: "Book a Table" }));
   expect(screen.getByText("Please select a date and time.")).toBeVisible();
 });

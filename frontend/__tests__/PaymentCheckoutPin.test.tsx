@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PaymentCheckoutPage from "@/app/payment-checkout/page";
 
@@ -50,7 +50,7 @@ test("requires a four-digit PIN before showing eSewa confirmation", async () => 
   expect(sessionStorage.getItem("transactionPin")).toBeNull();
 });
 
-test("mobile banking opens confirmation without a PIN step", async () => {
+test("requires a separate four-digit PIN before showing Mobile Banking confirmation", async () => {
   render(<PaymentCheckoutPage />);
   await userEvent.click(screen.getByRole("button", { name: /Mobile Banking Pay through your bank account/ }));
   await userEvent.selectOptions(screen.getByLabelText("Bank Name"), "Nabil Bank");
@@ -58,6 +58,20 @@ test("mobile banking opens confirmation without a PIN step", async () => {
   await userEvent.type(screen.getByLabelText("Mobile Number"), "9845698712");
   await userEvent.click(screen.getByRole("button", { name: /^Pay via Mobile Banking$/ }));
 
+  expect(screen.getByRole("heading", { name: "Enter Transaction PIN" })).toBeVisible();
+  expect(screen.getByText("Enter your 4-digit mobile banking transaction PIN to continue.")).toBeVisible();
+  expect(screen.queryByRole("heading", { name: "Confirm Payment" })).not.toBeInTheDocument();
+
+  const pin = screen.getByLabelText("Transaction PIN");
+  await userEvent.type(pin, "5678");
+  await userEvent.click(screen.getByRole("button", { name: "Continue" }));
+
   expect(screen.queryByRole("heading", { name: "Enter Transaction PIN" })).not.toBeInTheDocument();
   expect(screen.getByRole("heading", { name: "Confirm Payment" })).toBeVisible();
+  expect(within(screen.getByRole("dialog", { name: "Confirm Payment" })).getByText("Mobile Banking")).toBeVisible();
+
+  await userEvent.click(within(screen.getByRole("dialog", { name: "Confirm Payment" })).getByRole("button", { name: "Cancel" }));
+  await userEvent.click(screen.getByRole("button", { name: /^Pay via Mobile Banking$/ }));
+  expect(screen.getByLabelText("Transaction PIN")).toHaveValue("");
+  expect(screen.getByRole("button", { name: "Continue" })).toBeDisabled();
 });
