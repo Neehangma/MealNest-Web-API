@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { clearAuthCookies, getTokenCookie, storeUserData } from "@/lib/cookies";
 import { AdminApiError } from "@/lib/api/admin/user";
 import { getAdminProfile, updateAdminProfile } from "@/lib/api/admin/profile";
+import { isOptionalPhoneNumberValid, PHONE_VALIDATION_MESSAGE } from "@/lib/phone-validation";
 
 async function tokenOrRedirect() {
   const token = await getTokenCookie();
@@ -27,6 +28,7 @@ export async function getAdminProfileAction() {
 }
 
 export async function updateAdminProfileAction(data: FormData) {
+  if (!isOptionalPhoneNumberValid(String(data.get("phoneNumber") || ""))) throw new Error(PHONE_VALIDATION_MESSAGE);
   const token = await tokenOrRedirect();
   try {
     const response = await updateAdminProfile(data, token);

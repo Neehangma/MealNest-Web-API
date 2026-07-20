@@ -5,6 +5,7 @@ import type { AuthUser } from "@/lib/api/auth";
 import { getAdminProfileAction, updateAdminProfileAction } from "@/lib/actions/admin/profile-action";
 import { getRestaurantImage } from "@/lib/restaurant-image";
 import styles from "../admin.module.css";
+import { isOptionalPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
 
 type FormState = { fullName: string; email: string; phoneNumber: string };
 const EMPTY = { fullName: "", email: "", phoneNumber: "" };
@@ -45,7 +46,7 @@ export default function AdminSettingsPage() {
     const errors: typeof fieldErrors = {};
     if (!form.fullName.trim()) errors.fullName = "Full name is required.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) errors.email = "Enter a valid email address.";
-    if (form.phoneNumber.trim() && !/^[0-9+()\-\s]{7,20}$/.test(form.phoneNumber.trim())) errors.phoneNumber = "Enter a valid phone number.";
+    if (!isOptionalPhoneNumberValid(form.phoneNumber)) errors.phoneNumber = PHONE_VALIDATION_MESSAGE;
     if (Object.keys(errors).length) { setFieldErrors(errors); return; }
     const data = new FormData(); data.append("fullName", form.fullName.trim()); data.append("email", form.email.trim().toLowerCase()); data.append("phoneNumber", form.phoneNumber.trim()); if (imageFile) data.append("profileImage", imageFile);
     try {
@@ -73,9 +74,9 @@ export default function AdminSettingsPage() {
   {editing && admin && <div className={styles.modalBackdrop} role="dialog" aria-modal="true" aria-labelledby="edit-admin-profile"><section className={`${styles.modal} ${styles.restaurantModal}`}><div className={styles.modalHeader}><h2 id="edit-admin-profile">Edit Profile</h2><button type="button" className={styles.iconButton} aria-label="Close" onClick={closeEdit}>×</button></div><form className={styles.formGrid} onSubmit={save}>
     <label className={styles.field}>Full name<input className={styles.inputControl} value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })}/>{fieldErrors.fullName && <small className={styles.fieldError}>{fieldErrors.fullName}</small>}</label>
     <label className={styles.field}>Email<input className={styles.inputControl} type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })}/>{fieldErrors.email && <small className={styles.fieldError}>{fieldErrors.email}</small>}</label>
-    <label className={`${styles.field} ${styles.fullField}`}>Phone<input className={styles.inputControl} inputMode="tel" value={form.phoneNumber} onChange={(event) => setForm({ ...form, phoneNumber: event.target.value })}/>{fieldErrors.phoneNumber && <small className={styles.fieldError}>{fieldErrors.phoneNumber}</small>}</label>
+    <label className={`${styles.field} ${styles.fullField}`}>Phone<input className={`${styles.inputControl} ${form.phoneNumber && !isOptionalPhoneNumberValid(form.phoneNumber) ? "phone-input-invalid" : ""}`} type="tel" inputMode="numeric" maxLength={10} value={form.phoneNumber} onChange={(event) => { const phoneNumber = sanitizePhoneNumber(event.target.value); setForm({ ...form, phoneNumber }); setFieldErrors((current) => ({ ...current, phoneNumber: isOptionalPhoneNumberValid(phoneNumber) ? undefined : PHONE_VALIDATION_MESSAGE })); }}/>{fieldErrors.phoneNumber && <small className={styles.fieldError}>{fieldErrors.phoneNumber}</small>}</label>
     <label className={`${styles.field} ${styles.fullField}`}>Profile image<input className={styles.fileControl} type="file" accept="image/png,image/jpeg,image/jpg,image/webp" onChange={selectImage}/><span className={styles.selectedFileName}>{imageFile?.name || (admin.profilePicture ? "Current image (choose a file to replace)" : "No image selected")}</span>{fieldErrors.image && <small className={styles.fieldError}>{fieldErrors.image}</small>}{preview ? <span className={styles.profileEditPreview}><img src={preview} alt="Profile preview"/></span> : <span className={styles.profileEditFallback}>{initials(admin)}</span>}</label>
-    {error && <div className={`${styles.errorBanner} ${styles.fullField}`}>{error}</div>}<div className={`${styles.modalActions} ${styles.fullField}`}><button type="button" className={styles.secondaryButton} onClick={closeEdit} disabled={saving}>Cancel</button><button type="submit" className={styles.primaryButton} disabled={saving}>{saving ? "Saving..." : "Save Changes"}</button></div>
+    {error && <div className={`${styles.errorBanner} ${styles.fullField}`}>{error}</div>}<div className={`${styles.modalActions} ${styles.fullField}`}><button type="button" className={styles.secondaryButton} onClick={closeEdit} disabled={saving}>Cancel</button><button type="submit" className={styles.primaryButton} disabled={saving || !isOptionalPhoneNumberValid(form.phoneNumber)}>{saving ? "Saving..." : "Save Changes"}</button></div>
   </form></section></div>}
 
   {success && admin && <div className={styles.modalBackdrop} role="dialog" aria-modal="true" aria-labelledby="profile-updated-title"><section className={styles.profileSuccessModal}><div className={styles.profileSuccessIcon}>✓</div><h2 id="profile-updated-title">Profile Updated</h2><p>Your profile changes have been saved successfully.</p><div><span>Name</span><strong>{admin.fullName}</strong><span>Email</span><strong>{admin.email}</strong></div><button type="button" className={styles.primaryButton} onClick={() => setSuccess(false)}>Done</button></section></div>}

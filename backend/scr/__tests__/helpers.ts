@@ -25,7 +25,7 @@ async function createTestRestaurant(overrides = {}) {
     cuisine: input.cuisine || "Italian",
     location: input.location || "Kathmandu",
     address: input.address || "Test Street, Kathmandu",
-    phone: input.phone || "+977 1-5550000",
+    phone: input.phone || "9800000000",
     description: input.description || "Testing-only restaurant",
     image: input.image || "/images/tavola.jpg",
     price: input.price || 450,

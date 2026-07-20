@@ -30,7 +30,7 @@ function createRestaurantDto(body) {
     isActive: booleanValue(body.isActive, true),
     isOpen: booleanValue(body.isOpen, true),
     address: text(body.address, body.location),
-    phone: text(body.phone, "+977 1-0000000"),
+    phone: text(body.phone, "9800000000"),
     hours: text(body.hours, "Mon-Sun: 11:00 AM - 10:00 PM"),
     featured: booleanValue(body.featured, false),
     availableTimeSlots: listValue(body.availableTimeSlots),

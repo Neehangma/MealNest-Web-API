@@ -5,6 +5,8 @@ import type { AuthUser } from "@/lib/api/auth";
 import { clearAuthCookies, getTokenCookie, storeUserData } from "@/lib/cookies";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { isPasswordValid, PASSWORD_POLICY_MESSAGE } from "@/lib/password-policy";
+import { isOptionalPhoneNumberValid, PHONE_VALIDATION_MESSAGE } from "@/lib/phone-validation";
 
 export type ProfileActionState = {
   success: boolean;
@@ -68,6 +70,10 @@ export async function updateProfileAction(_prevState: ActionState, formData: For
     return { success: false, message: "Enter a valid email address" };
   }
 
+  if (!isOptionalPhoneNumberValid(phoneNumber)) {
+    return { success: false, message: PHONE_VALIDATION_MESSAGE };
+  }
+
   try {
     const result = await authedRequest<ProfileUpdateResponse>(API.PROFILE.UPDATE, {
       method: "PATCH",
@@ -103,12 +109,16 @@ export async function changePasswordAction(_prevState: ActionState, formData: Fo
     return { success: false, message: "Current password is required" };
   }
 
-  if (newPassword.length < 6) {
-    return { success: false, message: "New password must be at least 6 characters" };
+  if (!isPasswordValid(newPassword)) {
+    return { success: false, message: PASSWORD_POLICY_MESSAGE };
+  }
+
+  if (currentPassword === newPassword) {
+    return { success: false, message: "New password must be different from the current password." };
   }
 
   if (newPassword !== confirmPassword) {
-    return { success: false, message: "Passwords do not match" };
+    return { success: false, message: "New password and confirm password do not match." };
   }
 
   try {
@@ -117,14 +127,16 @@ export async function changePasswordAction(_prevState: ActionState, formData: Fo
       body: JSON.stringify({
         currentPassword,
         newPassword,
+        confirmPassword,
       }),
     });
 
-    return { success: true, message: result.message || "Password changed successfully" };
+    await clearAuthCookies();
+    return { success: true, message: result.message || "Password changed successfully. Please log in again using your new password." };
   } catch (error) {
     return {
       success: false,
-      message: getErrorMessage(error, "Unable to change password"),
+      message: getErrorMessage(error, "Password could not be changed. Please try again."),
     };
   }
 }

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createPaidReservationAction } from "@/lib/actions/reservation-action";
+import { isPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
 
 type PaymentMethod = "esewa" | "mobile_banking";
 type IconName = "chevron" | "check" | "bank";
@@ -24,7 +25,6 @@ type PendingBooking = {
   totalAmount: number;
 };
 
-const NEPAL_MOBILE_PATTERN = /^(97|98)\d{8}$/;
 const NEPAL_BANKS = ["Nabil Bank", "Global IME Bank", "NIC Asia Bank", "Nepal Investment Mega Bank", "Himalayan Bank", "Kumari Bank", "Siddhartha Bank"];
 
 function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
@@ -68,7 +68,7 @@ export default function PaymentCheckoutPage() {
 
   function validateDetails() {
     if (!booking) return "Booking details are missing. Please select a table again.";
-    if (!NEPAL_MOBILE_PATTERN.test(mobileNumber.trim())) return "Enter a valid 10-digit Nepal mobile number beginning with 97 or 98.";
+    if (!isPhoneNumberValid(mobileNumber)) return PHONE_VALIDATION_MESSAGE;
     if (paymentMethod === "esewa" && !accountName.trim()) return "Account name is required.";
     if (paymentMethod === "mobile_banking" && !bankName) return "Bank name is required.";
     if (paymentMethod === "mobile_banking" && !accountHolderName.trim()) return "Account holder name is required.";
@@ -148,12 +148,12 @@ export default function PaymentCheckoutPage() {
           <h2>Enter Payment Details</h2>
           <div className="payment-details-form">
             {paymentMethod === "esewa" ? <>
-              <div className="form-group"><label htmlFor="esewa-mobile">eSewa Mobile Number</label><input id="esewa-mobile" type="tel" inputMode="numeric" maxLength={10} value={mobileNumber} onChange={(event) => setMobileNumber(event.target.value.replace(/\D/g, ""))} placeholder="98XXXXXXXX" required/></div>
+              <div className="form-group"><label htmlFor="esewa-mobile">eSewa Mobile Number</label><input id="esewa-mobile" type="tel" inputMode="numeric" maxLength={10} className={mobileNumber && !isPhoneNumberValid(mobileNumber) ? "phone-input-invalid" : ""} value={mobileNumber} onChange={(event) => { const phone = sanitizePhoneNumber(event.target.value); setMobileNumber(phone); if (isPhoneNumberValid(phone)) setError(""); }} placeholder="98XXXXXXXX" required/>{mobileNumber && !isPhoneNumberValid(mobileNumber) && <small className="phone-validation-error">{PHONE_VALIDATION_MESSAGE}</small>}</div>
               <div className="form-group"><label htmlFor="esewa-name">Account Name</label><input id="esewa-name" type="text" value={accountName} onChange={(event) => setAccountName(event.target.value)} placeholder="Enter account name" required/></div>
             </> : <>
               <div className="form-group"><label htmlFor="bank-name">Bank Name</label><select id="bank-name" value={bankName} onChange={(event) => setBankName(event.target.value)} required><option value="">Select Bank</option>{NEPAL_BANKS.map((bank) => <option key={bank} value={bank}>{bank}</option>)}</select></div>
               <div className="form-group"><label htmlFor="account-holder">Account Holder Name</label><input id="account-holder" type="text" value={accountHolderName} onChange={(event) => setAccountHolderName(event.target.value)} placeholder="Enter account holder name" required/></div>
-              <div className="form-group"><label htmlFor="bank-mobile">Mobile Number</label><input id="bank-mobile" type="tel" inputMode="numeric" maxLength={10} value={mobileNumber} onChange={(event) => setMobileNumber(event.target.value.replace(/\D/g, ""))} placeholder="98XXXXXXXX" required/></div>
+              <div className="form-group"><label htmlFor="bank-mobile">Mobile Number</label><input id="bank-mobile" type="tel" inputMode="numeric" maxLength={10} className={mobileNumber && !isPhoneNumberValid(mobileNumber) ? "phone-input-invalid" : ""} value={mobileNumber} onChange={(event) => { const phone = sanitizePhoneNumber(event.target.value); setMobileNumber(phone); if (isPhoneNumberValid(phone)) setError(""); }} placeholder="98XXXXXXXX" required/>{mobileNumber && !isPhoneNumberValid(mobileNumber) && <small className="phone-validation-error">{PHONE_VALIDATION_MESSAGE}</small>}</div>
             </>}
           </div>
 
@@ -167,7 +167,7 @@ export default function PaymentCheckoutPage() {
 
         <div className="payment-actions">
           <Link href={booking ? `/dashboard/user/restaurants/${booking.restaurantId}` : "/dashboard/user"} className="cancel-button">CANCEL</Link>
-          <button type="button" className="pay-button" onClick={openConfirmation} disabled={processing}>{paymentMethod === "esewa" ? "Pay via eSewa" : "Pay via Mobile Banking"}</button>
+          <button type="button" className="pay-button" onClick={openConfirmation} disabled={processing || !isPhoneNumberValid(mobileNumber)}>{paymentMethod === "esewa" ? "Pay via eSewa" : "Pay via Mobile Banking"}</button>
         </div>
       </div>
     </main>

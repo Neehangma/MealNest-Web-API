@@ -333,6 +333,72 @@ input:focus {
   outline-offset: 1px;
 }
 
+.password-requirements {
+  margin: -8px 0 18px;
+  font-size: 13px;
+}
+
+.password-requirements ul {
+  display: grid;
+  gap: 5px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.password-requirements li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #7a7f87;
+}
+
+.password-requirements li span,
+.change-password-form label .password-requirements li span {
+  width: 16px;
+  color: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.password-requirements li.satisfied {
+  color: #16833b;
+}
+
+.password-policy-error,
+.password-match-error,
+.change-password-form label .password-match-error {
+  margin: 8px 0 0;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+input.phone-input-invalid,
+.adminRoot input.phone-input-invalid {
+  border-color: #b42318;
+  box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.1);
+}
+
+.phone-validation-error {
+  display: block;
+  margin: -10px 0 14px;
+  color: #b42318;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.change-password-form .password-requirements {
+  margin: 0;
+}
+
 .label-row {
 
   display: flex;
@@ -6466,6 +6532,14 @@ font-size:30px;
   background: #fff1e6;
   color: #8e4500;
   font-weight: 700;
+}
+
+.form-success {
+  margin: -4px 0 16px;
+  color: #16833b;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
 }
 
 /* User-owned booking cards */

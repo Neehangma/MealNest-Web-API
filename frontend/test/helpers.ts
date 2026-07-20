@@ -1,7 +1,7 @@
 import { expect, type APIRequestContext } from "@playwright/test";
 
 export const API_URL = "http://127.0.0.1:18088";
-export const PASSWORD = "TestPassword123";
+export const PASSWORD = "TestPassword123!";
 
 export async function login(request: APIRequestContext, email: string, password = PASSWORD) {
   const response = await request.post(`${API_URL}/api/auth/login`, { data: { email, password } });
@@ -16,7 +16,8 @@ export async function register(request: APIRequestContext, prefix: string) {
   });
   expect(response.status(), await response.text()).toBe(201);
   const body = await response.json();
-  return { email, token: body.token as string, user: body.user };
+  expect(body.token).toBeUndefined();
+  return { email, token: await login(request, email), user: body.user };
 }
 
 export async function restaurant(request: APIRequestContext) {

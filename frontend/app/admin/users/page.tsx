@@ -14,6 +14,9 @@ import {
 } from "@/lib/actions/admin/user-action";
 import styles from "../admin.module.css";
 import PasswordInput from "@/app/_components/PasswordInput";
+import PasswordRequirements from "@/app/_components/PasswordRequirements";
+import { isPasswordValid, PASSWORD_POLICY_MESSAGE } from "@/lib/password-policy";
+import { isOptionalPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
 import DeleteConfirmationModal from "../_components/DeleteConfirmationModal";
 
 type IconName =
@@ -210,9 +213,10 @@ function initials(name: string) {
 function validateForm(form: FormState, mode: "create" | "edit") {
   if (!form.fullName.trim()) return "Name is required.";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return "Enter a valid email address.";
-  if (mode === "create" && form.password.length < 6) return "Password must be at least 6 characters.";
-  if (mode === "edit" && form.password && form.password.length < 6) {
-    return "Password must be at least 6 characters.";
+  if (!isOptionalPhoneNumberValid(form.phoneNumber)) return PHONE_VALIDATION_MESSAGE;
+  if (mode === "create" && !isPasswordValid(form.password)) return PASSWORD_POLICY_MESSAGE;
+  if (mode === "edit" && form.password && !isPasswordValid(form.password)) {
+    return PASSWORD_POLICY_MESSAGE;
   }
   return "";
 }
@@ -607,7 +611,8 @@ export default function AdminUsersPage() {
               </label>
               <label className={styles.field}>
                 Phone
-                <input className={styles.inputControl} value={form.phoneNumber} onChange={(event) => setForm({ ...form, phoneNumber: event.target.value })} />
+                <input className={`${styles.inputControl} ${form.phoneNumber && !isOptionalPhoneNumberValid(form.phoneNumber) ? "phone-input-invalid" : ""}`} type="tel" inputMode="numeric" maxLength={10} value={form.phoneNumber} onChange={(event) => setForm({ ...form, phoneNumber: sanitizePhoneNumber(event.target.value) })} />
+                {form.phoneNumber && !isOptionalPhoneNumberValid(form.phoneNumber) && <small className={styles.fieldError}>{PHONE_VALIDATION_MESSAGE}</small>}
               </label>
               <label className={styles.field}>
                 Role
@@ -618,14 +623,15 @@ export default function AdminUsersPage() {
               </label>
               <label className={`${styles.field} ${styles.fullField}`}>
                 Password {modalMode === "edit" ? "(leave blank to keep current)" : ""}
-                <PasswordInput className={styles.inputControl} wrapperClassName="password-input-wrapper--flush" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
+                <PasswordInput className={styles.inputControl} wrapperClassName="password-input-wrapper--flush" minLength={8} required={modalMode === "create"} value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
+                <PasswordRequirements password={form.password} />
               </label>
               {formError && <div className={`${styles.errorBanner} ${styles.fullField}`}>{formError}</div>}
               <div className={`${styles.modalActions} ${styles.fullField}`}>
                 <button className={styles.secondaryButton} type="button" onClick={closeFormModal}>
                   Cancel
                 </button>
-                <button className={styles.primaryButton} type="submit" disabled={submitting}>
+                <button className={styles.primaryButton} type="submit" disabled={submitting || !isOptionalPhoneNumberValid(form.phoneNumber) || (modalMode === "create" ? !isPasswordValid(form.password) : Boolean(form.password) && !isPasswordValid(form.password))}>
                   {submitting ? "Saving..." : "Save User"}
                 </button>
               </div>

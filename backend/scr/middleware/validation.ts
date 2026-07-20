@@ -1,8 +1,10 @@
 const { ALLOWED_ROLES } = require("../config/constant");
 const { HttpException } = require("../exceptions/http-exception");
+const { isPasswordValid, PASSWORD_POLICY_MESSAGE } = require("../utils/password-policy");
+const { isOptionalPhoneNumberValid, PHONE_VALIDATION_MESSAGE } = require("../utils/phone-validation");
 
 const validateRegister = (req, _res, next) => {
-  const { fullName, email, password } = req.body;
+  const { fullName, email, password, phoneNumber } = req.body;
 
   if (!fullName || typeof fullName !== "string" || fullName.trim().length === 0) {
     return next(new HttpException(400, "Full name is required and must be a string"));
@@ -12,8 +14,12 @@ const validateRegister = (req, _res, next) => {
     return next(new HttpException(400, "Valid email is required"));
   }
 
-  if (!password || typeof password !== "string" || password.length < 6) {
-    return next(new HttpException(400, "Password must be at least 6 characters"));
+  if (!isPasswordValid(password)) {
+    return next(new HttpException(400, PASSWORD_POLICY_MESSAGE));
+  }
+
+  if (!isOptionalPhoneNumberValid(phoneNumber)) {
+    return next(new HttpException(400, PHONE_VALIDATION_MESSAGE));
   }
 
   return next();
@@ -34,7 +40,7 @@ const validateLogin = (req, _res, next) => {
 };
 
 const validateAdminCreateUser = (req, _res, next) => {
-  const { fullName, email, password, role } = req.body;
+  const { fullName, email, password, role, phoneNumber } = req.body;
 
   if (!fullName || typeof fullName !== "string" || fullName.trim().length === 0) {
     return next(new HttpException(400, "Full name is required and must be a string"));
@@ -44,8 +50,12 @@ const validateAdminCreateUser = (req, _res, next) => {
     return next(new HttpException(400, "Valid email is required"));
   }
 
-  if (!password || typeof password !== "string" || password.length < 6) {
-    return next(new HttpException(400, "Password must be at least 6 characters"));
+  if (!isPasswordValid(password)) {
+    return next(new HttpException(400, PASSWORD_POLICY_MESSAGE));
+  }
+
+  if (!isOptionalPhoneNumberValid(phoneNumber)) {
+    return next(new HttpException(400, PHONE_VALIDATION_MESSAGE));
   }
 
   if (role && !ALLOWED_ROLES.includes(role)) {
@@ -56,14 +66,18 @@ const validateAdminCreateUser = (req, _res, next) => {
 };
 
 const validateAdminUpdateUser = (req, _res, next) => {
-  const { email, password, role } = req.body;
+  const { email, password, role, phoneNumber } = req.body;
 
   if (email !== undefined && (typeof email !== "string" || !isValidEmail(email))) {
     return next(new HttpException(400, "Valid email is required"));
   }
 
-  if (password !== undefined && password !== "" && (typeof password !== "string" || password.length < 6)) {
-    return next(new HttpException(400, "Password must be at least 6 characters"));
+  if (password !== undefined && password !== "" && !isPasswordValid(password)) {
+    return next(new HttpException(400, PASSWORD_POLICY_MESSAGE));
+  }
+
+  if (!isOptionalPhoneNumberValid(phoneNumber)) {
+    return next(new HttpException(400, PHONE_VALIDATION_MESSAGE));
   }
 
   if (role !== undefined && !ALLOWED_ROLES.includes(role)) {
@@ -74,7 +88,7 @@ const validateAdminUpdateUser = (req, _res, next) => {
 };
 
 const validateProfileUpdate = (req, _res, next) => {
-  const { fullName, email, profilePicture } = req.body;
+  const { fullName, email, profilePicture, phoneNumber } = req.body;
 
   if (fullName !== undefined && (typeof fullName !== "string" || fullName.trim().length === 0)) {
     return next(new HttpException(400, "Full name is required and must be a string"));
@@ -82,6 +96,10 @@ const validateProfileUpdate = (req, _res, next) => {
 
   if (email !== undefined && (typeof email !== "string" || !isValidEmail(email))) {
     return next(new HttpException(400, "Valid email is required"));
+  }
+
+  if (!isOptionalPhoneNumberValid(phoneNumber)) {
+    return next(new HttpException(400, PHONE_VALIDATION_MESSAGE));
   }
 
   if (profilePicture !== undefined) {
@@ -102,18 +120,22 @@ const validateProfileUpdate = (req, _res, next) => {
 };
 
 const validatePasswordChange = (req, _res, next) => {
-  const { currentPassword, newPassword } = req.body;
+  const { currentPassword, newPassword, confirmPassword } = req.body;
 
   if (!currentPassword || typeof currentPassword !== "string") {
     return next(new HttpException(400, "Current password is required"));
   }
 
-  if (!newPassword || typeof newPassword !== "string" || newPassword.length < 6) {
-    return next(new HttpException(400, "New password must be at least 6 characters"));
+  if (!isPasswordValid(newPassword)) {
+    return next(new HttpException(400, PASSWORD_POLICY_MESSAGE));
   }
 
   if (currentPassword === newPassword) {
-    return next(new HttpException(400, "New password must be different"));
+    return next(new HttpException(400, "New password must be different from the current password."));
+  }
+
+  if (newPassword !== confirmPassword) {
+    return next(new HttpException(400, "New password and confirm password do not match."));
   }
 
   return next();

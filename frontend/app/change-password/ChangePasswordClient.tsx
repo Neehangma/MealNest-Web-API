@@ -1,9 +1,12 @@
 "use client";
 
 import { changePasswordAction } from "@/lib/actions/profile-action";
-import { useActionState, useRef, useEffect } from "react";
+import { useActionState, useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import PasswordInput from "@/app/_components/PasswordInput";
+import PasswordRequirements from "@/app/_components/PasswordRequirements";
+import { isPasswordValid } from "@/lib/password-policy";
+import { useRouter } from "next/navigation";
 
 type IconName = "lock" | "chevron";
 
@@ -39,14 +42,30 @@ const emptyState = {
 };
 
 export default function ChangePasswordClient() {
+  const { push } = useRouter();
   const [passwordState, passwordFormAction, isChangingPassword] = useActionState(changePasswordAction, emptyState);
   const passwordFormRef = useRef<HTMLFormElement>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
 
   useEffect(() => {
     if (passwordState.success) {
-      passwordFormRef.current?.reset();
+      const resetTimer = window.setTimeout(() => {
+        passwordFormRef.current?.reset();
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        for (const key of ["auth_token", "token", "user", "user_data"]) {
+          window.localStorage.removeItem(key);
+          window.sessionStorage.removeItem(key);
+        }
+        push("/login");
+      }, 1500);
+
+      return () => window.clearTimeout(resetTimer);
     }
-  }, [passwordState.success]);
+  }, [passwordState.success, push]);
 
   return (
     <div className="change-password-page">
@@ -69,33 +88,41 @@ export default function ChangePasswordClient() {
                   name="currentPassword"
                   required
                   placeholder="Enter your current password"
+                  value={currentPassword}
+                  onChange={(event) => setCurrentPassword(event.target.value)}
                 />
               </label>
               <label>
                 <span>New Password</span>
                 <PasswordInput
                   name="newPassword"
-                  minLength={6}
+                  minLength={8}
                   required
                   placeholder="Enter your new password"
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
                 />
-                <small>Password must be at least 6 characters</small>
+                <PasswordRequirements password={newPassword} />
+                {newPassword && currentPassword === newPassword && <small className="password-match-error">New password must be different from the current password.</small>}
               </label>
               <label>
                 <span>Confirm Password</span>
                 <PasswordInput
                   name="confirmPassword"
-                  minLength={6}
+                  minLength={8}
                   required
                   placeholder="Confirm your new password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
                 />
+                {confirmPassword && newPassword !== confirmPassword && <small className="password-match-error">New password and confirm password do not match.</small>}
               </label>
               {passwordState.message && (
                 <p className={`change-password-message ${passwordState.success ? "success" : "error"}`}>
                   {passwordState.message}
                 </p>
               )}
-              <button type="submit" className="change-password-submit-button" disabled={isChangingPassword}>
+              <button type="submit" className="change-password-submit-button" disabled={isChangingPassword || !currentPassword || !isPasswordValid(newPassword) || currentPassword === newPassword || newPassword !== confirmPassword}>
                 {isChangingPassword ? "Changing Password..." : "Change Password"}
               </button>
             </form>

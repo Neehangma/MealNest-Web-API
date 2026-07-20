@@ -13,7 +13,7 @@ async function main() {
   emailService.sendBookingConfirmationEmail = async () => ({ messageId: "e2e-email-suppressed" });
   const User = require("../models/user.model");
   const Restaurant = require("../models/restaurant.model");
-  await User.create({ fullName: "E2E Admin", email: "e2e-admin@example.com", phoneNumber: "9800000000", password: await bcrypt.hash("TestPassword123", 4), role: "admin" });
+  await User.create({ fullName: "E2E Admin", email: "e2e-admin@example.com", phoneNumber: "9800000000", password: await bcrypt.hash("TestPassword123!", 4), role: "admin" });
   await Restaurant.create({ name: "E2E Trattoria", cuisine: "Italian", location: "Kathmandu", address: "E2E Test Street", phone: "9800000000", description: "Disposable Playwright restaurant", price: 450, image: "/images/tavola.jpg" });
   const app = require("../server");
   const server = app.listen(18088, "127.0.0.1", () => console.log("E2E backend ready on http://127.0.0.1:18088"));

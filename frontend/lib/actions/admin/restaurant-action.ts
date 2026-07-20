@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { clearAuthCookies, getTokenCookie } from "@/lib/cookies";
 import { AdminApiError, createRestaurant, deleteRestaurant, getAdminRestaurants, updateRestaurant, type RestaurantListParams } from "@/lib/api/admin";
+import { isPhoneNumberValid, PHONE_VALIDATION_MESSAGE } from "@/lib/phone-validation";
 
 async function withAdminToken<T>(request: (token: string) => Promise<T>) {
   const token = await getTokenCookie();
@@ -23,9 +24,11 @@ export async function getAdminRestaurantsAction(params: RestaurantListParams = {
   return withAdminToken((token) => getAdminRestaurants(params, token));
 }
 export async function createRestaurantAction(data: FormData) {
+  if (!isPhoneNumberValid(String(data.get("phone") || ""))) throw new Error(PHONE_VALIDATION_MESSAGE);
   return withAdminToken((token) => createRestaurant(data, token));
 }
 export async function updateRestaurantAction(id: string, data: FormData) {
+  if (data.has("phone") && !isPhoneNumberValid(String(data.get("phone") || ""))) throw new Error(PHONE_VALIDATION_MESSAGE);
   return withAdminToken((token) => updateRestaurant(id, data, token));
 }
 export async function deleteRestaurantAction(id: string) {
