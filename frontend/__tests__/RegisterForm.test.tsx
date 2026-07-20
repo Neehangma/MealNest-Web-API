@@ -20,7 +20,9 @@ async function fill(password = "Secret123!", confirmation = password) {
 test("renders registration fields and validates password confirmation", async () => {
   render(<RegisterForm />);
   expect(screen.getByRole("heading", { name: "Create Account" })).toBeVisible();
+  expect(screen.getAllByRole("button", { name: "Show password" })).toHaveLength(2);
   await fill("Secret123!", "Different123!");
+  expect(screen.getAllByRole("button", { name: "Show password" })).toHaveLength(2);
   expect(await screen.findByText("Passwords do not match.")).toBeVisible();
   expect(register).not.toHaveBeenCalled();
 });

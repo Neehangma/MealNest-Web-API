@@ -329,14 +329,26 @@ async function createReservation(userId, payload) {
     throw new HttpException(400, "Payment must succeed before creating a reservation");
   }
 
-  if (!payload.customerName) throw new HttpException(400, "Valid customer payment details are required");
   if (!isPhoneNumberValid(String(payload.customerPhone || ""))) throw new HttpException(400, PHONE_VALIDATION_MESSAGE);
+
+  if (payload.paymentMethod === "esewa") {
+    const esewaId = String(payload.esewaId || "").trim();
+    const validEsewaId = /^\d{10}$/.test(esewaId) || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(esewaId);
+    if (!validEsewaId) throw new HttpException(400, "Please enter your eSewa ID.");
+  }
+
+  if (payload.paymentMethod === "mobile_banking" && !/^\d{10,16}$/.test(String(payload.bankAccountNumber || ""))) {
+    throw new HttpException(400, "Bank account number must contain between 10 and 16 digits.");
+  }
 
   if (!Number.isFinite(Number(payload.totalPaid)) || Number(payload.totalPaid) < 0) {
     throw new HttpException(400, "Invalid payment amount");
   }
 
-  const reservation = await userRepository.createReservation(userId, payload);
+  const reservationPayload = { ...payload };
+  delete reservationPayload.esewaId;
+  delete reservationPayload.bankAccountNumber;
+  const reservation = await userRepository.createReservation(userId, reservationPayload);
   if (!reservation) {
     throw new HttpException(404, "User not found");
   }

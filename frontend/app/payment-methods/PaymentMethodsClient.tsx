@@ -3,15 +3,16 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { isPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
+import { BANK_ACCOUNT_NUMBER_MESSAGE, ESEWA_ID_REQUIRED_MESSAGE, isBankAccountNumberValid, isEsewaIdValid, maskBankAccountNumber, sanitizeBankAccountNumber } from "@/lib/payment-validation";
 
 type AddPaymentMethodType = "esewa" | "mobile_banking";
 type AddedPaymentMethod = {
   id: string;
   type: AddPaymentMethodType;
   mobileNumber: string;
-  accountName?: string;
+  esewaId?: string;
   bankName?: string;
-  accountHolderName?: string;
+  bankAccountNumber?: string;
   isDefault: boolean;
 };
 type IconName = "card" | "bank" | "trash" | "check" | "chevron";
@@ -36,12 +37,16 @@ export default function PaymentMethodsClient() {
   const [formMessage, setFormMessage] = useState("");
   const [addedMethods, setAddedMethods] = useState<AddedPaymentMethod[]>([]);
   const [mobileNumber, setMobileNumber] = useState("");
+  const [esewaId, setEsewaId] = useState("");
+  const [bankAccountNumber, setBankAccountNumber] = useState("");
 
   const selectMethod = (type: AddPaymentMethodType) => {
     setSelectedType(type);
     setShowAddForm(true);
     setFormMessage("");
     setMobileNumber("");
+    setEsewaId("");
+    setBankAccountNumber("");
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -52,13 +57,25 @@ export default function PaymentMethodsClient() {
       setFormMessage(PHONE_VALIDATION_MESSAGE);
       return;
     }
+    const submittedEsewaId = String(data.get("esewaId") || "").trim();
+    const submittedBankAccountNumber = String(data.get("bankAccountNumber") || "");
+    if (selectedType === "esewa" && !isEsewaIdValid(submittedEsewaId)) {
+      setFormMessage(ESEWA_ID_REQUIRED_MESSAGE);
+      return;
+    }
+    if (selectedType === "mobile_banking" && !isBankAccountNumberValid(submittedBankAccountNumber)) {
+      setFormMessage(BANK_ACCOUNT_NUMBER_MESSAGE);
+      return;
+    }
     const method: AddedPaymentMethod = selectedType === "esewa"
-      ? { id: globalThis.crypto?.randomUUID?.() || String(Date.now()), type: "esewa", mobileNumber: submittedMobileNumber, accountName: String(data.get("accountName") || "").trim(), isDefault: addedMethods.length === 0 }
-      : { id: globalThis.crypto?.randomUUID?.() || String(Date.now()), type: "mobile_banking", mobileNumber: submittedMobileNumber, bankName: String(data.get("bankName") || ""), accountHolderName: String(data.get("accountHolderName") || "").trim(), isDefault: addedMethods.length === 0 };
+      ? { id: globalThis.crypto?.randomUUID?.() || String(Date.now()), type: "esewa", mobileNumber: submittedMobileNumber, esewaId: submittedEsewaId, isDefault: addedMethods.length === 0 }
+      : { id: globalThis.crypto?.randomUUID?.() || String(Date.now()), type: "mobile_banking", mobileNumber: submittedMobileNumber, bankName: String(data.get("bankName") || ""), bankAccountNumber: submittedBankAccountNumber, isDefault: addedMethods.length === 0 };
     setAddedMethods((methods) => [...methods, method]);
     setFormMessage(selectedType === "esewa" ? "eSewa account added." : "Linked bank account added.");
     event.currentTarget.reset();
     setMobileNumber("");
+    setEsewaId("");
+    setBankAccountNumber("");
   };
 
   const setDefaultMethod = (id: string) => setAddedMethods((methods) => methods.map((method) => ({ ...method, isDefault: method.id === id })));
@@ -106,11 +123,11 @@ export default function PaymentMethodsClient() {
           <form className="payment-methods-form" onSubmit={handleSubmit}>
             {selectedType === "esewa" ? <>
               <label><span>eSewa Mobile Number</span><input name="mobileNumber" type="tel" inputMode="numeric" maxLength={10} className={mobileNumber && !isPhoneNumberValid(mobileNumber) ? "phone-input-invalid" : ""} value={mobileNumber} onChange={(event) => { const phone = sanitizePhoneNumber(event.target.value); setMobileNumber(phone); if (isPhoneNumberValid(phone)) setFormMessage(""); }} placeholder="98XXXXXXXX" required/>{mobileNumber && !isPhoneNumberValid(mobileNumber) && <small className="phone-validation-error">{PHONE_VALIDATION_MESSAGE}</small>}</label>
-              <label><span>Account Name</span><input name="accountName" type="text" placeholder="Account name" required/></label>
+              <label><span>ESEWA ID</span><input name="esewaId" type="text" value={esewaId} onChange={(event) => { setEsewaId(event.target.value); if (isEsewaIdValid(event.target.value)) setFormMessage(""); }} placeholder="Enter eSewa ID" required/></label>
               <button type="submit" className="payment-methods-submit-button" disabled={!isPhoneNumberValid(mobileNumber)}>Add eSewa Account</button>
             </> : <>
               <label><span>Bank Name</span><select name="bankName" required><option value="">Select Bank</option>{NEPAL_BANKS.map((bank) => <option key={bank} value={bank}>{bank}</option>)}</select></label>
-              <label><span>Account Holder Name</span><input name="accountHolderName" type="text" placeholder="Account holder name" required/></label>
+              <label><span>ACCOUNT NUMBER</span><input name="bankAccountNumber" type="text" inputMode="numeric" maxLength={16} value={bankAccountNumber} onChange={(event) => { const value = sanitizeBankAccountNumber(event.target.value); setBankAccountNumber(value); if (isBankAccountNumberValid(value)) setFormMessage(""); }} placeholder="Enter bank account number" required/></label>
               <label><span>Mobile Number</span><input name="mobileNumber" type="tel" inputMode="numeric" maxLength={10} className={mobileNumber && !isPhoneNumberValid(mobileNumber) ? "phone-input-invalid" : ""} value={mobileNumber} onChange={(event) => { const phone = sanitizePhoneNumber(event.target.value); setMobileNumber(phone); if (isPhoneNumberValid(phone)) setFormMessage(""); }} placeholder="98XXXXXXXX" required/>{mobileNumber && !isPhoneNumberValid(mobileNumber) && <small className="phone-validation-error">{PHONE_VALIDATION_MESSAGE}</small>}</label>
               <button type="submit" className="payment-methods-submit-button" disabled={!isPhoneNumberValid(mobileNumber)}>Add Linked Bank Account</button>
             </>}
@@ -123,7 +140,7 @@ export default function PaymentMethodsClient() {
             <div className="payment-method-icon"><Icon name={method.type === "esewa" ? "card" : "bank"} size={32}/></div>
             <div className="payment-method-info">
               <div className="payment-method-header"><h3>{method.type === "esewa" ? "eSewa" : "Linked Bank Account"}</h3>{method.isDefault && <span className="payment-method-badge">Default</span>}</div>
-              {method.type === "esewa" ? <><p>Mobile Number: {maskMobileNumber(method.mobileNumber)}</p><p>Account Name: {method.accountName}</p></> : <><p>{method.bankName}</p><p>Account Holder: {method.accountHolderName}</p><p>Mobile: {maskMobileNumber(method.mobileNumber)}</p></>}
+              {method.type === "esewa" ? <><p>Mobile Number: {maskMobileNumber(method.mobileNumber)}</p><p>eSewa ID: {method.esewaId}</p></> : <><p>{method.bankName}</p><p>Account Number: {maskBankAccountNumber(method.bankAccountNumber || "")}</p><p>Mobile: {maskMobileNumber(method.mobileNumber)}</p></>}
             </div>
             <div className="payment-method-actions">
               {!method.isDefault && <button type="button" className="payment-method-action-button" onClick={() => setDefaultMethod(method.id)}><Icon name="check" size={16}/>Set Default</button>}

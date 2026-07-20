@@ -54,6 +54,9 @@ export default function RegisterForm() {
     setLoading(false);
 
     if (!result.success) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("Registration failed", { message: result.message || "Unknown registration error" });
+      }
       setError(result.message || "Registration failed");
       return;
     }
