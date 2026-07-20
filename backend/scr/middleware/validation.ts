@@ -1,9 +1,10 @@
 const { ALLOWED_ROLES } = require("../config/constant");
 const { HttpException } = require("../exceptions/http-exception");
 const { isPasswordValid, PASSWORD_POLICY_MESSAGE } = require("../utils/password-policy");
+const { isOptionalPhoneNumberValid, PHONE_VALIDATION_MESSAGE } = require("../utils/phone-validation");
 
 const validateRegister = (req, _res, next) => {
-  const { fullName, email, password } = req.body;
+  const { fullName, email, password, phoneNumber } = req.body;
 
   if (!fullName || typeof fullName !== "string" || fullName.trim().length === 0) {
     return next(new HttpException(400, "Full name is required and must be a string"));
@@ -15,6 +16,10 @@ const validateRegister = (req, _res, next) => {
 
   if (!isPasswordValid(password)) {
     return next(new HttpException(400, PASSWORD_POLICY_MESSAGE));
+  }
+
+  if (!isOptionalPhoneNumberValid(phoneNumber)) {
+    return next(new HttpException(400, PHONE_VALIDATION_MESSAGE));
   }
 
   return next();
@@ -35,7 +40,7 @@ const validateLogin = (req, _res, next) => {
 };
 
 const validateAdminCreateUser = (req, _res, next) => {
-  const { fullName, email, password, role } = req.body;
+  const { fullName, email, password, role, phoneNumber } = req.body;
 
   if (!fullName || typeof fullName !== "string" || fullName.trim().length === 0) {
     return next(new HttpException(400, "Full name is required and must be a string"));
@@ -49,6 +54,10 @@ const validateAdminCreateUser = (req, _res, next) => {
     return next(new HttpException(400, PASSWORD_POLICY_MESSAGE));
   }
 
+  if (!isOptionalPhoneNumberValid(phoneNumber)) {
+    return next(new HttpException(400, PHONE_VALIDATION_MESSAGE));
+  }
+
   if (role && !ALLOWED_ROLES.includes(role)) {
     return next(new HttpException(400, "Role must be either 'user' or 'admin'"));
   }
@@ -57,7 +66,7 @@ const validateAdminCreateUser = (req, _res, next) => {
 };
 
 const validateAdminUpdateUser = (req, _res, next) => {
-  const { email, password, role } = req.body;
+  const { email, password, role, phoneNumber } = req.body;
 
   if (email !== undefined && (typeof email !== "string" || !isValidEmail(email))) {
     return next(new HttpException(400, "Valid email is required"));
@@ -65,6 +74,10 @@ const validateAdminUpdateUser = (req, _res, next) => {
 
   if (password !== undefined && password !== "" && !isPasswordValid(password)) {
     return next(new HttpException(400, PASSWORD_POLICY_MESSAGE));
+  }
+
+  if (!isOptionalPhoneNumberValid(phoneNumber)) {
+    return next(new HttpException(400, PHONE_VALIDATION_MESSAGE));
   }
 
   if (role !== undefined && !ALLOWED_ROLES.includes(role)) {
@@ -75,7 +88,7 @@ const validateAdminUpdateUser = (req, _res, next) => {
 };
 
 const validateProfileUpdate = (req, _res, next) => {
-  const { fullName, email, profilePicture } = req.body;
+  const { fullName, email, profilePicture, phoneNumber } = req.body;
 
   if (fullName !== undefined && (typeof fullName !== "string" || fullName.trim().length === 0)) {
     return next(new HttpException(400, "Full name is required and must be a string"));
@@ -83,6 +96,10 @@ const validateProfileUpdate = (req, _res, next) => {
 
   if (email !== undefined && (typeof email !== "string" || !isValidEmail(email))) {
     return next(new HttpException(400, "Valid email is required"));
+  }
+
+  if (!isOptionalPhoneNumberValid(phoneNumber)) {
+    return next(new HttpException(400, PHONE_VALIDATION_MESSAGE));
   }
 
   if (profilePicture !== undefined) {

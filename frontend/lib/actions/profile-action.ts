@@ -6,6 +6,7 @@ import { clearAuthCookies, getTokenCookie, storeUserData } from "@/lib/cookies";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { isPasswordValid, PASSWORD_POLICY_MESSAGE } from "@/lib/password-policy";
+import { isOptionalPhoneNumberValid, PHONE_VALIDATION_MESSAGE } from "@/lib/phone-validation";
 
 export type ProfileActionState = {
   success: boolean;
@@ -67,6 +68,10 @@ export async function updateProfileAction(_prevState: ActionState, formData: For
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { success: false, message: "Enter a valid email address" };
+  }
+
+  if (!isOptionalPhoneNumberValid(phoneNumber)) {
+    return { success: false, message: PHONE_VALIDATION_MESSAGE };
   }
 
   try {

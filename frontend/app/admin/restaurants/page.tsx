@@ -7,6 +7,7 @@ import { createRestaurantAction, deleteRestaurantAction, getAdminRestaurantsActi
 import type { AdminRestaurant, RestaurantsResponse } from "@/lib/api/admin";
 import { getRestaurantImage, RESTAURANT_FALLBACK_IMAGE } from "@/lib/restaurant-image";
 import DeleteConfirmationModal from "../_components/DeleteConfirmationModal";
+import { isPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
 
 const CUISINES = ["Italian", "Japanese", "Indian", "Chinese", "Thai", "Korean", "Nepali"];
 const SLOTS = ["11:00 AM", "12:30 PM", "2:00 PM", "5:30 PM", "7:00 PM", "8:30 PM"];
@@ -29,7 +30,7 @@ function payload(form: FormState, imageFile: File | null) {
   const data = new FormData();
   data.append("name", form.name.trim()); data.append("cuisine", form.cuisine); data.append("location", form.location.trim());
   data.append("priceRange", form.priceRange); data.append("hours", `Mon-Sun: ${form.openingTime} - ${form.closingTime}`);
-  data.append("address", form.address.trim() || form.location.trim()); data.append("phone", form.phone.trim() || "+977 1-0000000");
+  data.append("address", form.address.trim() || form.location.trim()); data.append("phone", form.phone);
   data.append("description", form.description.trim()); data.append("features", form.features);
   data.append("availableTimeSlots", JSON.stringify(SLOTS));
   if (imageFile) data.append("image", imageFile);
@@ -87,6 +88,7 @@ export default function AdminRestaurantsPage() {
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!form.name.trim() || !CUISINES.includes(form.cuisine) || !form.location.trim() || !form.priceRange || !form.openingTime.trim() || !form.closingTime.trim()) { setFormError("Name, supported cuisine, location, price range, opening time, and closing time are required."); return; }
+    if (!isPhoneNumberValid(form.phone)) { setFormError(PHONE_VALIDATION_MESSAGE); return; }
     setSubmitting(true); setFormError("");
     try {
       if (editing === "new") await createRestaurantAction(payload(form, imageFile));
@@ -148,10 +150,10 @@ export default function AdminRestaurantsPage() {
       <label className={styles.field}>Opening time<input className={styles.inputControl} required value={form.openingTime} onChange={(e) => setForm({ ...form, openingTime: e.target.value })} /></label>
       <label className={styles.field}>Closing time<input className={styles.inputControl} required value={form.closingTime} onChange={(e) => setForm({ ...form, closingTime: e.target.value })} /></label>
       <label className={styles.field}>Address<input className={styles.inputControl} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} /></label>
-      <label className={styles.field}>Phone<input className={styles.inputControl} inputMode="tel" pattern="[0-9+()\-\s]{7,20}" title="Enter a valid phone number" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></label>
+      <label className={styles.field}>Phone<input className={`${styles.inputControl} ${form.phone && !isPhoneNumberValid(form.phone) ? "phone-input-invalid" : ""}`} type="tel" inputMode="numeric" maxLength={10} required value={form.phone} onChange={(e) => { const phone = sanitizePhoneNumber(e.target.value); setForm({ ...form, phone }); if (isPhoneNumberValid(phone)) setFormError(""); }} />{form.phone && !isPhoneNumberValid(form.phone) && <small className={styles.fieldError}>{PHONE_VALIDATION_MESSAGE}</small>}</label>
       <label className={`${styles.field} ${styles.fullField}`}>Description<textarea className={styles.inputControl} rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></label>
       <label className={`${styles.field} ${styles.fullField}`}>Menu/features (comma separated)<input className={styles.inputControl} value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} /></label>
-      {formError && <div className={`${styles.errorBanner} ${styles.fullField}`}>{formError}</div>}<div className={`${styles.modalActions} ${styles.fullField}`}><button className={styles.secondaryButton} type="button" onClick={closeForm}>Cancel</button><button className={styles.primaryButton} type="submit" disabled={submitting}>{submitting ? "Saving…" : "Save Restaurant"}</button></div>
+      {formError && <div className={`${styles.errorBanner} ${styles.fullField}`}>{formError}</div>}<div className={`${styles.modalActions} ${styles.fullField}`}><button className={styles.secondaryButton} type="button" onClick={closeForm}>Cancel</button><button className={styles.primaryButton} type="submit" disabled={submitting || !isPhoneNumberValid(form.phone)}>{submitting ? "Saving…" : "Save Restaurant"}</button></div>
     </form></section></div>}
 
     <DeleteConfirmationModal open={Boolean(deleteTarget)} title="Delete Restaurant" name={deleteTarget?.name || "this restaurant"} message="This removes it from both admin and user dashboards." confirmLabel="Delete Restaurant" deleting={submitting} onCancel={() => setDeleteTarget(null)} onConfirm={() => void remove()} />

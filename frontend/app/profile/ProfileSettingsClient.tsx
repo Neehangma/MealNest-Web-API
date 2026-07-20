@@ -3,6 +3,7 @@
 import { updateProfileAction, type ProfileActionState } from "@/lib/actions/profile-action";
 import { useLogout } from "@/app/_components/LogoutProvider";
 import { FormEvent, useRef, useState } from "react";
+import { isOptionalPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
 
 type ProfileUser = {
   fullName: string;
@@ -116,6 +117,10 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
 
   function requestProfileUpdate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!isOptionalPhoneNumberValid(profile.phoneNumber)) {
+      setProfileState({ success: false, message: PHONE_VALIDATION_MESSAGE });
+      return;
+    }
     setPendingProfileData(new FormData(event.currentTarget));
     setShowProfileUpdateDialog(true);
   }
@@ -205,7 +210,8 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
                 </label>
                 <label>
                   <span>Phone Number</span>
-                  <input name="phoneNumber" value={profile.phoneNumber} onChange={(event) => setProfile((current) => ({ ...current, phoneNumber: event.target.value }))} />
+                  <input name="phoneNumber" type="tel" inputMode="numeric" maxLength={10} className={profile.phoneNumber && !isOptionalPhoneNumberValid(profile.phoneNumber) ? "phone-input-invalid" : ""} value={profile.phoneNumber} onChange={(event) => setProfile((current) => ({ ...current, phoneNumber: sanitizePhoneNumber(event.target.value) }))} />
+                  {profile.phoneNumber && !isOptionalPhoneNumberValid(profile.phoneNumber) && <small className="phone-validation-error">{PHONE_VALIDATION_MESSAGE}</small>}
                 </label>
                 <label>
                   <span>Location</span>
@@ -225,7 +231,7 @@ export default function ProfileSettingsClient({ user }: { user: ProfileUser }) {
                     {profileState.message}
                   </p>
                 )}
-                <button type="submit" className="profile-submit-button" disabled={isUpdatingProfile}>
+                <button type="submit" className="profile-submit-button" disabled={isUpdatingProfile || !isOptionalPhoneNumberValid(profile.phoneNumber)}>
                   {isUpdatingProfile ? "Updating..." : "Update Profile"}
                 </button>
               </div>

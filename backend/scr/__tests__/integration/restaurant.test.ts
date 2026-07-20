@@ -27,7 +27,7 @@ describe("restaurant API", () => {
   test("allows admin restaurant CRUD and denies normal users", async () => {
     const admin = await createTestUser({ role: "admin", email: "admin-restaurants@example.com" });
     const user = await createTestUser({ email: "user-restaurants@example.com" });
-    const payload = { name: "CW2 Admin Bistro", cuisine: "Italian", location: "Kathmandu", address: "Test Address", phone: "+977 1-5551234", price: 400 };
+    const payload = { name: "CW2 Admin Bistro", cuisine: "Italian", location: "Kathmandu", address: "Test Address", phone: "9800000000", price: 400 };
 
     const denied = await request(app).post("/api/v1/restaurants").set("Authorization", `Bearer ${tokenFor(user)}`).field(payload);
     expect(denied.status).toBe(403);
@@ -45,4 +45,3 @@ describe("restaurant API", () => {
     expect(await Restaurant.findById(id)).toBeNull();
   });
 });
-

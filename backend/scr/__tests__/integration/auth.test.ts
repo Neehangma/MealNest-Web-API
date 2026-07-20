@@ -25,6 +25,7 @@ describe("authentication API", () => {
   test.each([
     [{ email: "bad", password: "secret123", fullName: "User" }, "Valid email is required"],
     [{ email: "user@example.com", password: "weakpassword", fullName: "User" }, "Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character."],
+    [{ email: "user@example.com", password: "Secret123!", fullName: "User", phoneNumber: "98000 00000" }, "Phone number must contain exactly 10 digits."],
     [{ email: "user@example.com", password: "secret123" }, "Full name is required and must be a string"],
   ])("rejects invalid registration input", async (body, message) => {
     const response = await request(app).post("/api/auth/register").send(body);

@@ -8,6 +8,7 @@ const { HttpException } = require("../exceptions/http-exception");
 const userRepository = require("../repositories/user.repository");
 const { sendBookingConfirmationEmail } = require("./emailService");
 const { isValidObjectId, toSafeUser } = require("../utils/apihelper.utils");
+const { isPhoneNumberValid, isOptionalPhoneNumberValid, PHONE_VALIDATION_MESSAGE } = require("../utils/phone-validation");
 
 function formatDisplayDate(dateValue) {
   const date = new Date(dateValue);
@@ -179,7 +180,7 @@ async function updateProfile(userId, payload) {
 
   if (payload.fullName !== undefined && !payload.fullName) throw new HttpException(400, "Full name is required");
   if (payload.email !== undefined && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) throw new HttpException(400, "Enter a valid email address");
-  if (payload.phoneNumber && !/^[0-9+()\-\s]{7,20}$/.test(payload.phoneNumber)) throw new HttpException(400, "Enter a valid phone number");
+  if (!isOptionalPhoneNumberValid(payload.phoneNumber)) throw new HttpException(400, PHONE_VALIDATION_MESSAGE);
 
   if (payload.email && payload.email !== user.email) {
     const existingUser = await userRepository.findByEmail(payload.email);
@@ -329,9 +330,8 @@ async function createReservation(userId, payload) {
     throw new HttpException(400, "Payment must succeed before creating a reservation");
   }
 
-  if (!payload.customerName || !/^(97|98)\d{8}$/.test(String(payload.customerPhone || ""))) {
-    throw new HttpException(400, "Valid customer payment details are required");
-  }
+  if (!payload.customerName) throw new HttpException(400, "Valid customer payment details are required");
+  if (!isPhoneNumberValid(String(payload.customerPhone || ""))) throw new HttpException(400, PHONE_VALIDATION_MESSAGE);
 
   if (!Number.isFinite(Number(payload.totalPaid)) || Number(payload.totalPaid) < 0) {
     throw new HttpException(400, "Invalid payment amount");

@@ -23,7 +23,7 @@ describe("payment validation within booking creation", () => {
 
   test.each([
     [{ customerName: "" }, "Valid customer payment details are required"],
-    [{ customerPhone: "123" }, "Valid customer payment details are required"],
+    [{ customerPhone: "123" }, "Phone number must contain exactly 10 digits."],
     [{ totalPaid: -1 }, "Invalid payment amount"],
     [{ paymentMethod: "cash" }, "Payment method must be eSewa or Mobile Banking"],
     [{ paymentStatus: "failed" }, "Payment must succeed before creating a reservation"],
@@ -35,4 +35,3 @@ describe("payment validation within booking creation", () => {
     expect(response.body.message).toBe(message);
   });
 });
-
