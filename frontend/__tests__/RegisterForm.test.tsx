@@ -7,7 +7,7 @@ import { navigationMocks } from "@/jest.setup";
 jest.mock("@/lib/actions/auth-action", () => ({ handleRegisterUser: jest.fn() }));
 const register = jest.mocked(handleRegisterUser);
 
-async function fill(password = "secret123", confirmation = password) {
+async function fill(password = "Secret123!", confirmation = password) {
   await userEvent.type(screen.getByLabelText("Full Name"), "Dawa Sherpa");
   await userEvent.type(screen.getByLabelText("Email Address"), "dawa@example.com");
   await userEvent.type(screen.getByLabelText("Phone Number"), "9845698712");
@@ -20,7 +20,7 @@ async function fill(password = "secret123", confirmation = password) {
 test("renders registration fields and validates password confirmation", async () => {
   render(<RegisterForm />);
   expect(screen.getByRole("heading", { name: "Create Account" })).toBeVisible();
-  await fill("secret123", "different");
+  await fill("Secret123!", "Different123!");
   expect(await screen.findByText("Passwords do not match.")).toBeVisible();
   expect(register).not.toHaveBeenCalled();
 });
@@ -29,6 +29,6 @@ test("submits registration and follows current success behavior", async () => {
   register.mockResolvedValue({ success: true, message: "Registered" });
   render(<RegisterForm />);
   await fill();
-  await waitFor(() => expect(register).toHaveBeenCalledWith({ fullName: "Dawa Sherpa", email: "dawa@example.com", phoneNumber: "9845698712", password: "secret123" }));
+  await waitFor(() => expect(register).toHaveBeenCalledWith({ fullName: "Dawa Sherpa", email: "dawa@example.com", phoneNumber: "9845698712", password: "Secret123!" }));
   expect(navigationMocks.push).toHaveBeenCalledWith("/dashboard/user");
 });

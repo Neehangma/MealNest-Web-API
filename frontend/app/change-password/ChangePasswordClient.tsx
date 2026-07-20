@@ -1,9 +1,11 @@
 "use client";
 
 import { changePasswordAction } from "@/lib/actions/profile-action";
-import { useActionState, useRef, useEffect } from "react";
+import { useActionState, useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import PasswordInput from "@/app/_components/PasswordInput";
+import PasswordRequirements from "@/app/_components/PasswordRequirements";
+import { isPasswordValid } from "@/lib/password-policy";
 
 type IconName = "lock" | "chevron";
 
@@ -41,10 +43,18 @@ const emptyState = {
 export default function ChangePasswordClient() {
   const [passwordState, passwordFormAction, isChangingPassword] = useActionState(changePasswordAction, emptyState);
   const passwordFormRef = useRef<HTMLFormElement>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
     if (passwordState.success) {
-      passwordFormRef.current?.reset();
+      const resetTimer = window.setTimeout(() => {
+        passwordFormRef.current?.reset();
+        setNewPassword("");
+        setConfirmPassword("");
+      }, 0);
+
+      return () => window.clearTimeout(resetTimer);
     }
   }, [passwordState.success]);
 
@@ -75,27 +85,32 @@ export default function ChangePasswordClient() {
                 <span>New Password</span>
                 <PasswordInput
                   name="newPassword"
-                  minLength={6}
+                  minLength={8}
                   required
                   placeholder="Enter your new password"
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
                 />
-                <small>Password must be at least 6 characters</small>
+                <PasswordRequirements password={newPassword} />
               </label>
               <label>
                 <span>Confirm Password</span>
                 <PasswordInput
                   name="confirmPassword"
-                  minLength={6}
+                  minLength={8}
                   required
                   placeholder="Confirm your new password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
                 />
+                {confirmPassword && newPassword !== confirmPassword && <small className="password-match-error">Passwords do not match.</small>}
               </label>
               {passwordState.message && (
                 <p className={`change-password-message ${passwordState.success ? "success" : "error"}`}>
                   {passwordState.message}
                 </p>
               )}
-              <button type="submit" className="change-password-submit-button" disabled={isChangingPassword}>
+              <button type="submit" className="change-password-submit-button" disabled={isChangingPassword || !isPasswordValid(newPassword) || newPassword !== confirmPassword}>
                 {isChangingPassword ? "Changing Password..." : "Change Password"}
               </button>
             </form>

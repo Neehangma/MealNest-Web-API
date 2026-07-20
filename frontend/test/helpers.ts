@@ -1,7 +1,7 @@
 import { expect, type APIRequestContext } from "@playwright/test";
 
 export const API_URL = "http://127.0.0.1:18088";
-export const PASSWORD = "TestPassword123";
+export const PASSWORD = "TestPassword123!";
 
 export async function login(request: APIRequestContext, email: string, password = PASSWORD) {
   const response = await request.post(`${API_URL}/api/auth/login`, { data: { email, password } });

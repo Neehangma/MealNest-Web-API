@@ -1,5 +1,6 @@
 const { ALLOWED_ROLES } = require("../config/constant");
 const { HttpException } = require("../exceptions/http-exception");
+const { isPasswordValid, PASSWORD_POLICY_MESSAGE } = require("../utils/password-policy");
 
 const validateRegister = (req, _res, next) => {
   const { fullName, email, password } = req.body;
@@ -12,8 +13,8 @@ const validateRegister = (req, _res, next) => {
     return next(new HttpException(400, "Valid email is required"));
   }
 
-  if (!password || typeof password !== "string" || password.length < 6) {
-    return next(new HttpException(400, "Password must be at least 6 characters"));
+  if (!isPasswordValid(password)) {
+    return next(new HttpException(400, PASSWORD_POLICY_MESSAGE));
   }
 
   return next();
@@ -44,8 +45,8 @@ const validateAdminCreateUser = (req, _res, next) => {
     return next(new HttpException(400, "Valid email is required"));
   }
 
-  if (!password || typeof password !== "string" || password.length < 6) {
-    return next(new HttpException(400, "Password must be at least 6 characters"));
+  if (!isPasswordValid(password)) {
+    return next(new HttpException(400, PASSWORD_POLICY_MESSAGE));
   }
 
   if (role && !ALLOWED_ROLES.includes(role)) {
@@ -62,8 +63,8 @@ const validateAdminUpdateUser = (req, _res, next) => {
     return next(new HttpException(400, "Valid email is required"));
   }
 
-  if (password !== undefined && password !== "" && (typeof password !== "string" || password.length < 6)) {
-    return next(new HttpException(400, "Password must be at least 6 characters"));
+  if (password !== undefined && password !== "" && !isPasswordValid(password)) {
+    return next(new HttpException(400, PASSWORD_POLICY_MESSAGE));
   }
 
   if (role !== undefined && !ALLOWED_ROLES.includes(role)) {
@@ -108,8 +109,8 @@ const validatePasswordChange = (req, _res, next) => {
     return next(new HttpException(400, "Current password is required"));
   }
 
-  if (!newPassword || typeof newPassword !== "string" || newPassword.length < 6) {
-    return next(new HttpException(400, "New password must be at least 6 characters"));
+  if (!isPasswordValid(newPassword)) {
+    return next(new HttpException(400, PASSWORD_POLICY_MESSAGE));
   }
 
   if (currentPassword === newPassword) {

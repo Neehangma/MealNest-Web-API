@@ -5,11 +5,15 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { handleRegisterUser } from "@/lib/actions/auth-action";
 import PasswordInput from "@/app/_components/PasswordInput";
+import PasswordRequirements from "@/app/_components/PasswordRequirements";
+import { isPasswordValid, PASSWORD_POLICY_MESSAGE } from "@/lib/password-policy";
 
 export default function RegisterForm() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -18,6 +22,11 @@ export default function RegisterForm() {
     const formData = new FormData(event.currentTarget);
     const password = String(formData.get("password") || "");
     const confirmPassword = String(formData.get("confirmPassword") || "");
+
+    if (!isPasswordValid(password)) {
+      setError(PASSWORD_POLICY_MESSAGE);
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
@@ -70,10 +79,12 @@ export default function RegisterForm() {
               <input id="phoneNumber" name="phoneNumber" type="tel" placeholder="Enter phone number" />
 
               <label htmlFor="registerPassword">Password</label>
-              <PasswordInput id="registerPassword" name="password" placeholder="Enter password" required minLength={6} />
+              <PasswordInput id="registerPassword" name="password" placeholder="Enter password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} />
+              <PasswordRequirements password={password} />
 
               <label htmlFor="confirmPassword">Confirm Password</label>
-              <PasswordInput id="confirmPassword" name="confirmPassword" placeholder="Confirm password" required minLength={6} />
+              <PasswordInput id="confirmPassword" name="confirmPassword" placeholder="Confirm password" required minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
+              {confirmPassword && password !== confirmPassword && <p className="password-match-error">Passwords do not match.</p>}
 
               <div className="checkbox-row">
                 <input id="terms" type="checkbox" required />
@@ -82,7 +93,7 @@ export default function RegisterForm() {
 
               {error && <p className="form-error">{error}</p>}
 
-              <button type="submit" disabled={loading}>
+              <button type="submit" disabled={loading || !isPasswordValid(password) || password !== confirmPassword}>
                 {loading ? "Creating..." : "Create Account"}
               </button>
             </form>

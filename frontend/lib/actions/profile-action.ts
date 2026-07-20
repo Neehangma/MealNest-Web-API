@@ -5,6 +5,7 @@ import type { AuthUser } from "@/lib/api/auth";
 import { clearAuthCookies, getTokenCookie, storeUserData } from "@/lib/cookies";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { isPasswordValid, PASSWORD_POLICY_MESSAGE } from "@/lib/password-policy";
 
 export type ProfileActionState = {
   success: boolean;
@@ -103,8 +104,8 @@ export async function changePasswordAction(_prevState: ActionState, formData: Fo
     return { success: false, message: "Current password is required" };
   }
 
-  if (newPassword.length < 6) {
-    return { success: false, message: "New password must be at least 6 characters" };
+  if (!isPasswordValid(newPassword)) {
+    return { success: false, message: PASSWORD_POLICY_MESSAGE };
   }
 
   if (newPassword !== confirmPassword) {

@@ -10,7 +10,7 @@ describe("authentication API", () => {
       fullName: "CW2 Registered User",
       email: "registered@example.com",
       phoneNumber: "9800000000",
-      password: "secret123",
+      password: "Secret123!",
     });
 
     expect(response.status).toBe(201);
@@ -18,13 +18,13 @@ describe("authentication API", () => {
     expect(typeof response.body.token).toBe("string");
     expect(response.body.user.password).toBeUndefined();
     const stored = await User.findOne({ email: "registered@example.com" }).select("+password");
-    expect(stored.password).not.toBe("secret123");
-    expect(await bcrypt.compare("secret123", stored.password)).toBe(true);
+    expect(stored.password).not.toBe("Secret123!");
+    expect(await bcrypt.compare("Secret123!", stored.password)).toBe(true);
   });
 
   test.each([
     [{ email: "bad", password: "secret123", fullName: "User" }, "Valid email is required"],
-    [{ email: "user@example.com", password: "123", fullName: "User" }, "Password must be at least 6 characters"],
+    [{ email: "user@example.com", password: "weakpassword", fullName: "User" }, "Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character."],
     [{ email: "user@example.com", password: "secret123" }, "Full name is required and must be a string"],
   ])("rejects invalid registration input", async (body, message) => {
     const response = await request(app).post("/api/auth/register").send(body);
@@ -34,7 +34,7 @@ describe("authentication API", () => {
 
   test("rejects duplicate email", async () => {
     await createTestUser({ email: "duplicate@example.com" });
-    const response = await request(app).post("/api/auth/register").send({ fullName: "Duplicate", email: "duplicate@example.com", password: "secret123" });
+    const response = await request(app).post("/api/auth/register").send({ fullName: "Duplicate", email: "duplicate@example.com", password: "Secret123!" });
     expect(response.status).toBe(409);
   });
 
@@ -69,4 +69,3 @@ describe("authentication API", () => {
     expect(response.body.user.password).toBeUndefined();
   });
 });
-

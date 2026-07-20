@@ -3,12 +3,17 @@
 import { LoginFormData, RegisterFormData } from "@/app/(auth)/components/schema";
 import { login, register } from "@/lib/api/auth";
 import { clearAuthCookies, setTokenCookie, storeUserData } from "@/lib/cookies";
+import { isPasswordValid, PASSWORD_POLICY_MESSAGE } from "@/lib/password-policy";
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
 }
 
 export const handleRegisterUser = async (data: RegisterFormData) => {
+  if (!isPasswordValid(data.password)) {
+    return { success: false, message: PASSWORD_POLICY_MESSAGE };
+  }
+
   try {
     const result = await register(data);
 
