@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { handleRegisterUser } from "@/lib/actions/auth-action";
 import PasswordInput from "@/app/_components/PasswordInput";
 import PasswordRequirements from "@/app/_components/PasswordRequirements";
@@ -16,10 +16,13 @@ export default function RegisterForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [success, setSuccess] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    setSuccess("");
 
     const formData = new FormData(event.currentTarget);
     const password = String(formData.get("password") || "");
@@ -55,8 +58,12 @@ export default function RegisterForm() {
       return;
     }
 
-    router.push("/dashboard/user");
-    router.refresh();
+    setSuccess(result.message || "Account created successfully. Please log in to continue.");
+    formRef.current?.reset();
+    setPassword("");
+    setConfirmPassword("");
+    setPhoneNumber("");
+    window.setTimeout(() => router.push("/login"), 1500);
   }
 
   return (
@@ -76,7 +83,7 @@ export default function RegisterForm() {
             <h1>Create Account</h1>
             <p>Join MealNest and start booking your favorite restaurants.</p>
 
-            <form onSubmit={handleSubmit}>
+            <form ref={formRef} onSubmit={handleSubmit}>
               <label htmlFor="fullName">Full Name</label>
               <input id="fullName" name="fullName" type="text" placeholder="Enter full name" required />
 
@@ -101,6 +108,7 @@ export default function RegisterForm() {
               </div>
 
               {error && <p className="form-error">{error}</p>}
+              {success && <p className="form-success" role="status">{success}</p>}
 
               <button type="submit" disabled={loading || !isOptionalPhoneNumberValid(phoneNumber) || !isPasswordValid(password) || password !== confirmPassword}>
                 {loading ? "Creating..." : "Create Account"}

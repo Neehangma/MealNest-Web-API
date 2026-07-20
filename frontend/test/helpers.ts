@@ -16,7 +16,8 @@ export async function register(request: APIRequestContext, prefix: string) {
   });
   expect(response.status(), await response.text()).toBe(201);
   const body = await response.json();
-  return { email, token: body.token as string, user: body.user };
+  expect(body.token).toBeUndefined();
+  return { email, token: await login(request, email), user: body.user };
 }
 
 export async function restaurant(request: APIRequestContext) {

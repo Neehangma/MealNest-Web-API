@@ -27,6 +27,12 @@ export type AuthResponse = {
   user: AuthUser;
 };
 
+export type RegistrationResponse = {
+  success: boolean;
+  message: string;
+  user: AuthUser;
+};
+
 export type CurrentUserResponse = {
   success: boolean;
   user: AuthUser;
@@ -34,7 +40,7 @@ export type CurrentUserResponse = {
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8088";
 
-async function authRequest(path: string, data: AuthRequest) {
+async function authRequest<T>(path: string, data: AuthRequest) {
   const response = await fetch(`${BASE_URL}${path}`, {
     method: "POST",
     headers: {
@@ -49,15 +55,15 @@ async function authRequest(path: string, data: AuthRequest) {
     throw new Error(body?.message || "Authentication failed");
   }
 
-  return body as AuthResponse;
+  return body as T;
 }
 
 export const register = async (data: AuthRequest) => {
-  return authRequest(API.AUTH.REGISTER, data);
+  return authRequest<RegistrationResponse>(API.AUTH.REGISTER, data);
 };
 
 export const login = async (data: AuthRequest) => {
-  return authRequest(API.AUTH.LOGIN, data);
+  return authRequest<AuthResponse>(API.AUTH.LOGIN, data);
 };
 
 export const getCurrentUser = async (token: string) => {

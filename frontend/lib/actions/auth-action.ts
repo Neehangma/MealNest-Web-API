@@ -31,8 +31,6 @@ export const handleRegisterUser = async (data: RegisterFormData) => {
     }
 
     await clearAuthCookies();
-    await setTokenCookie(result.token);
-    await storeUserData(result.user);
 
     return {
       success: true,

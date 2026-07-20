@@ -14,12 +14,16 @@ describe("authentication API", () => {
     });
 
     expect(response.status).toBe(201);
-    expect(response.body).toMatchObject({ success: true, message: "Account created successfully" });
-    expect(typeof response.body.token).toBe("string");
+    expect(response.body).toMatchObject({ success: true, message: "Account created successfully. Please log in to continue." });
+    expect(response.body.token).toBeUndefined();
     expect(response.body.user.password).toBeUndefined();
     const stored = await User.findOne({ email: "registered@example.com" }).select("+password");
     expect(stored.password).not.toBe("Secret123!");
     expect(await bcrypt.compare("Secret123!", stored.password)).toBe(true);
+
+    const login = await request(app).post("/api/auth/login").send({ email: "registered@example.com", password: "Secret123!" });
+    expect(login.status).toBe(200);
+    expect(typeof login.body.token).toBe("string");
   });
 
   test.each([

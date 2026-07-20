@@ -25,10 +25,14 @@ test("renders registration fields and validates password confirmation", async ()
   expect(register).not.toHaveBeenCalled();
 });
 
-test("submits registration and follows current success behavior", async () => {
-  register.mockResolvedValue({ success: true, message: "Registered" });
+test("shows success, clears the form, and redirects to login without authenticating", async () => {
+  register.mockResolvedValue({ success: true, message: "Account created successfully. Please log in to continue." });
   render(<RegisterForm />);
   await fill();
   await waitFor(() => expect(register).toHaveBeenCalledWith({ fullName: "Dawa Sherpa", email: "dawa@example.com", phoneNumber: "9845698712", password: "Secret123!" }));
-  expect(navigationMocks.push).toHaveBeenCalledWith("/dashboard/user");
+  expect(screen.getByRole("status")).toHaveTextContent("Account created successfully. Please log in to continue.");
+  expect(screen.getByLabelText("Full Name")).toHaveValue("");
+  expect(screen.getByLabelText("Password")).toHaveValue("");
+  await waitFor(() => expect(navigationMocks.push).toHaveBeenCalledWith("/login"), { timeout: 2500 });
+  expect(navigationMocks.push).not.toHaveBeenCalledWith("/dashboard/user");
 });

@@ -81,7 +81,6 @@ async function register(payload) {
   });
 
   return {
-    token: createToken(user),
     user: toSafeUser(user),
   };
 }

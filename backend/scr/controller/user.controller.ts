@@ -15,8 +15,7 @@ const { sendSuccess, toSafeUser } = require("../utils/apihelper.utils");
 async function register(req, res) {
   const result = await userService.register(createRegisterDto(req.body));
   return sendSuccess(res, 201, {
-    message: "Account created successfully",
-    token: result.token,
+    message: "Account created successfully. Please log in to continue.",
     user: result.user,
   });
 }
