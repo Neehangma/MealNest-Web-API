@@ -302,6 +302,21 @@ input:focus {
   padding-right: 48px;
 }
 
+/* Keep the shared custom toggle as the only password reveal control. */
+.password-input-wrapper input[type="password"]::-ms-reveal,
+.password-input-wrapper input[type="password"]::-ms-clear {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.password-input-wrapper input::-webkit-credentials-auto-fill-button,
+.password-input-wrapper input::-webkit-textfield-decoration-container {
+  display: none !important;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .password-visibility-toggle {
   position: absolute;
   top: 50%;

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createPaidReservationAction } from "@/lib/actions/reservation-action";
 import { isPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
+import { BANK_ACCOUNT_NUMBER_MESSAGE, ESEWA_ID_REQUIRED_MESSAGE, isBankAccountNumberValid, isEsewaIdValid, sanitizeBankAccountNumber } from "@/lib/payment-validation";
 
 type PaymentMethod = "esewa" | "mobile_banking";
 type IconName = "chevron" | "check" | "bank";
@@ -50,16 +51,16 @@ export default function PaymentCheckoutPage() {
   });
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("esewa");
   const [mobileNumber, setMobileNumber] = useState("");
-  const [accountName, setAccountName] = useState("");
+  const [esewaId, setEsewaId] = useState("");
   const [bankName, setBankName] = useState("");
-  const [accountHolderName, setAccountHolderName] = useState("");
+  const [bankAccountNumber, setBankAccountNumber] = useState("");
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
   const submissionStarted = useRef(false);
 
   const paymentLabel = paymentMethod === "esewa" ? "eSewa" : "Mobile Banking";
-  const customerName = paymentMethod === "esewa" ? accountName.trim() : accountHolderName.trim();
+  const bankAccountNumberIsValid = isBankAccountNumberValid(bankAccountNumber);
 
   function selectPaymentMethod(method: PaymentMethod) {
     setPaymentMethod(method);
@@ -69,9 +70,9 @@ export default function PaymentCheckoutPage() {
   function validateDetails() {
     if (!booking) return "Booking details are missing. Please select a table again.";
     if (!isPhoneNumberValid(mobileNumber)) return PHONE_VALIDATION_MESSAGE;
-    if (paymentMethod === "esewa" && !accountName.trim()) return "Account name is required.";
+    if (paymentMethod === "esewa" && !isEsewaIdValid(esewaId)) return ESEWA_ID_REQUIRED_MESSAGE;
     if (paymentMethod === "mobile_banking" && !bankName) return "Bank name is required.";
-    if (paymentMethod === "mobile_banking" && !accountHolderName.trim()) return "Account holder name is required.";
+    if (paymentMethod === "mobile_banking" && !bankAccountNumberIsValid) return BANK_ACCOUNT_NUMBER_MESSAGE;
     return "";
   }
 
@@ -98,8 +99,8 @@ export default function PaymentCheckoutPage() {
         paymentMethod,
         paymentStatus: "simulated_success",
         totalPaid: booking.totalAmount,
-        customerName,
         customerPhone: mobileNumber.trim(),
+        ...(paymentMethod === "esewa" ? { esewaId: esewaId.trim() } : { bankAccountNumber }),
       });
       const confirmedBooking = response.booking || response.data;
       if (!confirmedBooking?.bookingReference || !confirmedBooking.restaurantName) {
@@ -149,10 +150,10 @@ export default function PaymentCheckoutPage() {
           <div className="payment-details-form">
             {paymentMethod === "esewa" ? <>
               <div className="form-group"><label htmlFor="esewa-mobile">eSewa Mobile Number</label><input id="esewa-mobile" type="tel" inputMode="numeric" maxLength={10} className={mobileNumber && !isPhoneNumberValid(mobileNumber) ? "phone-input-invalid" : ""} value={mobileNumber} onChange={(event) => { const phone = sanitizePhoneNumber(event.target.value); setMobileNumber(phone); if (isPhoneNumberValid(phone)) setError(""); }} placeholder="98XXXXXXXX" required/>{mobileNumber && !isPhoneNumberValid(mobileNumber) && <small className="phone-validation-error">{PHONE_VALIDATION_MESSAGE}</small>}</div>
-              <div className="form-group"><label htmlFor="esewa-name">Account Name</label><input id="esewa-name" type="text" value={accountName} onChange={(event) => setAccountName(event.target.value)} placeholder="Enter account name" required/></div>
+              <div className="form-group"><label htmlFor="esewa-id">ESEWA ID</label><input id="esewa-id" type="text" value={esewaId} onChange={(event) => { setEsewaId(event.target.value); if (isEsewaIdValid(event.target.value)) setError(""); }} placeholder="Enter eSewa ID" required/></div>
             </> : <>
               <div className="form-group"><label htmlFor="bank-name">Bank Name</label><select id="bank-name" value={bankName} onChange={(event) => setBankName(event.target.value)} required><option value="">Select Bank</option>{NEPAL_BANKS.map((bank) => <option key={bank} value={bank}>{bank}</option>)}</select></div>
-              <div className="form-group"><label htmlFor="account-holder">Account Holder Name</label><input id="account-holder" type="text" value={accountHolderName} onChange={(event) => setAccountHolderName(event.target.value)} placeholder="Enter account holder name" required/></div>
+              <div className="form-group"><label htmlFor="bank-account-number">ACCOUNT NUMBER</label><input id="bank-account-number" type="text" inputMode="numeric" maxLength={16} value={bankAccountNumber} onChange={(event) => { const value = sanitizeBankAccountNumber(event.target.value); setBankAccountNumber(value); if (isBankAccountNumberValid(value)) setError(""); }} placeholder="Enter bank account number" required/></div>
               <div className="form-group"><label htmlFor="bank-mobile">Mobile Number</label><input id="bank-mobile" type="tel" inputMode="numeric" maxLength={10} className={mobileNumber && !isPhoneNumberValid(mobileNumber) ? "phone-input-invalid" : ""} value={mobileNumber} onChange={(event) => { const phone = sanitizePhoneNumber(event.target.value); setMobileNumber(phone); if (isPhoneNumberValid(phone)) setError(""); }} placeholder="98XXXXXXXX" required/>{mobileNumber && !isPhoneNumberValid(mobileNumber) && <small className="phone-validation-error">{PHONE_VALIDATION_MESSAGE}</small>}</div>
             </>}
           </div>
