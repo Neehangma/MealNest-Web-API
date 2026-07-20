@@ -1,9 +1,20 @@
 const nodemailer = require("nodemailer");
+const BOOKING_EMAIL_TEST_RECIPIENT = "mealnest67@gmail.com";
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: process.env.EMAIL_HOST || "smtp.gmail.com",
+  port: Number(process.env.EMAIL_PORT || 587),
+  secure: process.env.EMAIL_SECURE === "true",
   auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
 });
+
+if (process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test" && typeof transporter.verify === "function") {
+  transporter.verify()
+    .then(() => console.log("Email service is ready"))
+    .catch((error) => {
+      console.error("Email service configuration failed:", error instanceof Error ? error.message : "Unknown error");
+    });
+}
 
 function hasValue(value) {
   return value !== undefined && value !== null && String(value).trim() !== "";
@@ -61,10 +72,8 @@ function detailRow(leftLabel, leftValue, rightLabel, rightValue, rightFallback) 
   return `<tr>${detailCell(leftLabel, leftValue)}${detailCell(rightLabel, rightValue, rightFallback)}</tr>`;
 }
 
-async function sendBookingConfirmationEmail({ recipientEmail, customerName, booking }) {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) throw new Error("Booking email is not configured");
-  const email = String(recipientEmail || "").trim().toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Authenticated user email is invalid");
+async function sendBookingConfirmationEmail({ customerName, booking }) {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || !process.env.EMAIL_FROM) throw new Error("Booking email is not configured");
 
   const confirmed = booking || {};
   const displayName = valueOrFallback(customerName || confirmed.customerName, "Guest");
@@ -88,8 +97,8 @@ async function sendBookingConfirmationEmail({ recipientEmail, customerName, book
   ].join("");
 
   return transporter.sendMail({
-    from: `"${process.env.EMAIL_FROM_NAME || "MealNest"}" <${process.env.EMAIL_USER}>`,
-    to: email,
+    from: process.env.EMAIL_FROM,
+    to: BOOKING_EMAIL_TEST_RECIPIENT,
     subject: `Booking Confirmed – ${restaurantName.replace(/[\r\n]/g, " ")} – ${reference.replace(/[\r\n]/g, " ")}`,
     html: `<!doctype html><html><body style="margin:0;padding:0;background:#eee6df;font-family:Arial,sans-serif;color:#2b1d17;">
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:#eee6df;"><tr><td align="center" style="padding:28px 12px;">

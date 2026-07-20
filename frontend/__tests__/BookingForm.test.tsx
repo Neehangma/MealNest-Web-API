@@ -32,5 +32,5 @@ test("stores the current booking payload and follows payment navigation", async 
   await userEvent.selectOptions(screen.getByLabelText("Party Size"), "2");
   await userEvent.click(screen.getByRole("button", { name: "Book a Table" }));
   expect(JSON.parse(sessionStorage.getItem("mealnest_booking")!)).toMatchObject({ restaurantId: "restaurant-1", date: "2027-07-25", time: "7:00 PM", guests: 2 });
-  expect(navigationMocks.push).toHaveBeenCalledWith("/dashboard/user/payment");
+  expect(navigationMocks.push).toHaveBeenCalledWith("/payment-checkout");
 });

@@ -50,7 +50,7 @@ export default function BookingConfirmationPage() {
           <div className="confirmation-message">
             <p>Dear <strong>{displayValue(booking.customerName)}</strong>,</p>
             <p>Your reservation at <strong>{displayValue(booking.restaurantName)}</strong> is confirmed.</p>
-            <p>{booking.emailSent ? `A confirmation email has been sent to ${displayValue(booking.customerEmail)}.` : "Your booking is confirmed, but the confirmation email could not be sent."}</p>
+            <p>{booking.emailSent ? "A confirmation email has been sent." : "Your booking is confirmed, but the confirmation email could not be sent."}</p>
           </div>
 
           <div className="booking-details-card">

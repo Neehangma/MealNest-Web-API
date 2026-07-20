@@ -42,7 +42,7 @@ const emptyState = {
 };
 
 export default function ChangePasswordClient() {
-  const { push } = useRouter();
+  const { replace } = useRouter();
   const [passwordState, passwordFormAction, isChangingPassword] = useActionState(changePasswordAction, emptyState);
   const passwordFormRef = useRef<HTMLFormElement>(null);
   const [newPassword, setNewPassword] = useState("");
@@ -60,12 +60,12 @@ export default function ChangePasswordClient() {
           window.localStorage.removeItem(key);
           window.sessionStorage.removeItem(key);
         }
-        push("/login");
+        replace("/login");
       }, 1500);
 
       return () => window.clearTimeout(resetTimer);
     }
-  }, [passwordState.success, push]);
+  }, [passwordState.success, replace]);
 
   return (
     <div className="change-password-page">
