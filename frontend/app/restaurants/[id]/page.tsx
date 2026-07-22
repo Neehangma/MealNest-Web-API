@@ -9,6 +9,7 @@ import { getFavoritesAction, toggleFavoriteAction } from "@/lib/actions/dashboar
 import { getStableRestaurantPrice } from "@/lib/restaurant-price";
 import { getRestaurantImage, RESTAURANT_FALLBACK_IMAGE } from "@/lib/restaurant-image";
 import { RESERVATION_TIME_SLOTS } from "@/lib/reservation-time";
+import RestaurantMenu from "./RestaurantMenu";
 
 export default function RestaurantDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -165,6 +166,7 @@ export default function RestaurantDetailPage() {
               ))}
             </div>
           </section>
+          <RestaurantMenu key={restaurant.cuisine.trim().toLowerCase()} cuisine={restaurant.cuisine} />
         </div>
         <aside className="booking-sidebar">
           <div className="booking-card">
