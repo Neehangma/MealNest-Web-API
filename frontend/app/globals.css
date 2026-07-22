@@ -5346,6 +5346,90 @@ font-size:30px;
   margin-top: 48px;
 }
 
+/* Payment method add confirmation modal */
+.payment-method-confirmation-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(24, 16, 12, 0.62);
+}
+
+.payment-method-confirmation-modal {
+  width: min(100%, 480px);
+  padding: 32px;
+  border: 1px solid #ead5c8;
+  border-radius: 16px;
+  background: #fffaf6;
+  box-shadow: 0 20px 60px rgba(35, 24, 20, 0.3);
+  text-align: center;
+}
+
+.payment-method-confirmation-modal h2 {
+  margin: 0 0 14px;
+  color: #231814;
+  font-family: Georgia, serif;
+  font-size: 25px;
+}
+
+.payment-method-confirmation-modal p {
+  margin: 0 0 28px;
+  color: #61728a;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.payment-method-confirmation-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+}
+
+.payment-method-confirmation-no,
+.payment-method-confirmation-yes {
+  min-width: 150px;
+  padding: 13px 20px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.payment-method-confirmation-no {
+  border: 1px solid #c99d82;
+  background: #fffdfb;
+  color: #8e4500;
+}
+
+.payment-method-confirmation-yes {
+  border: 1px solid #a45100;
+  background: linear-gradient(135deg, #a45100, #c96100);
+  color: #fff;
+}
+
+.payment-method-confirmation-no:disabled,
+.payment-method-confirmation-yes:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+@media (max-width: 520px) {
+  .payment-method-confirmation-modal {
+    padding: 28px 20px;
+  }
+
+  .payment-method-confirmation-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .payment-method-confirmation-no,
+  .payment-method-confirmation-yes {
+    width: 100%;
+  }
+}
+
 @media(max-width:900px) {
   .booking-confirmation-nav {
     padding: 0 20px;

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import Link from "next/link";
 import { isPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
 import { BANK_ACCOUNT_NUMBER_MESSAGE, ESEWA_ID_REQUIRED_MESSAGE, isBankAccountNumberValid, isEsewaIdValid, maskBankAccountNumber, sanitizeBankAccountNumber } from "@/lib/payment-validation";
@@ -39,6 +39,10 @@ export default function PaymentMethodsClient() {
   const [mobileNumber, setMobileNumber] = useState("");
   const [esewaId, setEsewaId] = useState("");
   const [bankAccountNumber, setBankAccountNumber] = useState("");
+  const [pendingMethod, setPendingMethod] = useState<AddedPaymentMethod | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const submissionInProgress = useRef(false);
 
   const selectMethod = (type: AddPaymentMethodType) => {
     setSelectedType(type);
@@ -59,6 +63,7 @@ export default function PaymentMethodsClient() {
     }
     const submittedEsewaId = String(data.get("esewaId") || "").trim();
     const submittedBankAccountNumber = String(data.get("bankAccountNumber") || "");
+    const submittedBankName = String(data.get("bankName") || "");
     if (selectedType === "esewa" && !isEsewaIdValid(submittedEsewaId)) {
       setFormMessage(ESEWA_ID_REQUIRED_MESSAGE);
       return;
@@ -67,15 +72,34 @@ export default function PaymentMethodsClient() {
       setFormMessage(BANK_ACCOUNT_NUMBER_MESSAGE);
       return;
     }
+    if (selectedType === "mobile_banking" && !submittedBankName) {
+      setFormMessage("Bank name is required.");
+      return;
+    }
     const method: AddedPaymentMethod = selectedType === "esewa"
       ? { id: globalThis.crypto?.randomUUID?.() || String(Date.now()), type: "esewa", mobileNumber: submittedMobileNumber, esewaId: submittedEsewaId, isDefault: addedMethods.length === 0 }
-      : { id: globalThis.crypto?.randomUUID?.() || String(Date.now()), type: "mobile_banking", mobileNumber: submittedMobileNumber, bankName: String(data.get("bankName") || ""), bankAccountNumber: submittedBankAccountNumber, isDefault: addedMethods.length === 0 };
-    setAddedMethods((methods) => [...methods, method]);
-    setFormMessage(selectedType === "esewa" ? "eSewa account added." : "Linked bank account added.");
-    event.currentTarget.reset();
+      : { id: globalThis.crypto?.randomUUID?.() || String(Date.now()), type: "mobile_banking", mobileNumber: submittedMobileNumber, bankName: submittedBankName, bankAccountNumber: submittedBankAccountNumber, isDefault: addedMethods.length === 0 };
+    setPendingMethod(method);
+  };
+
+  const cancelAdd = () => {
+    if (isAdding) return;
+    setPendingMethod(null);
+  };
+
+  const confirmAdd = () => {
+    if (!pendingMethod || submissionInProgress.current) return;
+    submissionInProgress.current = true;
+    setIsAdding(true);
+    setAddedMethods((methods) => [...methods, pendingMethod]);
+    setFormMessage(pendingMethod.type === "esewa" ? "eSewa account added." : "Linked bank account added.");
+    setPendingMethod(null);
+    formRef.current?.reset();
     setMobileNumber("");
     setEsewaId("");
     setBankAccountNumber("");
+    setIsAdding(false);
+    submissionInProgress.current = false;
   };
 
   const setDefaultMethod = (id: string) => setAddedMethods((methods) => methods.map((method) => ({ ...method, isDefault: method.id === id })));
@@ -120,7 +144,7 @@ export default function PaymentMethodsClient() {
 
         {showAddForm && <div className="payment-methods-form-card">
           <h3>{selectedType === "esewa" ? "Add eSewa Account" : "Add Linked Bank Account"}</h3>
-          <form className="payment-methods-form" onSubmit={handleSubmit}>
+          <form ref={formRef} className="payment-methods-form" onSubmit={handleSubmit}>
             {selectedType === "esewa" ? <>
               <label><span>eSewa Mobile Number</span><input name="mobileNumber" type="tel" inputMode="numeric" maxLength={10} className={mobileNumber && !isPhoneNumberValid(mobileNumber) ? "phone-input-invalid" : ""} value={mobileNumber} onChange={(event) => { const phone = sanitizePhoneNumber(event.target.value); setMobileNumber(phone); if (isPhoneNumberValid(phone)) setFormMessage(""); }} placeholder="98XXXXXXXX" required/>{mobileNumber && !isPhoneNumberValid(mobileNumber) && <small className="phone-validation-error">{PHONE_VALIDATION_MESSAGE}</small>}</label>
               <label><span>ESEWA ID</span><input name="esewaId" type="text" value={esewaId} onChange={(event) => { setEsewaId(event.target.value); if (isEsewaIdValid(event.target.value)) setFormMessage(""); }} placeholder="Enter eSewa ID" required/></label>
@@ -151,6 +175,17 @@ export default function PaymentMethodsClient() {
 
       </div>
     </main>
+
+    {pendingMethod && <div className="payment-method-confirmation-backdrop" role="dialog" aria-modal="true" aria-labelledby="add-payment-method-title" aria-describedby="add-payment-method-message">
+      <section className="payment-method-confirmation-modal">
+        <h2 id="add-payment-method-title">{pendingMethod.type === "esewa" ? "Add eSewa Account?" : "Add Linked Bank Account?"}</h2>
+        <p id="add-payment-method-message">{pendingMethod.type === "esewa" ? "Do you want to add this eSewa account as a payment method?" : "Do you want to add this bank account as a payment method?"}</p>
+        <div className="payment-method-confirmation-modal-actions">
+          <button type="button" className="payment-method-confirmation-no" onClick={cancelAdd} disabled={isAdding}>No</button>
+          <button type="button" className="payment-method-confirmation-yes" onClick={confirmAdd} disabled={isAdding}>{isAdding ? "Adding..." : "Yes, Add Account"}</button>
+        </div>
+      </section>
+    </div>}
 
     <footer className="customer-footer payment-methods-footer"><div><h2>MealNest</h2><p>Premium dining logistics and reservations for the modern connoisseur.</p></div><nav aria-label="Platform links"><h3>Platform</h3><a href="#">About Us</a><a href="#">Press</a><a href="#">Careers</a></nav><nav aria-label="Support links"><h3>Support</h3><a href="#">Privacy Policy</a><a href="#">Terms of Service</a><a href="#">Contact</a></nav><div><h3>Connect</h3><div className="social-row"><Icon name="card"/><Icon name="card"/><Icon name="card"/></div><p>&copy; 2024 MealNest. All rights reserved.</p></div></footer>
   </div>;
