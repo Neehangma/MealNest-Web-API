@@ -13,7 +13,7 @@ import {
 import { clearAuthCookies, getTokenCookie } from "@/lib/cookies";
 import { redirect } from "next/navigation";
 import { isPasswordValid, PASSWORD_POLICY_MESSAGE } from "@/lib/password-policy";
-import { isOptionalPhoneNumberValid, PHONE_VALIDATION_MESSAGE } from "@/lib/phone-validation";
+import { isOptionalPhoneNumberValid, isPhoneNumberValid, PHONE_VALIDATION_MESSAGE } from "@/lib/phone-validation";
 
 async function getAdminToken() {
   const token = await getTokenCookie();
@@ -50,9 +50,34 @@ export async function getAdminUserByIdAction(id: string) {
 }
 
 export async function createAdminUserAction(data: UserPayload & { password: string }) {
-  if (!isOptionalPhoneNumberValid(data.phoneNumber || "")) throw new Error(PHONE_VALIDATION_MESSAGE);
-  if (!isPasswordValid(data.password)) throw new Error(PASSWORD_POLICY_MESSAGE);
-  return runAdminRequest((token) => createUser(data, token));
+  const fullName = data.fullName.trim();
+  const email = data.email.trim().toLowerCase();
+  const role = String(data.role || "user").toLowerCase();
+
+  if (!fullName) return { success: false as const, message: "Name is required." };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { success: false as const, message: "Please enter a valid email address." };
+  if (!isPhoneNumberValid(data.phoneNumber || "")) return { success: false as const, message: PHONE_VALIDATION_MESSAGE };
+  if (!isPasswordValid(data.password)) return { success: false as const, message: PASSWORD_POLICY_MESSAGE };
+  if (role !== "user" && role !== "admin") return { success: false as const, message: "Role must be either 'user' or 'admin'" };
+
+  const token = await getAdminToken();
+  try {
+    const response = await createUser({ ...data, fullName, email, role }, token);
+    return {
+      success: true as const,
+      message: response.message || "User created successfully.",
+      data: { ...response.data },
+    };
+  } catch (error) {
+    if (error instanceof AdminApiError && error.status === 401) {
+      await clearAuthCookies();
+      redirect("/login");
+    }
+    return {
+      success: false as const,
+      message: error instanceof Error ? error.message : "Unable to create user.",
+    };
+  }
 }
 
 export async function updateAdminUserAction(id: string, data: Partial<UserPayload>) {

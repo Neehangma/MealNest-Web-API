@@ -1,7 +1,7 @@
 const { ALLOWED_ROLES } = require("../config/constant");
 const { HttpException } = require("../exceptions/http-exception");
 const { isPasswordValid, PASSWORD_POLICY_MESSAGE } = require("../utils/password-policy");
-const { isOptionalPhoneNumberValid, PHONE_VALIDATION_MESSAGE } = require("../utils/phone-validation");
+const { isOptionalPhoneNumberValid, isPhoneNumberValid, PHONE_VALIDATION_MESSAGE } = require("../utils/phone-validation");
 
 const validateRegister = (req, _res, next) => {
   const { fullName, email, password, phoneNumber } = req.body;
@@ -43,22 +43,22 @@ const validateAdminCreateUser = (req, _res, next) => {
   const { fullName, email, password, role, phoneNumber } = req.body;
 
   if (!fullName || typeof fullName !== "string" || fullName.trim().length === 0) {
-    return next(new HttpException(400, "Full name is required and must be a string"));
+    return next(new HttpException(400, "Name is required."));
   }
 
   if (!email || typeof email !== "string" || !isValidEmail(email)) {
-    return next(new HttpException(400, "Valid email is required"));
+    return next(new HttpException(400, "Please enter a valid email address."));
   }
 
   if (!isPasswordValid(password)) {
     return next(new HttpException(400, PASSWORD_POLICY_MESSAGE));
   }
 
-  if (!isOptionalPhoneNumberValid(phoneNumber)) {
+  if (!isPhoneNumberValid(phoneNumber)) {
     return next(new HttpException(400, PHONE_VALIDATION_MESSAGE));
   }
 
-  if (role && !ALLOWED_ROLES.includes(role)) {
+  if (role && !ALLOWED_ROLES.includes(String(role).trim().toLowerCase())) {
     return next(new HttpException(400, "Role must be either 'user' or 'admin'"));
   }
 
