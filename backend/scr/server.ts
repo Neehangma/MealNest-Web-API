@@ -1,3 +1,4 @@
+import chatbotRoutes from "./routes/chatbotRoutes";
 require("dotenv").config({ quiet: true });
 
 const cors = require("cors");
@@ -33,6 +34,8 @@ app.use("/api/v1/restaurants", restaurantRoutes);
 app.use("/api/v1", userRoutes);
 app.use("/api", userRoutes);
 app.use("/api/restaurants", restaurantRoutes);
+// MealNest AI chatbot (authenticated users only).
+app.use("/api/chatbot", chatbotRoutes);
 
 app.use((_req, _res, next) => {
   next(new HttpException(404, "Route not found"));
