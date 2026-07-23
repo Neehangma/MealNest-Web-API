@@ -6,6 +6,7 @@ import Sidebar from "@/app/dashboard/user/_components/Sidebar";
 import DashboardHeader from "@/app/dashboard/user/_components/DashboardHeader";
 import { getUserData } from "@/lib/cookies";
 import type { AuthUser } from "@/lib/api/auth";
+import Chatbot from "@/components/chatbot/Chatbot";
 
 const USER_ROUTES = ["/dashboard/user", "/discover", "/reservations", "/favorites", "/profile", "/payment-methods", "/change-password", "/restaurants", "/payment-checkout", "/booking-confirmation"];
 
@@ -42,6 +43,8 @@ export default function UserDashboardShell({ children }: { children: React.React
       <Sidebar open={sidebarOpen} onNavigate={() => setSidebarOpen(false)} />
       {sidebarOpen && <button type="button" className="dash-sidebar-backdrop" aria-label="Close dashboard navigation" onClick={() => setSidebarOpen(false)} />}
       <div className="user-dashboard-content">{children}</div>
+      {/* MealNest AI chatbot is mounted only for authenticated user routes. */}
+      {user?.role === "user" && <Chatbot />}
     </div>
   </UserDashboardContext.Provider>;
 }
