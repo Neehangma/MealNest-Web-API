@@ -20,6 +20,8 @@ test("validates booking date and time", async () => {
   expect(timeOptions).toHaveLength(26);
   expect(timeOptions[1]).toHaveTextContent("10:00 AM");
   expect(timeOptions.at(-1)).toHaveTextContent("10:00 PM");
+  expect(screen.getByRole("heading", { name: "Restaurant Menu" })).toBeVisible();
+  expect(screen.getByText("Margherita Pizza")).toBeVisible();
   await userEvent.click(screen.getByRole("button", { name: "Book a Table" }));
   expect(screen.getByText("Please select a date and time.")).toBeVisible();
 });

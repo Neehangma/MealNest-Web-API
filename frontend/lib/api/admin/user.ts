@@ -81,7 +81,12 @@ export async function adminRequest<T>(
   const body = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new AdminApiError(body?.message || "Admin request failed", response.status);
+    const details = Array.isArray(body?.details)
+      ? body.details.filter(Boolean).join(", ")
+      : typeof body?.details === "string"
+        ? body.details
+        : "";
+    throw new AdminApiError(body?.message || details || `Admin request failed (${response.status})`, response.status);
   }
 
   return body as T;

@@ -34,6 +34,7 @@ describe("restaurant API", () => {
 
     const created = await request(app).post("/api/v1/restaurants").set("Authorization", `Bearer ${tokenFor(admin)}`).field(payload);
     expect(created.status).toBe(201);
+    expect(created.body.data).toMatchObject({ name: payload.name, cuisine: payload.cuisine });
     const id = created.body.restaurant._id;
 
     const updated = await request(app).put(`/api/v1/restaurants/${id}`).set("Authorization", `Bearer ${tokenFor(admin)}`).field({ name: "CW2 Updated Bistro" });
