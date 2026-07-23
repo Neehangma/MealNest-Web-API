@@ -18,6 +18,14 @@ function listValue(value) {
   return text(value).split(",").map((item) => item.trim()).filter(Boolean);
 }
 
+function hoursValue(body, fallback) {
+  if (body.hours !== undefined) return text(body.hours, fallback);
+  if (body.openingTime !== undefined || body.closingTime !== undefined) {
+    return `Mon-Sun: ${text(body.openingTime)} - ${text(body.closingTime)}`;
+  }
+  return fallback;
+}
+
 function createRestaurantDto(body) {
   return {
     name: text(body.name),
@@ -31,7 +39,7 @@ function createRestaurantDto(body) {
     isOpen: booleanValue(body.isOpen, true),
     address: text(body.address, body.location),
     phone: text(body.phone, "9800000000"),
-    hours: text(body.hours, "Mon-Sun: 11:00 AM - 10:00 PM"),
+    hours: hoursValue(body, "Mon-Sun: 11:00 AM - 10:00 PM"),
     featured: booleanValue(body.featured, false),
     availableTimeSlots: listValue(body.availableTimeSlots),
     features: listValue(body.features || body.menuFeatures),
@@ -43,6 +51,9 @@ function createRestaurantUpdateDto(body) {
   const textFields = ["name", "cuisine", "location", "description", "image", "priceRange", "address", "phone", "hours"];
   for (const field of textFields) {
     if (body[field] !== undefined) dto[field] = text(body[field]);
+  }
+  if (body.openingTime !== undefined || body.closingTime !== undefined) {
+    dto.hours = hoursValue(body, "Mon-Sun: 11:00 AM - 10:00 PM");
   }
   if (body.price !== undefined && body.price !== "") dto.price = Number(body.price);
   if (body.isActive !== undefined) dto.isActive = booleanValue(body.isActive, true);
