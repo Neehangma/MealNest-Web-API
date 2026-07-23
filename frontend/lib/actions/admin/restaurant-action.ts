@@ -24,8 +24,26 @@ export async function getAdminRestaurantsAction(params: RestaurantListParams = {
   return withAdminToken((token) => getAdminRestaurants(params, token));
 }
 export async function createRestaurantAction(data: FormData) {
-  if (!isPhoneNumberValid(String(data.get("phone") || ""))) throw new Error(PHONE_VALIDATION_MESSAGE);
-  return withAdminToken((token) => createRestaurant(data, token));
+  if (!isPhoneNumberValid(String(data.get("phone") || ""))) {
+    return { success: false as const, message: PHONE_VALIDATION_MESSAGE };
+  }
+
+  const token = await getTokenCookie();
+  if (!token) redirect("/login");
+
+  try {
+    const response = await createRestaurant(data, token);
+    return { success: true as const, response };
+  } catch (error) {
+    if (error instanceof AdminApiError && error.status === 401) {
+      await clearAuthCookies();
+      redirect("/login");
+    }
+    return {
+      success: false as const,
+      message: error instanceof Error ? error.message : "Unable to save restaurant",
+    };
+  }
 }
 export async function updateRestaurantAction(id: string, data: FormData) {
   if (data.has("phone") && !isPhoneNumberValid(String(data.get("phone") || ""))) throw new Error(PHONE_VALIDATION_MESSAGE);

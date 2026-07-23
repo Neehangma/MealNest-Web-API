@@ -7,6 +7,7 @@ import { createRestaurantAction, deleteRestaurantAction, getAdminRestaurantsActi
 import type { AdminRestaurant, RestaurantsResponse } from "@/lib/api/admin";
 import { getRestaurantImage, RESTAURANT_FALLBACK_IMAGE } from "@/lib/restaurant-image";
 import DeleteConfirmationModal from "../_components/DeleteConfirmationModal";
+import ConfirmationModal from "../_components/ConfirmationModal";
 import { isPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
 import { RESERVATION_TIME_SLOTS } from "@/lib/reservation-time";
 
@@ -49,7 +50,9 @@ export default function AdminRestaurantsPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [editing, setEditing] = useState<AdminRestaurant | "new" | null>(null);
+  const [confirmingCreate, setConfirmingCreate] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<AdminRestaurant | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -70,9 +73,9 @@ export default function AdminRestaurantsPage() {
   useEffect(() => { void load(page); }, [page, meta.limit, debouncedSearch, cuisine, available]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function clearPreview() { if (imagePreview.startsWith("blob:")) URL.revokeObjectURL(imagePreview); setImagePreview(""); setImageFile(null); }
-  function openCreate() { clearPreview(); setEditing("new"); setForm(EMPTY_FORM); setFormError(""); }
+  function openCreate() { clearPreview(); setEditing("new"); setForm(EMPTY_FORM); setFormError(""); setSuccessMessage(""); setConfirmingCreate(false); }
   function openEdit(restaurant: AdminRestaurant) { clearPreview(); setEditing(restaurant); setForm(editForm(restaurant)); setImagePreview(getRestaurantImage(restaurant.image)); setFormError(""); }
-  function closeForm() { if (!submitting) { clearPreview(); setEditing(null); setFormError(""); } }
+  function closeForm() { if (!submitting) { clearPreview(); setEditing(null); setFormError(""); setConfirmingCreate(false); } }
 
   useEffect(() => () => { if (imagePreview.startsWith("blob:")) URL.revokeObjectURL(imagePreview); }, [imagePreview]);
 
@@ -85,15 +88,36 @@ export default function AdminRestaurantsPage() {
     setImageFile(file); setImagePreview(URL.createObjectURL(file)); setFormError("");
   }
 
-  async function save(event: FormEvent<HTMLFormElement>) {
+  function validateForm() {
+    if (!form.name.trim() || !CUISINES.includes(form.cuisine) || !form.location.trim() || !form.priceRange || !form.openingTime.trim() || !form.closingTime.trim()) { setFormError("Name, supported cuisine, location, price range, opening time, and closing time are required."); return false; }
+    if (!isPhoneNumberValid(form.phone)) { setFormError(PHONE_VALIDATION_MESSAGE); return false; }
+    return true;
+  }
+
+  function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!form.name.trim() || !CUISINES.includes(form.cuisine) || !form.location.trim() || !form.priceRange || !form.openingTime.trim() || !form.closingTime.trim()) { setFormError("Name, supported cuisine, location, price range, opening time, and closing time are required."); return; }
-    if (!isPhoneNumberValid(form.phone)) { setFormError(PHONE_VALIDATION_MESSAGE); return; }
+    if (editing === "new") {
+      setFormError("");
+      setConfirmingCreate(true);
+      return;
+    }
+    void persistRestaurant();
+  }
+
+  async function persistRestaurant() {
+    if (submitting) return;
+    if (!validateForm()) { setConfirmingCreate(false); return; }
     setSubmitting(true); setFormError("");
     try {
-      if (editing === "new") await createRestaurantAction(payload(form, imageFile));
+      if (editing === "new") {
+        const result = await createRestaurantAction(payload(form, imageFile));
+        if (!result.success) throw new Error(result.message);
+      }
       else if (editing) await updateRestaurantAction(editing._id, payload(form, imageFile));
-      clearPreview(); setEditing(null); await load(editing === "new" ? 1 : page);
+      const wasNew = editing === "new";
+      clearPreview(); setConfirmingCreate(false); setEditing(null);
+      if (wasNew) setSuccessMessage("Restaurant added successfully.");
+      await load(wasNew ? 1 : page);
     } catch (reason) { setFormError(reason instanceof Error ? reason.message : "Unable to save restaurant"); }
     finally { setSubmitting(false); }
   }
@@ -126,6 +150,7 @@ export default function AdminRestaurantsPage() {
             <select value={meta.limit} onChange={(event) => { setMeta((current) => ({ ...current, limit: Number(event.target.value) })); setPage(1); }}><option value="10">10 per page</option><option value="20">20 per page</option><option value="50">50 per page</option></select>
           </div>
           <div className={styles.panelHeader}><div><h2 className={styles.panelTitle}>Restaurants</h2><p className={styles.tableMeta}>Showing {from}–{to} of {meta.total}</p></div></div>
+          {successMessage && <div className={styles.successBanner} role="status">{successMessage}</div>}
           {error && <div className={styles.errorBanner}>{error}</div>}
           <div className={styles.tableWrap}><table className={styles.usersTable}><thead><tr><th>Image</th><th>Restaurant Name</th><th>Cuisine</th><th>Location</th><th>Availability</th><th>Created Date</th><th>Actions</th></tr></thead><tbody>
             {loading ? <tr><td colSpan={7}><div className={styles.emptyState}>Loading restaurants…</div></td></tr> : error ? <tr><td colSpan={7}><div className={styles.emptyState}>Unable to display restaurants.</div></td></tr> : restaurants.length === 0 ? <tr><td colSpan={7}><div className={styles.emptyState}>No restaurants found.</div></td></tr> : restaurants.map((restaurant) => <tr key={restaurant._id}>
@@ -141,7 +166,7 @@ export default function AdminRestaurantsPage() {
       </section>
     </main>
 
-    {editing && <div className={styles.modalBackdrop} role="dialog" aria-modal="true" aria-labelledby="restaurant-form-title"><section className={`${styles.modal} ${styles.restaurantModal}`}><div className={styles.modalHeader}><h2 id="restaurant-form-title">{editing === "new" ? "Create Restaurant" : "Edit Restaurant"}</h2><button className={styles.iconButton} type="button" aria-label="Close" onClick={closeForm}>×</button></div><form className={styles.formGrid} onSubmit={save}>
+    {editing && <div className={styles.modalBackdrop} role="dialog" aria-modal="true" aria-labelledby="restaurant-form-title"><section className={`${styles.modal} ${styles.restaurantModal}`}><div className={styles.modalHeader}><h2 id="restaurant-form-title">{editing === "new" ? "Create Restaurant" : "Edit Restaurant"}</h2><button className={styles.iconButton} type="button" aria-label="Close" onClick={closeForm}>×</button></div><form className={styles.formGrid} onSubmit={save} noValidate>
       <label className={styles.field}>Restaurant name<input className={styles.inputControl} required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
       <label className={styles.field}>Cuisine<select className={styles.selectControl} required value={form.cuisine} onChange={(e) => setForm({ ...form, cuisine: e.target.value })}><option value="">Select cuisine</option>{CUISINES.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
       <label className={styles.field}>Location<input className={styles.inputControl} required value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} /></label>
@@ -153,8 +178,10 @@ export default function AdminRestaurantsPage() {
       <label className={styles.field}>Phone<input className={`${styles.inputControl} ${form.phone && !isPhoneNumberValid(form.phone) ? "phone-input-invalid" : ""}`} type="tel" inputMode="numeric" maxLength={10} required value={form.phone} onChange={(e) => { const phone = sanitizePhoneNumber(e.target.value); setForm({ ...form, phone }); if (isPhoneNumberValid(phone)) setFormError(""); }} />{form.phone && !isPhoneNumberValid(form.phone) && <small className={styles.fieldError}>{PHONE_VALIDATION_MESSAGE}</small>}</label>
       <label className={`${styles.field} ${styles.fullField}`}>Description<textarea className={styles.inputControl} rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></label>
       <label className={`${styles.field} ${styles.fullField}`}>Menu/features (comma separated)<input className={styles.inputControl} value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} /></label>
-      {formError && <div className={`${styles.errorBanner} ${styles.fullField}`}>{formError}</div>}<div className={`${styles.modalActions} ${styles.fullField}`}><button className={styles.secondaryButton} type="button" onClick={closeForm}>Cancel</button><button className={styles.primaryButton} type="submit" disabled={submitting || !isPhoneNumberValid(form.phone)}>{submitting ? "Saving…" : "Save Restaurant"}</button></div>
+      {formError && <div className={`${styles.errorBanner} ${styles.fullField}`}>{formError}</div>}<div className={`${styles.modalActions} ${styles.fullField}`}><button className={styles.secondaryButton} type="button" onClick={closeForm}>Cancel</button><button className={styles.primaryButton} type="submit" disabled={submitting}>{submitting ? "Saving…" : "Save Restaurant"}</button></div>
     </form></section></div>}
+
+    <ConfirmationModal open={confirmingCreate} title="Add Restaurant" message="Do you want to add this restaurant?" confirming={submitting} onNo={() => { if (!submitting) setConfirmingCreate(false); }} onYes={() => void persistRestaurant()} />
 
     <DeleteConfirmationModal open={Boolean(deleteTarget)} title="Delete Restaurant" name={deleteTarget?.name || "this restaurant"} message="This removes it from both admin and user dashboards." confirmLabel="Delete Restaurant" deleting={submitting} onCancel={() => setDeleteTarget(null)} onConfirm={() => void remove()} />
   </div>;

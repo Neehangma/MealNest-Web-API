@@ -65,6 +65,8 @@ async function createRestaurant(req, res) {
   );
   return sendSuccess(res, 201, {
     message: "Restaurant created successfully",
+    data: restaurant,
+    // Retain the legacy key for older clients while dashboards use `data`.
     restaurant,
   });
 }
