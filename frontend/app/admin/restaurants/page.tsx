@@ -137,19 +137,19 @@ export default function AdminRestaurantsPage() {
     <main className={styles.main}>
       <header className={styles.topbar}><div className={styles.search}><span>⌕</span><input className={styles.searchInput} type="search" placeholder="Search by name or location..." value={search} onChange={(event) => setSearch(event.target.value)} /></div></header>
       <section className={styles.content}>
-        <div className={styles.pageHeading}><div><p className={styles.eyebrow}>Restaurant directory</p><h1>Admin Restaurant Management</h1><p className={styles.subtitle}>View, search, create, edit, and delete MealNest restaurants.</p></div><button className={styles.dateButton} type="button" onClick={openCreate}>＋ New Restaurant</button></div>
+        <div className={styles.pageHeading}><div><p className={styles.eyebrow}>Restaurant directory</p><h1>Admin Restaurant Management</h1><p className={styles.subtitle}>View, search, create, edit, and delete MealNest restaurants.</p></div></div>
 
         <div className={styles.statsGrid}>
           {[ ["Total Restaurants", meta.total], ["Available Restaurants", meta.availableTotal], ["Cuisine Types", CUISINES.length], ["Current Page", meta.page || 1] ].map(([label, value]) => <article key={label} className={`${styles.card} ${styles.statCard}`}><div><p className={styles.statLabel}>{label}</p><p className={styles.statValue}>{value}</p></div></article>)}
         </div>
 
         <section className={`${styles.card} ${styles.panel}`}>
+          <div className={styles.panelHeader}><div><h2 className={styles.panelTitle}>Restaurants</h2><p className={styles.tableMeta}>Showing {from}–{to} of {meta.total}</p></div><button className={styles.dateButton} type="button" onClick={openCreate}>＋ New Restaurant</button></div>
           <div className={styles.restaurantFilters}>
             <select value={cuisine} onChange={(event) => { setCuisine(event.target.value); setPage(1); }}><option value="">All cuisines</option>{CUISINES.map((item) => <option key={item}>{item}</option>)}</select>
             <select value={available} onChange={(event) => { setAvailable(event.target.value as typeof available); setPage(1); }}><option value="">All availability</option><option value="true">Available</option><option value="false">Unavailable</option></select>
             <select value={meta.limit} onChange={(event) => { setMeta((current) => ({ ...current, limit: Number(event.target.value) })); setPage(1); }}><option value="10">10 per page</option><option value="20">20 per page</option><option value="50">50 per page</option></select>
           </div>
-          <div className={styles.panelHeader}><div><h2 className={styles.panelTitle}>Restaurants</h2><p className={styles.tableMeta}>Showing {from}–{to} of {meta.total}</p></div></div>
           {successMessage && <div className={styles.successBanner} role="status">{successMessage}</div>}
           {error && <div className={styles.errorBanner}>{error}</div>}
           <div className={styles.tableWrap}><table className={styles.usersTable}><thead><tr><th>Image</th><th>Restaurant Name</th><th>Cuisine</th><th>Location</th><th>Availability</th><th>Created Date</th><th>Actions</th></tr></thead><tbody>
