@@ -63,6 +63,7 @@ export default function FavoritesPage() {
               <div key={restaurant._id} className="favorite-card">
                 <div className="favorite-image">
                   <Image
+                    unoptimized
                     src={getRestaurantImage(restaurant.image)}
                     alt={restaurant.name}
                     fill

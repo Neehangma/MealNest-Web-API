@@ -27,14 +27,14 @@ describe("restaurant API", () => {
   test("allows admin restaurant CRUD and denies normal users", async () => {
     const admin = await createTestUser({ role: "admin", email: "admin-restaurants@example.com" });
     const user = await createTestUser({ email: "user-restaurants@example.com" });
-    const payload = { name: "CW2 Admin Bistro", cuisine: "Italian", location: "Kathmandu", address: "Test Address", phone: "9800000000", price: 400 };
+    const payload = { name: "CW2 Admin Bistro", cuisine: "Italian", location: "Kathmandu", address: "Test Address", phone: "9800000000", priceRange: "Rs. 300–500", openingTime: "9:00 AM", closingTime: "9:00 PM", menuFeatures: "Pizza, Pasta", price: 400 };
 
     const denied = await request(app).post("/api/v1/restaurants").set("Authorization", `Bearer ${tokenFor(user)}`).field(payload);
     expect(denied.status).toBe(403);
 
     const created = await request(app).post("/api/v1/restaurants").set("Authorization", `Bearer ${tokenFor(admin)}`).field(payload);
     expect(created.status).toBe(201);
-    expect(created.body.data).toMatchObject({ name: payload.name, cuisine: payload.cuisine });
+    expect(created.body.data).toMatchObject({ name: payload.name, cuisine: payload.cuisine, priceRange: payload.priceRange, hours: "Mon-Sun: 9:00 AM - 9:00 PM", features: ["Pizza", "Pasta"] });
     const id = created.body.restaurant._id;
 
     const updated = await request(app).put(`/api/v1/restaurants/${id}`).set("Authorization", `Bearer ${tokenFor(admin)}`).field({ name: "CW2 Updated Bistro" });

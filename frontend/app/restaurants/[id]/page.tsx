@@ -120,7 +120,7 @@ export default function RestaurantDetailPage() {
     <main className="restaurant-detail">
       <div className="hero-section">
         <div className="hero-image">
-          <Image src={image} onError={() => setImage(RESTAURANT_FALLBACK_IMAGE)} alt={restaurant.name} fill priority className="hero-img" />
+          <Image unoptimized src={image} onError={() => setImage(RESTAURANT_FALLBACK_IMAGE)} alt={restaurant.name} fill priority className="hero-img" />
           <div className="hero-overlay" />
         </div>
         <div className="hero-content">
