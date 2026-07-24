@@ -144,9 +144,73 @@ async function sendPasswordResetEmail({ recipientEmail, customerName, resetToken
   });
 }
 
+async function sendReservationChangeEmail({
+  recipientEmail,
+  customerName,
+  booking,
+  heading,
+  intro,
+  subject,
+  accent,
+}) {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || !process.env.EMAIL_FROM) {
+    throw new Error("Reservation email is not configured");
+  }
+
+  const reservation = booking || {};
+  const restaurantName = valueOrFallback(reservation.restaurant?.name || reservation.restaurantName);
+  const displayName = valueOrFallback(customerName, "MealNest user");
+  const guests = hasValue(reservation.guests) ? `${reservation.guests} Guest${Number(reservation.guests) === 1 ? "" : "s"}` : "Not available";
+
+  return transporter.sendMail({
+    from: process.env.EMAIL_FROM,
+    to: String(recipientEmail || "").trim().toLowerCase(),
+    subject: `${subject} – ${restaurantName.replace(/[\r\n]/g, " ")}`,
+    html: `<!doctype html><html><body style="margin:0;padding:0;background:#f7f2ed;font-family:Arial,sans-serif;color:#2b211b;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td align="center" style="padding:32px 12px;">
+        <table role="presentation" width="580" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:580px;background:#fffaf6;border:1px solid #e3c9b7;border-radius:18px;">
+          <tr><td style="padding:24px 30px;background:#a45100;color:#fff;border-radius:18px 18px 0 0;font-family:Georgia,serif;font-size:28px;font-weight:700;">MealNest</td></tr>
+          <tr><td style="padding:32px 30px;">
+            <h1 style="margin:0 0 14px;color:${accent};font-family:Georgia,serif;font-size:28px;">${escapeHtml(heading)}</h1>
+            <p style="margin:0 0 12px;color:#62534a;line-height:1.6;">Hello ${escapeHtml(displayName)},</p>
+            <p style="margin:0 0 22px;color:#62534a;line-height:1.6;">${escapeHtml(intro)}</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #ead8ca;border-radius:12px;background:#fff;">
+              ${detailRow("Restaurant", restaurantName, "Status", formatStatus(reservation.status))}
+              ${detailRow("Reservation Date", formatDate(reservation.reservationDate || reservation.date), "Reservation Time", reservation.time)}
+              ${detailRow("Guests", guests, "Booking Reference", reservation.bookingReference)}
+            </table>
+          </td></tr>
+        </table>
+      </td></tr></table>
+    </body></html>`,
+  });
+}
+
+function sendBookingCancellationEmail(payload) {
+  return sendReservationChangeEmail({
+    ...payload,
+    heading: "Booking Cancelled",
+    intro: "Your reservation has been cancelled successfully. The booking remains available in your MealNest reservation history.",
+    subject: "MealNest booking cancelled",
+    accent: "#a72a2a",
+  });
+}
+
+function sendReservationUpdatedEmail(payload) {
+  return sendReservationChangeEmail({
+    ...payload,
+    heading: "Reservation Updated",
+    intro: "Your reservation details have been updated successfully.",
+    subject: "MealNest reservation updated",
+    accent: "#17653a",
+  });
+}
+
 module.exports = {
   formatPaymentMethod,
   formatStatus,
+  sendBookingCancellationEmail,
   sendBookingConfirmationEmail,
   sendPasswordResetEmail,
+  sendReservationUpdatedEmail,
 };

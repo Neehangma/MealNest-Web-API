@@ -7,7 +7,12 @@ const jwt = require("jsonwebtoken");
 const { ALLOWED_ROLES, BCRYPT_SALT_ROUNDS, JWT_EXPIRES_IN, JWT_SECRET } = require("../config/constant");
 const { HttpException } = require("../exceptions/http-exception");
 const userRepository = require("../repositories/user.repository");
-const { sendBookingConfirmationEmail, sendPasswordResetEmail } = require("./emailService");
+const {
+  sendBookingCancellationEmail,
+  sendBookingConfirmationEmail,
+  sendPasswordResetEmail,
+  sendReservationUpdatedEmail,
+} = require("./emailService");
 const { isValidObjectId, toSafeUser } = require("../utils/apihelper.utils");
 const { isPhoneNumberValid, isOptionalPhoneNumberValid, PHONE_VALIDATION_MESSAGE } = require("../utils/phone-validation");
 
@@ -34,6 +39,7 @@ function formatReservationItem(reservation) {
     date: reservation.date,
     time: reservation.time,
     guests: reservation.guests,
+    tableNumber: reservation.tableNumber,
     status: reservation.status,
     specialRequests: reservation.specialRequests,
     bookingReference: reservation.bookingReference,
@@ -47,6 +53,7 @@ function formatReservationItem(reservation) {
       location: populatedRestaurant.location, address: populatedRestaurant.address,
       phone: populatedRestaurant.phone, description: populatedRestaurant.description,
       priceRange: populatedRestaurant.priceRange, hours: populatedRestaurant.hours,
+      availableTimeSlots: populatedRestaurant.availableTimeSlots || [],
     } : undefined,
     paymentMethod: reservation.paymentMethod,
     paymentStatus: reservation.paymentStatus,
@@ -64,6 +71,62 @@ function createToken(user) {
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
   );
+}
+
+function reservationMoment(dateValue, timeValue) {
+  const dateText = String(dateValue || "").slice(0, 10);
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(dateText)
+    ? new Date(`${dateText}T00:00:00`)
+    : new Date(dateValue);
+  const match = String(timeValue || "").match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (!match || Number.isNaN(date.getTime())) return date;
+  let hours = Number(match[1]);
+  const meridiem = match[3]?.toUpperCase();
+  if (meridiem === "PM" && hours < 12) hours += 12;
+  if (meridiem === "AM" && hours === 12) hours = 0;
+  date.setHours(hours, Number(match[2]), 0, 0);
+  return date;
+}
+
+async function validateReservationAvailability({
+  restaurant,
+  date,
+  time,
+  guests,
+  excludeReservationId,
+}) {
+  if (!restaurant || restaurant.isOpen === false || restaurant.isActive === false) {
+    throw new HttpException(400, "This restaurant is not currently accepting reservations.");
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(reservationMoment(date, time).getTime())) {
+    throw new HttpException(400, "Enter a valid reservation date and time.");
+  }
+  if (!Number.isInteger(guests) || guests < 1 || guests > 20) {
+    throw new HttpException(400, "Guest count must be between 1 and 20.");
+  }
+  if (restaurant.availableTimeSlots?.length && !restaurant.availableTimeSlots.includes(time)) {
+    throw new HttpException(409, "The selected reservation time is unavailable.");
+  }
+
+  const suitableTables = (restaurant.tables || []).filter(
+    (table) => table.isAvailable !== false && table.capacity >= guests
+  );
+  if (restaurant.tables?.length && suitableTables.length === 0) {
+    throw new HttpException(409, "No table is available for this party size.");
+  }
+  if (suitableTables.length) {
+    const activeBookings = await userRepository.countActiveReservationsForSlot(
+      restaurant._id,
+      date,
+      time,
+      excludeReservationId
+    );
+    if (activeBookings >= suitableTables.length) {
+      throw new HttpException(409, "The selected reservation time is fully booked.");
+    }
+    return suitableTables[activeBookings]?.tableNumber;
+  }
+  return undefined;
 }
 
 const PASSWORD_RESET_EXPIRY_MS = 15 * 60 * 1000;
@@ -397,7 +460,24 @@ async function createReservation(userId, payload) {
     throw new HttpException(400, "Invalid payment amount");
   }
 
-  const reservationPayload = { ...payload };
+  const restaurant = await userRepository.getRestaurantById(payload.restaurantId);
+  if (!restaurant) throw new HttpException(404, "Restaurant not found");
+  const date = String(payload.date || payload.reservationDate || "").slice(0, 10);
+  const guests = Number(payload.guests);
+  const tableNumber = await validateReservationAvailability({
+    restaurant,
+    date,
+    time: String(payload.time || ""),
+    guests,
+  });
+  const reservationPayload = {
+    ...payload,
+    date,
+    reservationDate: date,
+    guests,
+    tableNumber,
+    status: "confirmed",
+  };
   delete reservationPayload.esewaId;
   delete reservationPayload.bankAccountNumber;
   const reservation = await userRepository.createReservation(userId, reservationPayload);
@@ -439,15 +519,60 @@ async function createReservation(userId, payload) {
 }
 
 async function updateReservation(userId, reservationId, payload) {
-  const reservation = await userRepository.updateReservation(userId, reservationId, payload);
-  if (!reservation) {
+  if (!isValidObjectId(reservationId)) throw new HttpException(400, "Invalid reservation id");
+  const current = await userRepository.getReservationWithDetails(reservationId, userId);
+  if (!current) {
     throw new HttpException(404, "Reservation not found");
   }
+  if (!["pending", "confirmed"].includes(current.status)) {
+    throw new HttpException(400, "Only upcoming pending or confirmed bookings can be modified.");
+  }
+  const currentMoment = reservationMoment(current.date || current.reservationDate, current.time);
+  if (currentMoment.getTime() - Date.now() < 2 * 60 * 60 * 1000) {
+    throw new HttpException(400, "Bookings cannot be modified after they start or within 2 hours of the reservation.");
+  }
 
-  return formatReservationItem(reservation);
+  const date = String(payload.date || current.date || current.reservationDate).slice(0, 10);
+  const time = String(payload.time || current.time);
+  const guests = payload.guests === undefined ? current.guests : Number(payload.guests);
+  if (reservationMoment(date, time).getTime() - Date.now() < 2 * 60 * 60 * 1000) {
+    throw new HttpException(400, "The new reservation time must be at least 2 hours from now.");
+  }
+  const restaurant = current.restaurant;
+  const tableNumber = await validateReservationAvailability({
+    restaurant,
+    date,
+    time,
+    guests,
+    excludeReservationId: current._id,
+  });
+
+  const reservation = await userRepository.updateReservation(userId, reservationId, {
+    date,
+    reservationDate: date,
+    time,
+    guests,
+    tableNumber,
+  });
+  const updated = await userRepository.getReservationWithDetails(reservation._id, userId) || reservation;
+  const user = await userRepository.findById(userId);
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(user?.email || ""))) {
+    try {
+      await sendReservationUpdatedEmail({
+        recipientEmail: user.email,
+        customerName: user.fullName,
+        booking: formatReservationItem(updated),
+      });
+    } catch (error) {
+      console.error(`Reservation update email failed for ${reservation.bookingReference}: ${error.message}`);
+    }
+  }
+
+  return formatReservationItem(updated);
 }
 
 async function cancelReservation(userId, reservationId) {
+  if (!isValidObjectId(reservationId)) throw new HttpException(400, "Invalid reservation id");
   const reservation = await userRepository.cancelReservation(userId, reservationId);
   if (!reservation) {
     throw new HttpException(404, "Reservation not found");
@@ -456,6 +581,35 @@ async function cancelReservation(userId, reservationId) {
     throw new HttpException(400, "This booking can no longer be cancelled");
   }
 
+  const cancelled = await userRepository.getReservationWithDetails(reservation._id, userId) || reservation;
+  const user = await userRepository.findById(userId);
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(user?.email || ""))) {
+    try {
+      await sendBookingCancellationEmail({
+        recipientEmail: user.email,
+        customerName: user.fullName,
+        booking: formatReservationItem(cancelled),
+      });
+    } catch (error) {
+      console.error(`Booking cancellation email failed for ${reservation.bookingReference}: ${error.message}`);
+    }
+  }
+
+  return formatReservationItem(cancelled);
+}
+
+async function completeAdminReservation(reservationId) {
+  if (!isValidObjectId(reservationId)) throw new HttpException(400, "Invalid reservation id");
+  const reservation = await userRepository.completeAdminReservation(reservationId);
+  if (!reservation) throw new HttpException(404, "Reservation not found");
+  if (reservation.completionDenied) {
+    throw new HttpException(400, "Only confirmed bookings can be marked as completed.");
+  }
+  if (reservationMoment(reservation.date || reservation.reservationDate, reservation.time).getTime() > Date.now()) {
+    throw new HttpException(400, "A booking can only be completed after its reservation time.");
+  }
+  reservation.status = "completed";
+  await reservation.save();
   return formatReservationItem(reservation);
 }
 
@@ -525,6 +679,13 @@ async function getAdminDashboardStats() {
   return { stats: { totalUsers: result.totalUsers, totalRestaurants: result.totalRestaurants, totalBookings: result.totalBookings, totalRevenue: result.totalRevenue }, activities };
 }
 
+async function getAdminAnalytics(range = "7d") {
+  if (!["7d", "30d", "6m"].includes(range)) {
+    throw new HttpException(400, "Analytics range must be one of: 7d, 30d, 6m.");
+  }
+  return userRepository.getAdminAnalytics(range);
+}
+
 module.exports = {
   cancelReservation,
   changePassword,
@@ -534,6 +695,8 @@ module.exports = {
   deleteAdminUser,
   getCurrentUser,
   getAdminDashboardStats,
+  getAdminAnalytics,
+  completeAdminReservation,
   getDashboard,
   getRestaurant,
   getReservation,

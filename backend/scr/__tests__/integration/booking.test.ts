@@ -1,6 +1,7 @@
 const request = require("supertest");
 const app = require("../../server");
 const Reservation = require("../../models/reservation.model");
+const emailService = require("../../services/emailService");
 const { createTestRestaurant, createTestUser, tokenFor } = require("../helpers");
 
 function bookingPayload(restaurant, overrides = {}) {
@@ -66,10 +67,69 @@ describe("booking API", () => {
     const updated = await request(app).patch(`/api/reservations/${id}`).set("Authorization", `Bearer ${token}`).send({ guests: 4 });
     expect(updated.status).toBe(200);
     expect(updated.body.data.guests).toBe(4);
+    expect(emailService.sendReservationUpdatedEmail).toHaveBeenCalledWith(expect.objectContaining({
+      recipientEmail: user.email,
+      booking: expect.objectContaining({ guests: 4 }),
+    }));
 
     const cancelled = await request(app).patch(`/api/bookings/${id}/cancel`).set("Authorization", `Bearer ${token}`);
     expect(cancelled.status).toBe(200);
     expect(cancelled.body.data.status).toBe("cancelled");
+    expect(emailService.sendBookingCancellationEmail).toHaveBeenCalledWith(expect.objectContaining({
+      recipientEmail: user.email,
+      booking: expect.objectContaining({ status: "cancelled" }),
+    }));
+    expect(await Reservation.findById(id)).not.toBeNull();
+
+    const cancelledAgain = await request(app).patch(`/api/bookings/${id}/cancel`).set("Authorization", `Bearer ${token}`);
+    expect(cancelledAgain.status).toBe(400);
+  });
+
+  test("prevents another user from modifying or cancelling a booking", async () => {
+    const owner = await createTestUser({ email: "modify-owner@example.com" });
+    const other = await createTestUser({ email: "modify-other@example.com" });
+    const restaurant = await createTestRestaurant();
+    const created = await request(app).post("/api/bookings").set("Authorization", `Bearer ${tokenFor(owner)}`).send(bookingPayload(restaurant));
+    const id = created.body.booking._id;
+
+    const modified = await request(app).patch(`/api/reservations/${id}`).set("Authorization", `Bearer ${tokenFor(other)}`).send({ guests: 5 });
+    const cancelled = await request(app).patch(`/api/bookings/${id}/cancel`).set("Authorization", `Bearer ${tokenFor(other)}`);
+    expect(modified.status).toBe(404);
+    expect(cancelled.status).toBe(404);
+  });
+
+  test("validates modification cutoff and restaurant time availability", async () => {
+    const user = await createTestUser();
+    const restaurant = await createTestRestaurant({ availableTimeSlots: ["7:00 PM"] });
+    restaurant.availableTimeSlots = ["7:00 PM"];
+    await restaurant.save();
+    const token = tokenFor(user);
+    const created = await request(app).post("/api/bookings").set("Authorization", `Bearer ${token}`).send(bookingPayload(restaurant));
+
+    const unavailable = await request(app)
+      .patch(`/api/reservations/${created.body.booking._id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ date: "2030-07-27", time: "8:00 PM", guests: 3 });
+    expect(unavailable.status).toBe(409);
+
+    const nearDate = new Date(Date.now() + 60 * 60 * 1000);
+    const near = await Reservation.create({
+      user: user._id,
+      restaurant: restaurant._id,
+      restaurantName: restaurant.name,
+      reservationDate: nearDate,
+      date: nearDate.toLocaleDateString("en-CA"),
+      time: nearDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+      guests: 2,
+      status: "confirmed",
+      bookingReference: "NEAR-CUTOFF",
+    });
+    const blocked = await request(app)
+      .patch(`/api/reservations/${near._id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ guests: 3 });
+    expect(blocked.status).toBe(400);
+    expect(blocked.body.message).toContain("within 2 hours");
   });
 
   test("returns not found for a missing owned booking", async () => {

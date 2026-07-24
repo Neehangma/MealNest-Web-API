@@ -29,3 +29,11 @@ export type AdminBooking = {
 export function getAdminBookings(token?: string) {
   return adminRequest<{ success: boolean; data: AdminBooking[]; total: number }>(API.ADMIN.BOOKINGS, {}, token);
 }
+
+export function completeAdminBooking(reservationId: string, token?: string) {
+  return adminRequest<{ success: boolean; message: string; data: AdminBooking }>(
+    API.ADMIN.COMPLETE_BOOKING(reservationId),
+    { method: "PATCH" },
+    token
+  );
+}

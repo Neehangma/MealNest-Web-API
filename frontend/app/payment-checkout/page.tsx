@@ -118,6 +118,12 @@ export default function PaymentCheckoutPage() {
 
   async function confirmPayment() {
     if (!booking || submissionStarted.current) return;
+    const validationError = validateDetails();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     submissionStarted.current = true;
     setTransactionPin("");
     setPinError("");
@@ -125,14 +131,15 @@ export default function PaymentCheckoutPage() {
     setError("");
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 700));
       const response = await createPaidReservationAction({
         ...booking,
         paymentMethod,
         paymentStatus: "simulated_success",
         totalPaid: booking.totalAmount,
         customerPhone: mobileNumber.trim(),
-        ...(paymentMethod === "esewa" ? { esewaId: esewaId.trim() } : { bankAccountNumber }),
+        ...(paymentMethod === "esewa"
+          ? { esewaId: esewaId.trim() }
+          : { bankName, bankAccountNumber: bankAccountNumber.trim() }),
       });
       const confirmedBooking = response.booking || response.data;
       if (!confirmedBooking?.bookingReference || !confirmedBooking.restaurantName) {
@@ -143,10 +150,20 @@ export default function PaymentCheckoutPage() {
         emailSent: response.emailSent === true,
       }));
       sessionStorage.removeItem("mealnest_booking");
+      setConfirmationOpen(false);
+      router.refresh();
       router.push("/dashboard/user/booking-confirmation");
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Unable to process payment. Please try again.");
-      setConfirmationOpen(false);
+      const paymentError = reason as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
+      const message =
+        paymentError?.response?.data?.message ||
+        paymentError?.message ||
+        "Payment could not be completed. Please try again.";
+      console.error("Mobile Banking payment could not be completed:", reason);
+      setError(message);
       setProcessing(false);
       submissionStarted.current = false;
     }
@@ -253,9 +270,10 @@ export default function PaymentCheckoutPage() {
           <div className="total-row"><span>Payment Method</span><span>{paymentLabel}</span></div>
           <div className="total-row final"><strong>Total Amount</strong><strong>Rs. {booking.totalAmount.toLocaleString()}</strong></div>
         </div>
+        {error && <p className="form-message error" role="alert">{error}</p>}
         <div className="payment-actions">
           <button type="button" className="cancel-button" onClick={() => setConfirmationOpen(false)} disabled={processing}>Cancel</button>
-          <button type="button" className="pay-button" onClick={() => void confirmPayment()} disabled={processing}>{processing ? "Processing Payment..." : "Confirm and Pay"}</button>
+          <button type="button" className="pay-button" onClick={confirmPayment} disabled={processing}>{processing ? "Processing..." : "Confirm and Pay"}</button>
         </div>
       </div>
     </div>}

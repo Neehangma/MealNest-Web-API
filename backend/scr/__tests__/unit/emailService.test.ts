@@ -116,4 +116,29 @@ describe("booking email service", () => {
     expect(message.html).toContain("Dawa &lt;Sherpa&gt;");
     expect(message.html).not.toContain("test-only-password");
   });
+
+  test.each([
+    ["sendBookingCancellationEmail", "MealNest booking cancelled", "Booking Cancelled"],
+    ["sendReservationUpdatedEmail", "MealNest reservation updated", "Reservation Updated"],
+  ])("sends %s to the authenticated user's email", async (method, subject, heading) => {
+    sendMail.mockResolvedValue({ messageId: "reservation-change" });
+    await emailService[method]({
+      recipientEmail: " USER@example.com ",
+      customerName: "Dawa",
+      booking: {
+        restaurantName: "Tavola",
+        reservationDate: "2030-07-25",
+        time: "7:00 PM",
+        guests: 4,
+        status: method === "sendBookingCancellationEmail" ? "cancelled" : "confirmed",
+        bookingReference: "MN-CHANGE",
+      },
+    });
+
+    const message = sendMail.mock.calls[0][0];
+    expect(message.to).toBe("user@example.com");
+    expect(message.subject).toContain(subject);
+    expect(message.html).toContain(heading);
+    expect(message.html).toContain("MN-CHANGE");
+  });
 });

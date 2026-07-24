@@ -32,6 +32,8 @@ export const API = {
         BOOKINGS: "/api/v1/admin/bookings",
         PROFILE: "/api/v1/admin/profile",
         DASHBOARD_STATS: "/api/v1/admin/dashboard/stats",
+        ANALYTICS: "/api/v1/admin/analytics",
+        COMPLETE_BOOKING: (reservationId: string) => `/api/v1/admin/bookings/${reservationId}/complete`,
         USER_BY_ID: (id: string) => `/api/v1/admin/users/${id}`,
     }
 }

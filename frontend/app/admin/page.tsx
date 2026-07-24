@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAdminDashboardStatsAction } from "@/lib/actions/admin/dashboard-action";
 import type { AdminActivity } from "@/lib/api/admin/dashboard";
+import AnalyticsSection from "./_components/analytics/AnalyticsSection";
 import styles from "./admin.module.css";
 
 type IconName = "grid" | "users" | "store" | "calendar" | "settings" | "arrow";
@@ -119,6 +120,8 @@ export default async function AdminDashboardPage() {
               </article>
             ))}
           </div>
+
+          <AnalyticsSection />
 
           <section className={`${styles.card} ${styles.panel}`}>
             <div className={styles.panelHeader}>

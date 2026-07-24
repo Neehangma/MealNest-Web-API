@@ -91,5 +91,85 @@ describe("admin API", () => {
     expect(response.status).toBe(200);
     expect(response.body.stats).toMatchObject({ totalUsers: 2, totalBookings: 1, totalRestaurants: 1, totalRevenue: 350 });
   });
+
+  test("allows only an admin to complete an eligible confirmed booking", async () => {
+    const admin = await createTestUser({ role: "admin", email: "complete-admin@example.com" });
+    const user = await createTestUser({ email: "complete-user@example.com" });
+    const restaurant = await createTestRestaurant();
+    const past = await Reservation.create({
+      user: user._id,
+      restaurant: restaurant._id,
+      restaurantName: restaurant.name,
+      reservationDate: new Date("2020-01-01"),
+      date: "2020-01-01",
+      time: "7:00 PM",
+      guests: 2,
+      status: "confirmed",
+      paymentMethod: "esewa",
+      paymentStatus: "simulated_success",
+      bookingReference: "COMPLETE-PAST",
+    });
+
+    const denied = await request(app)
+      .patch(`/api/admin/bookings/${past._id}/complete`)
+      .set("Authorization", `Bearer ${tokenFor(user)}`);
+    expect(denied.status).toBe(403);
+
+    const completed = await request(app)
+      .patch(`/api/admin/bookings/${past._id}/complete`)
+      .set("Authorization", `Bearer ${tokenFor(admin)}`);
+    expect(completed.status).toBe(200);
+    expect(completed.body.data.status).toBe("completed");
+    expect((await Reservation.findById(past._id)).paymentStatus).toBe("simulated_success");
+  });
+
+  test("returns protected, zero-filled analytics from MongoDB aggregations", async () => {
+    const admin = await createTestUser({ role: "admin", email: "analytics-admin@example.com" });
+    const user = await createTestUser({ email: "analytics-user@example.com" });
+    const italian = await createTestRestaurant({ name: "Analytics Italian", cuisine: "Italian", image: "/images/italian.jpg" });
+    const thai = await createTestRestaurant({ name: "Analytics Thai", cuisine: "Thai", image: "/images/thai.jpg" });
+    const createdAt = new Date();
+
+    await Reservation.create([
+      { user: user._id, restaurant: italian._id, restaurantName: italian.name, reservationDate: new Date("2030-01-01"), date: "2030-01-01", time: "7:00 PM", guests: 2, status: "confirmed", bookingReference: "ANALYTICS-1", createdAt },
+      { user: user._id, restaurant: italian._id, restaurantName: italian.name, reservationDate: new Date("2030-01-02"), date: "2030-01-02", time: "7:00 PM", guests: 2, status: "cancelled", bookingReference: "ANALYTICS-2", createdAt },
+      { user: user._id, restaurant: thai._id, restaurantName: thai.name, reservationDate: new Date("2030-01-03"), date: "2030-01-03", time: "7:00 PM", guests: 2, status: "pending", bookingReference: "ANALYTICS-3", createdAt },
+    ]);
+
+    const denied = await request(app).get("/api/admin/analytics?range=7d").set("Authorization", `Bearer ${tokenFor(user)}`);
+    expect(denied.status).toBe(403);
+
+    const response = await request(app).get("/api/admin/analytics?range=7d").set("Authorization", `Bearer ${tokenFor(admin)}`);
+    expect(response.status).toBe(200);
+    expect(response.body.summary).toEqual({ totalUsers: 2, totalRestaurants: 2, totalBookings: 3 });
+    expect(response.body.bookingTrends).toHaveLength(7);
+    expect(response.body.bookingTrends.reduce((sum, item) => sum + item.count, 0)).toBe(3);
+    expect(response.body.userGrowth).toHaveLength(7);
+    expect(response.body.userGrowth.reduce((sum, item) => sum + item.count, 0)).toBe(1);
+    expect(response.body.bookingStatuses).toEqual([
+      { status: "pending", count: 1 },
+      { status: "confirmed", count: 1 },
+      { status: "completed", count: 0 },
+      { status: "cancelled", count: 1 },
+    ]);
+    expect(response.body.restaurantsByCuisine).toEqual(expect.arrayContaining([
+      { cuisine: "Italian", count: 1 },
+      { cuisine: "Thai", count: 1 },
+    ]));
+    expect(response.body.topRestaurants[0]).toMatchObject({
+      restaurantId: italian._id.toString(),
+      name: "Analytics Italian",
+      cuisine: "Italian",
+      image: "/images/italian.jpg",
+      bookingCount: 2,
+    });
+
+    const monthly = await request(app).get("/api/admin/analytics?range=6m").set("Authorization", `Bearer ${tokenFor(admin)}`);
+    expect(monthly.status).toBe(200);
+    expect(monthly.body.bookingTrends).toHaveLength(6);
+
+    const invalid = await request(app).get("/api/admin/analytics?range=year").set("Authorization", `Bearer ${tokenFor(admin)}`);
+    expect(invalid.status).toBe(400);
+  });
 });
 

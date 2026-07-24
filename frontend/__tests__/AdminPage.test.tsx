@@ -3,6 +3,10 @@ import AdminPage from "@/app/admin/page";
 import { getAdminDashboardStatsAction } from "@/lib/actions/admin/dashboard-action";
 
 jest.mock("@/lib/actions/admin/dashboard-action", () => ({ getAdminDashboardStatsAction: jest.fn() }));
+jest.mock("@/app/admin/_components/analytics/AnalyticsSection", () => {
+  function MockAnalyticsSection() { return <div>Analytics</div>; }
+  return MockAnalyticsSection;
+});
 
 test("renders statistics, management link, and recent activities", async () => {
   jest.spyOn(Date, "now").mockReturnValue(new Date("2030-01-01T12:00:30Z").getTime());

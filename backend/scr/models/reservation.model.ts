@@ -12,6 +12,7 @@ const reservationSchema = new mongoose.Schema({
   date: { type: String, required: true },
   time: { type: String, required: true },
   guests: { type: Number, required: true, min: 1 },
+  tableNumber: { type: Number },
   status: { type: String, enum: ["confirmed", "pending", "completed", "cancelled"], default: "confirmed" },
   paymentMethod: { type: String, enum: ["esewa", "mobile_banking"] },
   paymentStatus: { type: String, enum: ["simulated_success"] },

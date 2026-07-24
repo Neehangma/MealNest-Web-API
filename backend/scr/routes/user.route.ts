@@ -47,7 +47,9 @@ router.post("/email/send-confirmation", authenticate, asyncHandler(userControlle
 
 router.get("/admin/users", authenticate, requireAdmin, asyncHandler(userController.listUsers));
 router.get("/admin/bookings", authenticate, requireAdmin, asyncHandler(userController.listAdminReservations));
+router.patch("/admin/bookings/:reservationId/complete", authenticate, requireAdmin, asyncHandler(userController.completeAdminReservation));
 router.get("/admin/dashboard/stats", authenticate, requireAdmin, asyncHandler(userController.getAdminDashboardStats));
+router.get("/admin/analytics", authenticate, requireAdmin, asyncHandler(userController.getAdminAnalytics));
 router.get("/admin/profile", authenticate, requireAdmin, asyncHandler(userController.getAdminProfile));
 router.put("/admin/profile", authenticate, requireAdmin, uploadProfileImage.single("profileImage"), asyncHandler(userController.updateAdminProfile));
 router.get("/admin/users/:id", authenticate, requireAdmin, asyncHandler(userController.getUser));

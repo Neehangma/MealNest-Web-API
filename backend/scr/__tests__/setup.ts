@@ -3,7 +3,9 @@ const path = require("path");
 const mongoose = require("mongoose");
 
 jest.mock("../services/emailService", () => ({
+  sendBookingCancellationEmail: jest.fn().mockResolvedValue({ messageId: "cw2-cancel-email" }),
   sendBookingConfirmationEmail: jest.fn().mockResolvedValue({ messageId: "cw2-test-email" }),
+  sendReservationUpdatedEmail: jest.fn().mockResolvedValue({ messageId: "cw2-update-email" }),
 }));
 
 const stateFile = path.join(__dirname, ".memory-server.json");

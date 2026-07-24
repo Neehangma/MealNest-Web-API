@@ -32,6 +32,7 @@ export type ReservationItem = {
   date: string;
   time: string;
   guests: number;
+  tableNumber?: number;
   status: string;
   specialRequests?: string;
   bookingReference?: string;
@@ -52,6 +53,7 @@ export type ReservationItem = {
   restaurant?: {
     _id: string; name: string; cuisine: string; image: string; location: string;
     address?: string; phone?: string; description?: string; priceRange?: string; hours?: string;
+    availableTimeSlots?: string[];
   };
 };
 

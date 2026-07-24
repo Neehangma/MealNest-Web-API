@@ -6785,7 +6785,7 @@ font-size:30px;
 .user-booking-actions .action-button { min-width: 150px; }
 .user-bookings-state { padding: 54px 24px; text-align: center; color: #6d5b50; background: #fffaf6; border: 1px solid #ead5c8; border-radius: 18px; }
 .booking-modal-backdrop { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 20px; background: rgba(35, 24, 20, .6); backdrop-filter: blur(3px); }
-.booking-details-modal, .booking-cancel-modal { position: relative; width: min(680px, 100%); max-height: 90vh; overflow: auto; background: #fffaf6; border-radius: 20px; box-shadow: 0 24px 70px rgba(35, 24, 20, .3); }
+.booking-details-modal, .booking-cancel-modal, .booking-modify-modal { position: relative; width: min(680px, 100%); max-height: 90vh; overflow: auto; background: #fffaf6; border-radius: 20px; box-shadow: 0 24px 70px rgba(35, 24, 20, .3); }
 .booking-details-modal > img { width: 100%; height: 260px; object-fit: cover; }
 .booking-modal-body { padding: 28px; }
 .booking-modal-close { position: absolute; top: 14px; right: 14px; z-index: 1; width: 38px; height: 38px; border: 0; border-radius: 50%; color: #5b3320; background: rgba(255, 250, 246, .95); font-size: 25px; cursor: pointer; }
@@ -6797,6 +6797,13 @@ font-size:30px;
 .booking-cancel-modal h2 { margin: 0 0 12px; color: #281a14; font: 700 28px Georgia, serif; }
 .booking-cancel-modal p { color: #68564c; line-height: 1.6; }
 .booking-cancel-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 25px; }
+.booking-modify-modal { width: min(520px, 100%); padding: 32px; }
+.booking-modify-modal h2 { margin: 0 0 12px; color: #281a14; font: 700 28px Georgia, serif; }
+.booking-modify-modal > p { margin: 0 0 22px; color: #68564c; line-height: 1.6; }
+.booking-modify-form { display: grid; gap: 8px; }
+.booking-modify-form label { margin-top: 5px; color: #5a473a; font-size: 13px; font-weight: 800; }
+.booking-modify-form input, .booking-modify-form select { width: 100%; height: 48px; margin: 0 0 8px; border: 1px solid #dfbda9; border-radius: 10px; background: #fffdfb; padding: 0 13px; color: #2e211b; }
+.user-booking-actions .action-button { display: inline-flex; align-items: center; justify-content: center; text-align: center; }
 
 @media (max-width: 760px) {
   .user-booking-card { grid-template-columns: 1fr; }
@@ -6804,6 +6811,7 @@ font-size:30px;
   .user-booking-grid { grid-template-columns: 1fr 1fr; }
   .user-booking-actions { flex-direction: column; }
   .booking-details-list { grid-template-columns: 1fr; }
+  .booking-cancel-actions { grid-template-columns: 1fr; }
 }
 
 .dashboard-restaurants-results-title {
