@@ -220,6 +220,7 @@ async function createReservation(userId, payload) {
     date: payload.date,
     time: payload.time,
     guests: payload.guests || 2,
+    tableNumber: payload.tableNumber,
     status: "confirmed",
     specialRequests: payload.specialRequests || "",
     bookingReference: `MN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
@@ -243,6 +244,7 @@ async function updateReservation(userId, reservationId, payload) {
   if (payload.date !== undefined) reservation.date = payload.date;
   if (payload.time !== undefined) reservation.time = payload.time;
   if (payload.guests !== undefined) reservation.guests = payload.guests;
+  if (payload.tableNumber !== undefined) reservation.tableNumber = payload.tableNumber;
   if (payload.specialRequests !== undefined) reservation.specialRequests = payload.specialRequests;
   if (payload.reservationDate !== undefined) reservation.reservationDate = new Date(payload.reservationDate);
 
@@ -323,8 +325,143 @@ async function getAdminDashboardStats() {
   return { totalUsers, totalRestaurants, totalBookings, totalRevenue: revenue[0]?.total || 0, recentUsers, recentRestaurants, recentBookings };
 }
 
+function countActiveReservationsForSlot(restaurantId, date, time, excludeReservationId) {
+  const filter = {
+    restaurant: restaurantId,
+    date,
+    time,
+    status: { $in: ["pending", "confirmed"] },
+  };
+  if (excludeReservationId) filter._id = { $ne: excludeReservationId };
+  return Reservation.countDocuments(filter);
+}
+
+async function completeAdminReservation(reservationId) {
+  const reservation = await Reservation.findById(reservationId).populate("restaurant");
+  if (!reservation) return null;
+  if (reservation.status !== "confirmed") return { completionDenied: true };
+  return reservation;
+}
+
+function createAnalyticsBuckets(range, now = new Date()) {
+  const buckets = [];
+
+  if (range === "6m") {
+    const cursor = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1));
+    for (let index = 0; index < 6; index += 1) {
+      const date = new Date(Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth() + index, 1));
+      buckets.push({
+        key: date.toISOString().slice(0, 7),
+        label: date.toLocaleDateString("en-US", { month: "short", year: "numeric", timeZone: "UTC" }),
+      });
+    }
+    return {
+      buckets,
+      startDate: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1)),
+      mongoFormat: "%Y-%m",
+    };
+  }
+
+  const days = range === "30d" ? 30 : 7;
+  const startDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - days + 1));
+  for (let index = 0; index < days; index += 1) {
+    const date = new Date(startDate);
+    date.setUTCDate(startDate.getUTCDate() + index);
+    buckets.push({
+      key: date.toISOString().slice(0, 10),
+      label: date.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" }),
+    });
+  }
+  return { buckets, startDate, mongoFormat: "%Y-%m-%d" };
+}
+
+function fillAnalyticsBuckets(buckets, grouped) {
+  const counts = new Map(grouped.map((item) => [item._id, item.count]));
+  return buckets.map((bucket) => ({ label: bucket.label, count: counts.get(bucket.key) || 0 }));
+}
+
+async function getAdminAnalytics(range) {
+  const { buckets, startDate, mongoFormat } = createAnalyticsBuckets(range);
+  const dateGroup = {
+    $dateToString: { format: mongoFormat, date: "$createdAt", timezone: "UTC" },
+  };
+
+  const [
+    totalUsers,
+    totalRestaurants,
+    totalBookings,
+    bookingTrendGroups,
+    userGrowthGroups,
+    bookingStatusGroups,
+    cuisineGroups,
+    topRestaurants,
+  ] = await Promise.all([
+    User.countDocuments({}),
+    Restaurant.countDocuments({}),
+    Reservation.countDocuments({}),
+    Reservation.aggregate([
+      { $match: { createdAt: { $gte: startDate } } },
+      { $group: { _id: dateGroup, count: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
+    ]),
+    User.aggregate([
+      { $match: { role: { $ne: "admin" }, createdAt: { $gte: startDate } } },
+      { $group: { _id: dateGroup, count: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
+    ]),
+    Reservation.aggregate([
+      { $group: { _id: "$status", count: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
+    ]),
+    Restaurant.aggregate([
+      { $project: { cuisine: { $trim: { input: "$cuisine" } } } },
+      { $match: { cuisine: { $ne: "" } } },
+      { $group: { _id: { $toLower: "$cuisine" }, cuisine: { $first: "$cuisine" }, count: { $sum: 1 } } },
+      { $sort: { count: -1, cuisine: 1 } },
+    ]),
+    Reservation.aggregate([
+      { $group: { _id: "$restaurant", bookingCount: { $sum: 1 } } },
+      { $sort: { bookingCount: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: Restaurant.collection.name,
+          localField: "_id",
+          foreignField: "_id",
+          as: "restaurant",
+        },
+      },
+      { $unwind: "$restaurant" },
+      {
+        $project: {
+          _id: 0,
+          restaurantId: { $toString: "$restaurant._id" },
+          name: "$restaurant.name",
+          cuisine: "$restaurant.cuisine",
+          image: "$restaurant.image",
+          bookingCount: 1,
+        },
+      },
+    ]),
+  ]);
+
+  const knownStatuses = ["pending", "confirmed", "completed", "cancelled"];
+  const statusCounts = new Map(bookingStatusGroups.map((item) => [item._id, item.count]));
+
+  return {
+    summary: { totalUsers, totalRestaurants, totalBookings },
+    bookingTrends: fillAnalyticsBuckets(buckets, bookingTrendGroups),
+    userGrowth: fillAnalyticsBuckets(buckets, userGrowthGroups),
+    bookingStatuses: knownStatuses.map((status) => ({ status, count: statusCounts.get(status) || 0 })),
+    restaurantsByCuisine: cuisineGroups.map((item) => ({ cuisine: item.cuisine, count: item.count })),
+    topRestaurants,
+  };
+}
+
 module.exports = {
   cancelReservation,
+  completeAdminReservation,
+  countActiveReservationsForSlot,
   createReservation,
   createUser,
   deleteUser,
@@ -333,6 +470,7 @@ module.exports = {
   findByValidPasswordResetToken,
   getDashboardData,
   getAdminDashboardStats,
+  getAdminAnalytics,
   getRestaurantById,
   getReservationWithDetails,
   listRestaurants,

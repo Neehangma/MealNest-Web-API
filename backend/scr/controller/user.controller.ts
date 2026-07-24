@@ -191,6 +191,19 @@ async function getAdminDashboardStats(_req, res) {
   return sendSuccess(res, 200, result);
 }
 
+async function getAdminAnalytics(req, res) {
+  const result = await userService.getAdminAnalytics(String(req.query.range || "7d"));
+  return sendSuccess(res, 200, result);
+}
+
+async function completeAdminReservation(req, res) {
+  const booking = await userService.completeAdminReservation(req.params.reservationId);
+  return sendSuccess(res, 200, {
+    message: "Booking marked as completed.",
+    data: booking,
+  });
+}
+
 async function updateAdminProfile(req, res) {
   const payload = createProfileUpdateDto(req.body);
   if (req.file) payload.profilePicture = `/uploads/profiles/${req.file.filename}`;
@@ -200,6 +213,7 @@ async function updateAdminProfile(req, res) {
 
 module.exports = {
   cancelReservation,
+  completeAdminReservation,
   changePassword,
   createReservation,
   createUser,
@@ -209,6 +223,7 @@ module.exports = {
   getDashboard,
   getAdminProfile,
   getAdminDashboardStats,
+  getAdminAnalytics,
   getRestaurant,
   getReservation,
   getUser,

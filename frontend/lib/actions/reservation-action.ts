@@ -1,7 +1,7 @@
 "use server";
 
 import { API } from "@/lib/api/endpoints";
-import type { DashboardResponse, ReservationCreateResponse, ReservationItem, ReservationMutationResponse } from "@/lib/api/dashboard";
+import type { ReservationCreateResponse, ReservationItem, ReservationMutationResponse } from "@/lib/api/dashboard";
 import { getTokenCookie } from "@/lib/cookies";
 import { revalidatePath } from "next/cache";
 
@@ -32,6 +32,9 @@ export async function createPaidReservationAction(payload: Record<string, unknow
   });
   revalidatePath("/dashboard/user");
   revalidatePath("/dashboard/user/reservations");
+  revalidatePath("/admin");
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/admin/bookings");
   return result;
 }
 
@@ -46,5 +49,22 @@ export async function cancelReservationAction(reservationId: string) {
   });
   revalidatePath("/dashboard/user");
   revalidatePath("/dashboard/user/reservations");
+  revalidatePath("/admin");
+  revalidatePath("/admin/bookings");
+  return result;
+}
+
+export async function updateReservationAction(
+  reservationId: string,
+  payload: { date: string; time: string; guests: number }
+) {
+  const result = await authedRequest<ReservationMutationResponse>(API.RESERVATIONS.BY_ID(reservationId), {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+  revalidatePath("/dashboard/user");
+  revalidatePath("/dashboard/user/reservations");
+  revalidatePath("/admin");
+  revalidatePath("/admin/bookings");
   return result;
 }

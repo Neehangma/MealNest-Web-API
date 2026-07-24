@@ -3,6 +3,10 @@ import AdminDashboardPage from "@/app/admin/page";
 import { getAdminDashboardStatsAction } from "@/lib/actions/admin/dashboard-action";
 
 jest.mock("@/lib/actions/admin/dashboard-action", () => ({ getAdminDashboardStatsAction: jest.fn() }));
+jest.mock("@/app/admin/_components/analytics/AnalyticsSection", () => {
+  function MockAnalyticsSection() { return <div>Analytics</div>; }
+  return MockAnalyticsSection;
+});
 
 test("renders real admin statistics returned by the action", async () => {
   jest.mocked(getAdminDashboardStatsAction).mockResolvedValue({ success: true, stats: { totalUsers: 10, totalRestaurants: 5, totalBookings: 7 }, activities: [] });
