@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema(
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/mealnest";
+const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://127.0.0.1:27017/mealnest";
 
 async function seedAdmin() {
   try {

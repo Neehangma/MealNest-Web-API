@@ -1,5 +1,4 @@
 const nodemailer = require("nodemailer");
-const BOOKING_EMAIL_TEST_RECIPIENT = "mealnest67@gmail.com";
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || "smtp.gmail.com",
@@ -72,7 +71,7 @@ function detailRow(leftLabel, leftValue, rightLabel, rightValue, rightFallback) 
   return `<tr>${detailCell(leftLabel, leftValue)}${detailCell(rightLabel, rightValue, rightFallback)}</tr>`;
 }
 
-async function sendBookingConfirmationEmail({ customerName, booking }) {
+async function sendBookingConfirmationEmail({ recipientEmail, customerName, booking }) {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || !process.env.EMAIL_FROM) throw new Error("Booking email is not configured");
 
   const confirmed = booking || {};
@@ -98,7 +97,7 @@ async function sendBookingConfirmationEmail({ customerName, booking }) {
 
   return transporter.sendMail({
     from: process.env.EMAIL_FROM,
-    to: BOOKING_EMAIL_TEST_RECIPIENT,
+    to: String(recipientEmail || "").trim().toLowerCase(),
     subject: `Booking Confirmed – ${restaurantName.replace(/[\r\n]/g, " ")} – ${reference.replace(/[\r\n]/g, " ")}`,
     html: `<!doctype html><html><body style="margin:0;padding:0;background:#eee6df;font-family:Arial,sans-serif;color:#2b1d17;">
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:#eee6df;"><tr><td align="center" style="padding:28px 12px;">

@@ -1,6 +1,7 @@
 import { API } from "./endpoints";
+import { API_URL } from "./config";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8088";
+const BASE_URL = API_URL;
 
 export type DashboardStats = {
   bookings: number;

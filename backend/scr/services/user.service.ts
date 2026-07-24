@@ -94,6 +94,7 @@ async function validateReservationAvailability({
   time,
   guests,
   excludeReservationId,
+  enforceConfiguredTime = true,
 }) {
   if (!restaurant || restaurant.isOpen === false || restaurant.isActive === false) {
     throw new HttpException(400, "This restaurant is not currently accepting reservations.");
@@ -104,7 +105,11 @@ async function validateReservationAvailability({
   if (!Number.isInteger(guests) || guests < 1 || guests > 20) {
     throw new HttpException(400, "Guest count must be between 1 and 20.");
   }
-  if (restaurant.availableTimeSlots?.length && !restaurant.availableTimeSlots.includes(time)) {
+  if (
+    enforceConfiguredTime &&
+    restaurant.availableTimeSlots?.length &&
+    !restaurant.availableTimeSlots.includes(time)
+  ) {
     throw new HttpException(409, "The selected reservation time is unavailable.");
   }
 
@@ -469,6 +474,10 @@ async function createReservation(userId, payload) {
     date,
     time: String(payload.time || ""),
     guests,
+    // Checkout historically offers the application's standard half-hour slots.
+    // Capacity is still checked here; configured restaurant slots are enforced
+    // when an existing reservation is modified.
+    enforceConfiguredTime: false,
   });
   const reservationPayload = {
     ...payload,

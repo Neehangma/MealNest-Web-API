@@ -4,11 +4,14 @@
     "module": "Node16",
     "moduleResolution": "Node16",
     "esModuleInterop": true,
+    "allowJs": true,
     "strict": false,
+    "noCheck": true,
     "skipLibCheck": true,
     "types": ["node"],
     "outDir": "dist",
     "rootDir": "."
   },
-  "include": ["index.ts", "scr/**/*.ts"]
+  "include": ["index.ts", "scr/**/*.ts", "scr/**/*.js"],
+  "exclude": ["scr/__tests__/**"]
 }

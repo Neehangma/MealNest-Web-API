@@ -1,11 +1,12 @@
 "use server";
 
 import { API } from "@/lib/api/endpoints";
+import { API_URL } from "@/lib/api/config";
 import type { ReservationCreateResponse, ReservationItem, ReservationMutationResponse } from "@/lib/api/dashboard";
 import { getTokenCookie } from "@/lib/cookies";
 import { revalidatePath } from "next/cache";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8088";
+const BASE_URL = API_URL;
 
 async function authedRequest<T>(path: string, init: RequestInit = {}) {
   const token = await getTokenCookie();
@@ -26,16 +27,28 @@ async function authedRequest<T>(path: string, init: RequestInit = {}) {
 }
 
 export async function createPaidReservationAction(payload: Record<string, unknown>) {
-  const result = await authedRequest<ReservationCreateResponse>(API.RESERVATIONS.CREATE, {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-  revalidatePath("/dashboard/user");
-  revalidatePath("/dashboard/user/reservations");
-  revalidatePath("/admin");
-  revalidatePath("/admin/dashboard");
-  revalidatePath("/admin/bookings");
-  return result;
+  try {
+    const result = await authedRequest<ReservationCreateResponse>(API.RESERVATIONS.CREATE, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    revalidatePath("/dashboard/user");
+    revalidatePath("/dashboard/user/reservations");
+    revalidatePath("/admin");
+    revalidatePath("/admin/dashboard");
+    revalidatePath("/admin/bookings");
+    return result;
+  } catch (error) {
+    const message =
+      error instanceof Error && error.message
+        ? error.message
+        : "Payment could not be completed. Please try again.";
+    console.error("Paid reservation request failed:", error);
+    return {
+      success: false,
+      message,
+    } satisfies ReservationCreateResponse;
+  }
 }
 
 export async function getReservationsAction(): Promise<ReservationItem[]> {

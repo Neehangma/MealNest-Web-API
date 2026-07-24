@@ -1,4 +1,5 @@
 import { API } from "../endpoints";
+import { API_URL } from "../config";
 
 export interface User {
   id: string;
@@ -44,7 +45,7 @@ export interface UserListParams {
   search?: string;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8088";
+const BASE_URL = API_URL;
 
 export class AdminApiError extends Error {
   constructor(message: string, public status: number) {

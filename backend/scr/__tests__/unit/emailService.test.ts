@@ -71,7 +71,7 @@ describe("booking email service", () => {
     await expect(emailService.sendBookingConfirmationEmail({ recipientEmail: " USER@Example.com ", customerName: "Dawa <Sherpa>", booking })).resolves.toEqual({ messageId: "test-message" });
     expect(sendMail).toHaveBeenCalledTimes(1);
     const message = sendMail.mock.calls[0][0];
-    expect(message).toMatchObject({ from: "MealNest Tests <mailer@example.com>", to: "mealnest67@gmail.com" });
+    expect(message).toMatchObject({ from: "MealNest Tests <mailer@example.com>", to: "user@example.com" });
     expect(message.subject).toContain("Bistro <One>");
     expect(message.html).toContain("Dawa &lt;Sherpa&gt;");
     expect(message.html).toContain("Bistro &lt;One&gt;");
