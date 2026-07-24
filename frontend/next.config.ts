@@ -6,14 +6,20 @@ const uploadRemotePatterns: NonNullable<NextConfig["images"]>["remotePatterns"] 
 ];
 
 if (process.env.NEXT_PUBLIC_API_URL) {
-  const apiUrl = new URL(process.env.NEXT_PUBLIC_API_URL);
-  if (apiUrl.protocol === "http:" || apiUrl.protocol === "https:") {
-    uploadRemotePatterns.push({
-      protocol: apiUrl.protocol.slice(0, -1) as "http" | "https",
-      hostname: apiUrl.hostname,
-      port: apiUrl.port,
-      pathname: "/uploads/**",
-    });
+  try {
+    const apiUrl = new URL(process.env.NEXT_PUBLIC_API_URL);
+    if (apiUrl.protocol === "http:" || apiUrl.protocol === "https:") {
+      uploadRemotePatterns.push({
+        protocol: apiUrl.protocol.slice(0, -1) as "http" | "https",
+        hostname: apiUrl.hostname,
+        port: apiUrl.port,
+        pathname: "/uploads/**",
+      });
+    }
+  } catch {
+    console.warn(
+      "[MealNest deployment] NEXT_PUBLIC_API_URL is invalid; remote backend images will not be optimized."
+    );
   }
 }
 
