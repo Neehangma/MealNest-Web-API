@@ -17,6 +17,7 @@ describe("booking email service", () => {
     process.env.EMAIL_HOST = "smtp.gmail.com";
     process.env.EMAIL_PORT = "587";
     process.env.EMAIL_SECURE = "false";
+    process.env.FRONTEND_URL = "http://localhost:3000";
     sendMail.mockReset();
     createTransport.mockClear();
     emailService = require("../../services/emailService");
@@ -30,6 +31,7 @@ describe("booking email service", () => {
     delete process.env.EMAIL_PORT;
     delete process.env.EMAIL_SECURE;
     delete process.env.EMAIL_FROM;
+    delete process.env.FRONTEND_URL;
   });
 
   test("creates the configured SMTP transporter without exposing credentials in output", () => {
@@ -94,5 +96,24 @@ describe("booking email service", () => {
   test("propagates transporter failures", async () => {
     sendMail.mockRejectedValue(new Error("SMTP unavailable"));
     await expect(emailService.sendBookingConfirmationEmail({ recipientEmail: "user@example.com", booking: { restaurantName: "Bistro", bookingReference: "REF" } })).rejects.toThrow("SMTP unavailable");
+  });
+
+  test("sends a reset link to the requested user without exposing secrets", async () => {
+    sendMail.mockResolvedValue({ messageId: "reset-message" });
+    await emailService.sendPasswordResetEmail({
+      recipientEmail: " USER@example.com ",
+      customerName: "Dawa <Sherpa>",
+      resetToken: "secure-reset-token",
+    });
+
+    const message = sendMail.mock.calls[0][0];
+    expect(message).toMatchObject({
+      from: "MealNest Tests <mailer@example.com>",
+      to: "user@example.com",
+      subject: "Reset your MealNest password",
+    });
+    expect(message.html).toContain("http://localhost:3000/reset-password/secure-reset-token");
+    expect(message.html).toContain("Dawa &lt;Sherpa&gt;");
+    expect(message.html).not.toContain("test-only-password");
   });
 });

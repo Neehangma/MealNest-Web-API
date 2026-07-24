@@ -4,6 +4,8 @@ export const API = {
         REGISTER: "/api/v1/auth/register",
         LOGIN: "/api/v1/auth/login",
         CURRENT: "/api/v1/auth/current",
+        FORGOT_PASSWORD: "/api/v1/auth/forgot-password",
+        RESET_PASSWORD: (token: string) => `/api/v1/auth/reset-password/${encodeURIComponent(token)}`,
     },
     PROFILE: {
         UPDATE: "/api/v1/profile",

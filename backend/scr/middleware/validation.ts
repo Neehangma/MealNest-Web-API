@@ -39,6 +39,30 @@ const validateLogin = (req, _res, next) => {
   return next();
 };
 
+const validateForgotPassword = (req, _res, next) => {
+  const { email } = req.body;
+
+  if (!email || typeof email !== "string" || !isValidEmail(email)) {
+    return next(new HttpException(400, "Valid email is required"));
+  }
+
+  return next();
+};
+
+const validateResetPassword = (req, _res, next) => {
+  const { newPassword, confirmPassword } = req.body;
+
+  if (!isPasswordValid(newPassword)) {
+    return next(new HttpException(400, PASSWORD_POLICY_MESSAGE));
+  }
+
+  if (newPassword !== confirmPassword) {
+    return next(new HttpException(400, "New password and confirm password do not match."));
+  }
+
+  return next();
+};
+
 const validateAdminCreateUser = (req, _res, next) => {
   const { fullName, email, password, role, phoneNumber } = req.body;
 
@@ -149,8 +173,10 @@ function isValidEmail(email) {
 module.exports = {
   validateAdminCreateUser,
   validateAdminUpdateUser,
+  validateForgotPassword,
   validateLogin,
   validatePasswordChange,
   validateProfileUpdate,
   validateRegister,
+  validateResetPassword,
 };

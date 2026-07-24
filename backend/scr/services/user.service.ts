@@ -2,11 +2,12 @@ declare const require: any;
 declare const module: any;
 
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { ALLOWED_ROLES, BCRYPT_SALT_ROUNDS, JWT_EXPIRES_IN, JWT_SECRET } = require("../config/constant");
 const { HttpException } = require("../exceptions/http-exception");
 const userRepository = require("../repositories/user.repository");
-const { sendBookingConfirmationEmail } = require("./emailService");
+const { sendBookingConfirmationEmail, sendPasswordResetEmail } = require("./emailService");
 const { isValidObjectId, toSafeUser } = require("../utils/apihelper.utils");
 const { isPhoneNumberValid, isOptionalPhoneNumberValid, PHONE_VALIDATION_MESSAGE } = require("../utils/phone-validation");
 
@@ -63,6 +64,49 @@ function createToken(user) {
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
   );
+}
+
+const PASSWORD_RESET_EXPIRY_MS = 15 * 60 * 1000;
+
+function hashPasswordResetToken(token) {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+async function requestPasswordReset(payload) {
+  const user = await userRepository.findByEmail(payload.email);
+  if (!user) return;
+
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  user.passwordResetToken = hashPasswordResetToken(resetToken);
+  user.passwordResetExpires = new Date(Date.now() + PASSWORD_RESET_EXPIRY_MS);
+  await user.save();
+
+  try {
+    await sendPasswordResetEmail({
+      recipientEmail: user.email,
+      customerName: user.fullName,
+      resetToken,
+    });
+  } catch (error) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+    console.error("Password reset email failed:", error instanceof Error ? error.message : "Unknown error");
+  }
+}
+
+async function resetPassword(token, payload) {
+  const hashedToken = hashPasswordResetToken(String(token || ""));
+  const user = await userRepository.findByValidPasswordResetToken(hashedToken);
+
+  if (!user) {
+    throw new HttpException(400, "This password reset link is invalid or has expired.");
+  }
+
+  user.password = await bcrypt.hash(payload.newPassword, BCRYPT_SALT_ROUNDS);
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
 }
 
 async function register(payload) {
@@ -500,6 +544,8 @@ module.exports = {
   listRestaurants,
   login,
   register,
+  requestPasswordReset,
+  resetPassword,
   sendReservationConfirmation,
   toggleFavorite,
   updateAdminUser,
