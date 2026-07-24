@@ -2,118 +2,37 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 
-interface Restaurant {
-  id: string;
-  name: string;
-  cuisine: string;
-  location: string;
-  rating: number;
-  priceRange: string;
-  image: string;
-  isOpen: boolean;
-}
+type LandingIconName = "serving" | "star" | "calendar" | "tag";
 
-const mockRestaurants: Restaurant[] = [
-  {
-    id: "1",
-    name: "The Golden Truffle",
-    cuisine: "French",
-    location: "Upper East Side",
-    rating: 4.8,
-    priceRange: "$$$",
-    image: "/images/Register.jpg",
-    isOpen: true,
-  },
-  {
-    id: "2",
-    name: "Sakura Omakase",
-    cuisine: "Japanese",
-    location: "Tribeca",
-    rating: 4.9,
-    priceRange: "$$$$",
-    image: "/images/Login.jpg",
-    isOpen: true,
-  },
-  {
-    id: "3",
-    name: "La Bella Italia",
-    cuisine: "Italian",
-    location: "SoHo",
-    rating: 4.6,
-    priceRange: "$$",
-    image: "/images/Register.jpg",
-    isOpen: true,
-  },
-  {
-    id: "4",
-    name: "El Toro Loco",
-    cuisine: "Spanish",
-    location: "Chelsea",
-    rating: 4.5,
-    priceRange: "$$",
-    image: "/images/Login.jpg",
-    isOpen: false,
-  },
-  {
-    id: "5",
-    name: "Dragon Palace",
-    cuisine: "Chinese",
-    location: "Chinatown",
-    rating: 4.4,
-    priceRange: "$",
-    image: "/images/Register.jpg",
-    isOpen: true,
-  },
-  {
-    id: "6",
-    name: "Le Petit Bistro",
-    cuisine: "French",
-    location: "West Village",
-    rating: 4.7,
-    priceRange: "$$$",
-    image: "/images/Login.jpg",
-    isOpen: true,
-  },
+const landingFeatures: Array<{ title: string; description: string; icon: LandingIconName }> = [
+  { title: "Wide Selection", description: "Explore a variety of cuisines and dining experiences.", icon: "serving" },
+  { title: "Real Reviews", description: "Read genuine reviews from real diners.", icon: "star" },
+  { title: "Instant Booking", description: "Book your table instantly with real-time availability.", icon: "calendar" },
+  { title: "Exclusive Offers", description: "Get access to special deals and discounts.", icon: "tag" },
 ];
 
+const popularCuisines = [
+  { name: "French", image: "/images/Golden.jpg" },
+  { name: "Japanese", image: "/images/sakura.jpg" },
+  { name: "Thai", image: "/images/tanrak.jpg" },
+  { name: "Spanish", image: "/images/Patio.jpg" },
+  { name: "Chinese", image: "/images/jade.jpg" },
+  { name: "Indian", image: "/images/mahal.jpg" },
+];
+
+function LandingFeatureIcon({ name }: { name: LandingIconName }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      {name === "serving" && <><path d="M4 17h16"/><path d="M6 17a6 6 0 0 1 12 0"/><path d="M12 8V6"/><path d="M10 6h4"/></>}
+      {name === "star" && <path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z"/>}
+      {name === "calendar" && <><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M8 14h2M14 14h2M8 17h2M14 17h2"/></>}
+      {name === "tag" && <><path d="M20 13 13 20 4 11V4h7l9 9Z"/><circle cx="8.5" cy="8.5" r="1"/></>}
+    </svg>
+  );
+}
+
 export default function Home() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCuisine, setSelectedCuisine] = useState("All");
-  const [filteredRestaurants, setFilteredRestaurants] = useState(mockRestaurants);
-
-  const cuisines = ["All", "French", "Japanese", "Italian", "Spanish", "Chinese"];
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    filterRestaurants(query, selectedCuisine);
-  };
-
-  const handleCuisineChange = (cuisine: string) => {
-    setSelectedCuisine(cuisine);
-    filterRestaurants(searchQuery, cuisine);
-  };
-
-  const filterRestaurants = (query: string, cuisine: string) => {
-    let filtered = mockRestaurants;
-
-    if (cuisine !== "All") {
-      filtered = filtered.filter((r) => r.cuisine === cuisine);
-    }
-
-    if (query) {
-      filtered = filtered.filter(
-        (r) =>
-          r.name.toLowerCase().includes(query.toLowerCase()) ||
-          r.location.toLowerCase().includes(query.toLowerCase()) ||
-          r.cuisine.toLowerCase().includes(query.toLowerCase())
-      );
-    }
-
-    setFilteredRestaurants(filtered);
-  };
-
   return (
     <main className="home-page">
       <nav className="home-nav">
@@ -123,105 +42,61 @@ export default function Home() {
         </Link>
         <div className="home-nav-actions">
           <Link href="/login">Login</Link>
-          <Link className="home-nav-button" href="/signup">
-            Sign Up
-          </Link>
+          <Link className="home-nav-button" href="/signup">Sign Up</Link>
         </div>
       </nav>
 
       <section className="home-hero">
-        <Image
-          src="/images/Register.jpg"
-          alt="Restaurant table prepared for dining"
-          fill
-          priority
-          className="home-hero-image"
-        />
+        <Image src="/images/Register.jpg" alt="Restaurant table prepared for dining" fill priority className="home-hero-image" />
         <div className="home-hero-overlay" />
         <div className="home-hero-content">
           <p className="home-kicker">Premium Dining Reservations</p>
           <h1>Reserve your perfect table with MealNest.</h1>
-          <p>
-            Discover restaurants, book tables, and manage your dining journey
-            from one simple place.
-          </p>
+          <p>Discover restaurants, book tables, and manage your dining journey from one simple place.</p>
           <div className="home-hero-actions">
-            <Link className="home-primary" href="/signup">
-              Create Account
-            </Link>
-            <Link className="home-secondary" href="/login">
-              Sign In
-            </Link>
+            <Link className="home-primary" href="/signup">Create Account</Link>
+            <Link className="home-secondary" href="/login">Sign In</Link>
           </div>
         </div>
       </section>
 
-      <section className="restaurant-section">
-        <div className="restaurant-container">
-          <div className="section-header">
-            <h2>Discover Restaurants</h2>
-            <p>Find the perfect dining experience from our curated selection</p>
+      <section className="landing-discovery-section">
+        <div className="landing-benefits">
+          <div className="landing-section-heading">
+            <h2><span aria-hidden="true">◆</span> Why Choose MealNest? <span aria-hidden="true">◆</span></h2>
+            <i aria-hidden="true" />
           </div>
-
-          <div className="search-filters">
-            <div className="search-bar">
-              <input
-                type="text"
-                placeholder="Search restaurants, cuisines, or locations..."
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-              />
-            </div>
-
-            <div className="cuisine-filters">
-              {cuisines.map((cuisine) => (
-                <button
-                  key={cuisine}
-                  className={`cuisine-filter ${selectedCuisine === cuisine ? "active" : ""}`}
-                  onClick={() => handleCuisineChange(cuisine)}
-                >
-                  {cuisine}
-                </button>
-              ))}
-            </div>
+          <div className="landing-benefit-grid">
+            {landingFeatures.map((feature) => (
+              <article key={feature.title} className="landing-benefit-card">
+                <div className="landing-benefit-icon"><LandingFeatureIcon name={feature.icon} /></div>
+                <div>
+                  <h3>{feature.title}</h3>
+                  <p>{feature.description}</p>
+                </div>
+              </article>
+            ))}
           </div>
+        </div>
 
-          <div className="restaurant-grid">
-            {filteredRestaurants.length === 0 ? (
-              <div className="no-results">
-                <p>No restaurants found matching your search.</p>
-                <button onClick={() => { setSearchQuery(""); setSelectedCuisine("All"); filterRestaurants("", "All"); }}>
-                  Clear Filters
-                </button>
-              </div>
-            ) : (
-              filteredRestaurants.map((restaurant) => (
-                <Link key={restaurant.id} href={`/restaurants/${restaurant.id}`} className="restaurant-card">
-                  <div className="restaurant-image">
-                    <Image
-                      src={restaurant.image}
-                      alt={restaurant.name}
-                      fill
-                      className="restaurant-img"
-                    />
-                    <div className={`status-badge ${restaurant.isOpen ? "open" : "closed"}`}>
-                      {restaurant.isOpen ? "Open Now" : "Closed"}
-                    </div>
-                  </div>
-                  <div className="restaurant-content">
-                    <div className="restaurant-header">
-                      <h3>{restaurant.name}</h3>
-                    </div>
-                    <p className="cuisine">{restaurant.cuisine}</p>
-                    <p className="location">{restaurant.location}</p>
-                    <div className="restaurant-footer">
-                      <span className="book-now">Book Table →</span>
-                    </div>
-                  </div>
-                </Link>
-              ))
-            )}
+        <div className="landing-cuisines">
+          <div className="landing-section-heading">
+            <h2>Explore Popular Cuisines</h2>
+            <i aria-hidden="true" />
+            <p>Find your favorite flavor from our top cuisines</p>
           </div>
+          <div className="landing-cuisine-grid">
+            {popularCuisines.map((cuisine) => (
+              <article key={cuisine.name} className="landing-cuisine-card">
+                <Image src={cuisine.image} alt={`${cuisine.name} cuisine`} fill sizes="(max-width: 640px) 100vw, (max-width: 1000px) 33vw, 16vw" />
+                <span className="landing-cuisine-shade" aria-hidden="true" />
+                <strong>{cuisine.name}</strong>
+              </article>
+            ))}
+          </div>
+          <Link className="landing-cuisine-cta" href="/dashboard/user/discover">
+            Explore All Cuisines <span aria-hidden="true">→</span>
+          </Link>
         </div>
       </section>
 
@@ -233,24 +108,9 @@ export default function Home() {
             <p>Premium dining reservations made simple.</p>
           </div>
           <div className="footer-links">
-            <div>
-              <h4>Discover</h4>
-              <Link href="/">Restaurants</Link>
-              <Link href="/">Cuisines</Link>
-              <Link href="/">Locations</Link>
-            </div>
-            <div>
-              <h4>Company</h4>
-              <Link href="/">About Us</Link>
-              <Link href="/">Careers</Link>
-              <Link href="/">Contact</Link>
-            </div>
-            <div>
-              <h4>Support</h4>
-              <Link href="/">Help Center</Link>
-              <Link href="/">Privacy Policy</Link>
-              <Link href="/">Terms of Service</Link>
-            </div>
+            <div><h4>Discover</h4><Link href="/">Restaurants</Link><Link href="/">Cuisines</Link><Link href="/">Locations</Link></div>
+            <div><h4>Company</h4><Link href="/">About Us</Link><Link href="/">Careers</Link><Link href="/">Contact</Link></div>
+            <div><h4>Support</h4><Link href="/">Help Center</Link><Link href="/">Privacy Policy</Link><Link href="/">Terms of Service</Link></div>
           </div>
         </div>
         <div className="footer-bottom">
