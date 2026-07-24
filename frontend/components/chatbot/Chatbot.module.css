@@ -99,31 +99,11 @@
 .assistantMessage { border-bottom-left-radius: 5px; background: #fff; color: #34251f; box-shadow: 0 3px 12px rgba(63, 39, 29, .08); }
 .userMessage { border-bottom-right-radius: 5px; background: #d94709; color: #fff; }
 
-.suggestions {
-  display: flex;
-  overflow-x: auto;
-  gap: 7px;
-  padding: 8px 13px 10px;
-  scrollbar-width: none;
-}
-
-.suggestions button {
-  flex: 0 0 auto;
-  border: 1px solid #e7bda9;
-  border-radius: 999px;
-  background: #fff;
-  padding: 7px 10px;
-  color: #a63808;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
 .inputRow { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #ecdcd4; background: #fff; }
 .inputRow input { flex: 1; min-width: 0; height: 42px; border: 1px solid #e3c8bb; border-radius: 12px; padding: 0 12px; color: #30231e; outline: none; }
 .inputRow input:focus { border-color: #d94a0b; box-shadow: 0 0 0 3px rgba(217, 74, 11, .11); }
 .inputRow button { display: grid; width: 42px; height: 42px; place-items: center; border: 0; border-radius: 12px; background: #d94709; color: #fff; cursor: pointer; }
-.inputRow button:disabled, .suggestions button:disabled { cursor: not-allowed; opacity: .55; }
+.inputRow button:disabled { cursor: not-allowed; opacity: .55; }
 .inputRow svg { width: 21px; fill: currentColor; }
 
 .typing { display: flex; gap: 4px; padding: 13px 14px; border-radius: 15px 15px 15px 5px; background: #fff; box-shadow: 0 3px 12px rgba(63, 39, 29, .08); }

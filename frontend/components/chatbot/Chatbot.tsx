@@ -5,7 +5,6 @@ import { sendChatbotMessage } from "@/services/chatbotService";
 import type { ChatMessageData } from "@/types/chatbot";
 import ChatInput from "./ChatInput";
 import ChatMessage from "./ChatMessage";
-import SuggestedQuestions from "./SuggestedQuestions";
 import styles from "./Chatbot.module.css";
 
 const WELCOME_MESSAGE: ChatMessageData = {
@@ -77,7 +76,6 @@ export default function Chatbot() {
           <div ref={messagesEndRef} />
         </div>
 
-        <SuggestedQuestions disabled={loading} onSelect={(question) => void send(question)} />
         <div ref={inputRef}><ChatInput value={input} disabled={loading} onChange={setInput} onSubmit={() => void send()} /></div>
       </section>
 
