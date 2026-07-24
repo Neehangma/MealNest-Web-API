@@ -91,6 +91,13 @@ function findById(id, includePassword = false) {
   return includePassword ? query.select("+password") : query;
 }
 
+function findByValidPasswordResetToken(passwordResetToken) {
+  return User.findOne({
+    passwordResetToken,
+    passwordResetExpires: { $gt: new Date() },
+  }).select("+password +passwordResetToken +passwordResetExpires");
+}
+
 function createUser(payload) {
   return User.create(payload);
 }
@@ -323,6 +330,7 @@ module.exports = {
   deleteUser,
   findByEmail,
   findById,
+  findByValidPasswordResetToken,
   getDashboardData,
   getAdminDashboardStats,
   getRestaurantById,

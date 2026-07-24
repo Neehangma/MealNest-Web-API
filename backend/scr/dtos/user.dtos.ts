@@ -18,6 +18,19 @@ function createLoginDto(body) {
   };
 }
 
+function createForgotPasswordDto(body) {
+  return {
+    email: normalizeEmail(body.email),
+  };
+}
+
+function createResetPasswordDto(body) {
+  return {
+    newPassword: String(body.newPassword || ""),
+    confirmPassword: String(body.confirmPassword || ""),
+  };
+}
+
 function createAdminUserDto(body) {
   return {
     fullName: String(body.fullName || "").trim(),
@@ -65,7 +78,9 @@ module.exports = {
   createRegisterDto,
   createLoginDto,
   createAdminUserDto,
+  createForgotPasswordDto,
   createUpdateUserDto,
   createProfileUpdateDto,
   createPasswordChangeDto,
+  createResetPasswordDto,
 };

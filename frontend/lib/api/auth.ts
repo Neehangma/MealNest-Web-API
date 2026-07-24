@@ -40,7 +40,7 @@ export type CurrentUserResponse = {
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8088";
 
-async function authRequest<T>(path: string, data: AuthRequest) {
+async function authRequest<T>(path: string, data: object) {
   const endpoint = `${BASE_URL}${path}`;
   let response: Response;
 
@@ -98,4 +98,21 @@ export const getCurrentUser = async (token: string) => {
   }
 
   return body as CurrentUserResponse;
+};
+
+export const requestPasswordReset = async (email: string) => {
+  return authRequest<{ success: boolean; message: string }>(
+    API.AUTH.FORGOT_PASSWORD,
+    { email }
+  );
+};
+
+export const resetPassword = async (
+  token: string,
+  data: { newPassword: string; confirmPassword: string }
+) => {
+  return authRequest<{ success: boolean; message: string }>(
+    API.AUTH.RESET_PASSWORD(token),
+    data
+  );
 };

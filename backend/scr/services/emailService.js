@@ -114,4 +114,39 @@ async function sendBookingConfirmationEmail({ customerName, booking }) {
   });
 }
 
-module.exports = { formatPaymentMethod, formatStatus, sendBookingConfirmationEmail };
+async function sendPasswordResetEmail({ recipientEmail, customerName, resetToken }) {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || !process.env.EMAIL_FROM) {
+    throw new Error("Password reset email is not configured");
+  }
+
+  const frontendUrl = String(process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/+$/, "");
+  const resetUrl = `${frontendUrl}/reset-password/${encodeURIComponent(resetToken)}`;
+  const displayName = valueOrFallback(customerName, "MealNest user");
+
+  return transporter.sendMail({
+    from: process.env.EMAIL_FROM,
+    to: String(recipientEmail || "").trim().toLowerCase(),
+    subject: "Reset your MealNest password",
+    html: `<!doctype html><html><body style="margin:0;padding:0;background:#f7f2ed;font-family:Arial,sans-serif;color:#2b211b;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:#f7f2ed;"><tr><td align="center" style="padding:36px 12px;">
+        <table role="presentation" width="560" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:560px;background:#fffaf6;border:1px solid #e3c9b7;border-radius:18px;">
+          <tr><td style="padding:24px 30px;background:#a45100;color:#fff;border-radius:18px 18px 0 0;"><div style="font-family:Georgia,serif;font-size:28px;font-weight:700;">MealNest</div></td></tr>
+          <tr><td style="padding:34px 30px;">
+            <h1 style="margin:0 0 16px;font-family:Georgia,serif;font-size:28px;">Reset your password</h1>
+            <p style="margin:0 0 14px;color:#62534a;line-height:1.6;">Hello ${escapeHtml(displayName)},</p>
+            <p style="margin:0 0 24px;color:#62534a;line-height:1.6;">Use the button below to choose a new MealNest password. This link expires in 15 minutes and can only be used once.</p>
+            <a href="${escapeHtml(resetUrl)}" style="display:inline-block;padding:14px 22px;border-radius:12px;background:#a45100;color:#fff;text-decoration:none;font-weight:700;">Reset Password</a>
+            <p style="margin:24px 0 0;color:#7a6a60;font-size:13px;line-height:1.6;">If you did not request this change, you can safely ignore this email.</p>
+          </td></tr>
+        </table>
+      </td></tr></table>
+    </body></html>`,
+  });
+}
+
+module.exports = {
+  formatPaymentMethod,
+  formatStatus,
+  sendBookingConfirmationEmail,
+  sendPasswordResetEmail,
+};

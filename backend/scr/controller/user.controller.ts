@@ -3,10 +3,12 @@ declare const module: any;
 
 const {
   createAdminUserDto,
+  createForgotPasswordDto,
   createLoginDto,
   createPasswordChangeDto,
   createProfileUpdateDto,
   createRegisterDto,
+  createResetPasswordDto,
   createUpdateUserDto,
 } = require("../dtos/user.dtos");
 const userService = require("../services/user.service");
@@ -26,6 +28,20 @@ async function login(req, res) {
     message: "Login successful",
     token: result.token,
     user: result.user,
+  });
+}
+
+async function forgotPassword(req, res) {
+  await userService.requestPasswordReset(createForgotPasswordDto(req.body));
+  return sendSuccess(res, 200, {
+    message: "If an account exists for this email, a password reset link has been sent.",
+  });
+}
+
+async function resetPassword(req, res) {
+  await userService.resetPassword(req.params.token, createResetPasswordDto(req.body));
+  return sendSuccess(res, 200, {
+    message: "Password changed successfully. You can now log in with your new password.",
   });
 }
 
@@ -189,6 +205,7 @@ module.exports = {
   createUser,
   current,
   deleteUser,
+  forgotPassword,
   getDashboard,
   getAdminProfile,
   getAdminDashboardStats,
@@ -201,6 +218,7 @@ module.exports = {
   listUsers,
   login,
   register,
+  resetPassword,
   sendReservationConfirmation,
   toggleFavorite,
   updateProfile,

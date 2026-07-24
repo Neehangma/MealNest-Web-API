@@ -16,7 +16,7 @@ MealNest supports simulated eSewa and Mobile Banking payments.
 Never claim that you completed a booking, cancellation, payment, or account change.
 If information is unavailable, politely say you don't know instead of making it up.
 Never request passwords, PINs, or payment credentials.
-Keep answers under 120 words.`;
+Keep answers under 120 words and always finish the response with a complete sentence.`;
 
 let client: GoogleGenAI | null = null;
 
@@ -34,7 +34,7 @@ export async function getMealNestReply(message: string): Promise<string> {
     contents: message,
     config: {
       systemInstruction: SYSTEM_PROMPT,
-      maxOutputTokens: 220,
+      maxOutputTokens: 1_024,
     },
   });
 

@@ -4,10 +4,12 @@ const { authenticate, requireAdmin } = require("../middleware/authorized.middlew
 const {
   validateAdminCreateUser,
   validateAdminUpdateUser,
+  validateForgotPassword,
   validateLogin,
   validatePasswordChange,
   validateProfileUpdate,
   validateRegister,
+  validateResetPassword,
 } = require("../middleware/validation");
 const { asyncHandler } = require("../utils/apihelper.utils");
 const { uploadProfileImage } = require("../middleware/profile-upload");
@@ -16,6 +18,8 @@ const router = express.Router();
 
 router.post("/auth/register", validateRegister, asyncHandler(userController.register));
 router.post("/auth/login", validateLogin, asyncHandler(userController.login));
+router.post("/auth/forgot-password", validateForgotPassword, asyncHandler(userController.forgotPassword));
+router.post("/auth/reset-password/:token", validateResetPassword, asyncHandler(userController.resetPassword));
 router.get("/auth/current", authenticate, asyncHandler(userController.current));
 router.patch("/profile", authenticate, validateProfileUpdate, asyncHandler(userController.updateProfile));
 router.patch(
