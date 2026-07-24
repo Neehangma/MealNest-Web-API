@@ -23,6 +23,24 @@ describe("payment validation within booking creation", () => {
     expect(JSON.stringify(response.body)).not.toContain("123456789012");
   });
 
+  test("accepts a standard checkout time while still validating table capacity", async () => {
+    const user = await createTestUser();
+    const restaurant = await createTestRestaurant({ availableTimeSlots: ["7:00 PM"] });
+    restaurant.availableTimeSlots = ["7:00 PM"];
+    await restaurant.save();
+
+    const response = await request(app)
+      .post("/api/bookings")
+      .set("Authorization", `Bearer ${tokenFor(user)}`)
+      .send(payload(restaurant, { time: "6:30 PM" }));
+
+    expect(response.status).toBe(201);
+    expect(response.body.booking).toMatchObject({
+      time: "6:30 PM",
+      status: "confirmed",
+    });
+  });
+
   test.each([
     [{ esewaId: "" }, "Please enter your eSewa ID."],
     [{ paymentMethod: "mobile_banking", bankAccountNumber: "1234" }, "Bank account number must contain between 10 and 16 digits."],

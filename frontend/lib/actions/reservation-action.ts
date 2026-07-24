@@ -26,16 +26,28 @@ async function authedRequest<T>(path: string, init: RequestInit = {}) {
 }
 
 export async function createPaidReservationAction(payload: Record<string, unknown>) {
-  const result = await authedRequest<ReservationCreateResponse>(API.RESERVATIONS.CREATE, {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-  revalidatePath("/dashboard/user");
-  revalidatePath("/dashboard/user/reservations");
-  revalidatePath("/admin");
-  revalidatePath("/admin/dashboard");
-  revalidatePath("/admin/bookings");
-  return result;
+  try {
+    const result = await authedRequest<ReservationCreateResponse>(API.RESERVATIONS.CREATE, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    revalidatePath("/dashboard/user");
+    revalidatePath("/dashboard/user/reservations");
+    revalidatePath("/admin");
+    revalidatePath("/admin/dashboard");
+    revalidatePath("/admin/bookings");
+    return result;
+  } catch (error) {
+    const message =
+      error instanceof Error && error.message
+        ? error.message
+        : "Payment could not be completed. Please try again.";
+    console.error("Paid reservation request failed:", error);
+    return {
+      success: false,
+      message,
+    } satisfies ReservationCreateResponse;
+  }
 }
 
 export async function getReservationsAction(): Promise<ReservationItem[]> {

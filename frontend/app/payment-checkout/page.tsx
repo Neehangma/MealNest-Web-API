@@ -141,6 +141,9 @@ export default function PaymentCheckoutPage() {
           ? { esewaId: esewaId.trim() }
           : { bankName, bankAccountNumber: bankAccountNumber.trim() }),
       });
+      if (!response.success) {
+        throw new Error(response.message || "Payment could not be completed. Please try again.");
+      }
       const confirmedBooking = response.booking || response.data;
       if (!confirmedBooking?.bookingReference || !confirmedBooking.restaurantName) {
         throw new Error("The booking was created, but its confirmation details were not returned. Please check My Reservations before trying again.");
