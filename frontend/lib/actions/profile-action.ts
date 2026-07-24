@@ -1,6 +1,7 @@
 "use server";
 
 import { API } from "@/lib/api/endpoints";
+import { API_URL } from "@/lib/api/config";
 import type { AuthUser } from "@/lib/api/auth";
 import { clearAuthCookies, getTokenCookie, storeUserData } from "@/lib/cookies";
 import { revalidatePath } from "next/cache";
@@ -22,7 +23,7 @@ type ProfileUpdateResponse = {
   user: AuthUser;
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8088";
+const BASE_URL = API_URL;
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;

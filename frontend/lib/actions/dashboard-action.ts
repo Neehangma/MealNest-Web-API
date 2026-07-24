@@ -1,11 +1,12 @@
 "use server";
 
 import { API } from "@/lib/api/endpoints";
+import { API_URL } from "@/lib/api/config";
 import type { DashboardData, FavoriteRestaurant } from "@/lib/api/dashboard";
 import { getTokenCookie } from "@/lib/cookies";
 import { revalidatePath } from "next/cache";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8088";
+const BASE_URL = API_URL;
 
 async function authedRequest<T>(path: string, init: RequestInit = {}) {
   const token = await getTokenCookie();

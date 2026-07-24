@@ -1,0 +1,11 @@
+**/node_modules
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.e2e.example
+**/dist
+**/build
+**/.next
+coverage
+npm-debug.log*
+*.log

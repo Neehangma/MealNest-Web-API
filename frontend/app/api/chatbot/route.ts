@@ -1,6 +1,7 @@
 import { getTokenCookie } from "@/lib/cookies";
+import { API_URL } from "@/lib/api/config";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8088";
+const API_BASE_URL = API_URL;
 
 export async function POST(request: Request) {
   const token = await getTokenCookie();

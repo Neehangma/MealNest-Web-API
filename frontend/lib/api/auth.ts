@@ -1,4 +1,5 @@
 import { API } from "./endpoints";
+import { API_URL } from "./config";
 
 export type AuthUser = {
   id: string;
@@ -38,7 +39,7 @@ export type CurrentUserResponse = {
   user: AuthUser;
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8088";
+const BASE_URL = API_URL;
 
 async function authRequest<T>(path: string, data: object) {
   const endpoint = `${BASE_URL}${path}`;

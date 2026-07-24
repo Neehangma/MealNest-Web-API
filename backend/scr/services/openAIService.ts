@@ -1,5 +1,3 @@
-import { GoogleGenAI } from "@google/genai";
-
 const SYSTEM_PROMPT = `You are MealNest AI Assistant.
 
 Help users with:
@@ -18,18 +16,22 @@ If information is unavailable, politely say you don't know instead of making it 
 Never request passwords, PINs, or payment credentials.
 Keep answers under 120 words and always finish the response with a complete sentence.`;
 
-let client: GoogleGenAI | null = null;
+let client = null;
 
-function getClient() {
+async function getClient() {
   if (!process.env.GEMINI_API_KEY) {
     throw new Error("GEMINI_API_KEY is not configured.");
   }
-  client ??= new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  if (!client) {
+    const { GoogleGenAI } = await import("@google/genai");
+    client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  }
   return client;
 }
 
 export async function getMealNestReply(message: string): Promise<string> {
-  const response = await getClient().models.generateContent({
+  const ai = await getClient();
+  const response = await ai.models.generateContent({
     model: process.env.GEMINI_CHAT_MODEL || "gemini-3.6-flash",
     contents: message,
     config: {

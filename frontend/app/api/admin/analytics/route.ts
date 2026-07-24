@@ -1,6 +1,7 @@
 import { getTokenCookie } from "@/lib/cookies";
+import { API_URL } from "@/lib/api/config";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8088";
+const API_BASE_URL = API_URL;
 const VALID_RANGES = new Set(["7d", "30d", "6m"]);
 
 export async function GET(request: Request) {
