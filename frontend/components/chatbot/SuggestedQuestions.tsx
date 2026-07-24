@@ -1,7 +1,6 @@
 import styles from "./Chatbot.module.css";
 
 export const SUGGESTED_QUESTIONS = [
-  "Book a table",
   "Payment methods",
   "Thai restaurants",
   "Italian restaurants",
