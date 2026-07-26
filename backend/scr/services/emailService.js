@@ -5,6 +5,9 @@ const transporter = nodemailer.createTransport({
   port: Number(process.env.EMAIL_PORT || 587),
   secure: process.env.EMAIL_SECURE === "true",
   auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+  connectionTimeout: 5000,
+  greetingTimeout: 5000,
+  socketTimeout: 10000,
 });
 
 if (process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test" && typeof transporter.verify === "function") {
@@ -89,6 +92,7 @@ async function sendBookingConfirmationEmail({ recipientEmail, customerName, book
     detailRow("Address", confirmed.restaurantAddress || confirmed.restaurant?.address, "Restaurant Phone", confirmed.restaurantPhone || confirmed.restaurant?.phone),
     detailRow("Reservation Date", formatDate(confirmed.reservationDate || confirmed.date), "Reservation Time", confirmed.time),
     detailRow("Guests", guests, "Customer", displayName),
+    detailRow("Customer Email", confirmed.customerEmail, "Customer Phone", confirmed.customerPhone),
     detailRow("Payment Method", formatPaymentMethod(confirmed.paymentMethod), "Payment Status", formatStatus(confirmed.paymentStatus)),
     detailRow("Booking Reference", reference, "Transaction ID", confirmed.transactionId || reference),
     detailRow("Special Request", confirmed.specialRequests || "None", "Booking Status", formatStatus(confirmed.status)),

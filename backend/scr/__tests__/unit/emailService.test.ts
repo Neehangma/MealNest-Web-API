@@ -40,6 +40,9 @@ describe("booking email service", () => {
       port: 587,
       secure: false,
       auth: { user: "mailer@example.com", pass: "test-only-password" },
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 10000,
     });
   });
 

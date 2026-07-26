@@ -13,6 +13,22 @@ const {
   sendPasswordResetEmail,
   sendReservationUpdatedEmail,
 } = require("./emailService");
+
+const BOOKING_EMAIL_TIMEOUT_MS = 5000;
+const BOOKING_NOTIFICATION_EMAIL =
+  String(process.env.BOOKING_NOTIFICATION_EMAIL || "mealnest67@gmail.com")
+    .trim()
+    .toLowerCase();
+
+function withTimeout(promise, timeoutMs, message) {
+  let timeout;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeout = setTimeout(() => reject(new Error(message)), timeoutMs);
+  });
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    clearTimeout(timeout);
+  });
+}
 const { isValidObjectId, toSafeUser } = require("../utils/apihelper.utils");
 const { isPhoneNumberValid, isOptionalPhoneNumberValid, PHONE_VALIDATION_MESSAGE } = require("../utils/phone-validation");
 
@@ -503,21 +519,27 @@ async function createReservation(userId, payload) {
   let emailSent = false;
 
   const authenticatedEmail = String(user?.email || "").trim().toLowerCase();
-  const validAuthenticatedEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(authenticatedEmail);
-  if (!validAuthenticatedEmail) {
-    console.warn(`Booking ${reservation.bookingReference} saved; confirmation email skipped because the authenticated account has no valid email.`);
+  const validNotificationEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+    BOOKING_NOTIFICATION_EMAIL,
+  );
+  if (!validNotificationEmail) {
+    console.warn(`Booking ${reservation.bookingReference} saved; notification email is not configured.`);
   } else if (booking.status === "confirmed" && booking.paymentStatus === "simulated_success") {
     try {
-      await sendBookingConfirmationEmail({
-        recipientEmail: authenticatedEmail,
-        customerName: booking.customerName,
-        booking: {
-          ...booking,
+      await withTimeout(
+        sendBookingConfirmationEmail({
+          recipientEmail: BOOKING_NOTIFICATION_EMAIL,
           customerName: booking.customerName,
-          customerEmail: authenticatedEmail,
-          customerPhone: booking.customerPhone || "",
-        },
-      });
+          booking: {
+            ...booking,
+            customerName: booking.customerName,
+            customerEmail: authenticatedEmail,
+            customerPhone: booking.customerPhone || "",
+          },
+        }),
+        BOOKING_EMAIL_TIMEOUT_MS,
+        "Confirmation email timed out",
+      );
       emailSent = true;
     } catch (error) {
       console.error(`Booking confirmation email failed for ${reservation.bookingReference}: ${error.message}`);
