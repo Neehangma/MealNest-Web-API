@@ -241,12 +241,11 @@ export default function AdminRestaurantsPage() {
           </div>
           {successMessage && <div className={styles.successBanner} role="status">{successMessage}</div>}
           {error && <div className={styles.errorBanner}>{error}</div>}
-          <div className={styles.tableWrap}><table className={styles.usersTable}><thead><tr><th>Image</th><th>Restaurant Name</th><th>Cuisine</th><th>Location</th><th>Availability</th><th>Created Date</th><th>Actions</th></tr></thead><tbody>
-            {loading ? <tr><td colSpan={7}><div className={styles.emptyState}>Loading restaurants…</div></td></tr> : error ? <tr><td colSpan={7}><div className={styles.emptyState}>Unable to display restaurants.</div></td></tr> : restaurants.length === 0 ? <tr><td colSpan={7}><div className={styles.emptyState}>No restaurants found.</div></td></tr> : restaurants.map((restaurant) => <tr key={restaurant._id}>
+          <div className={styles.tableWrap}><table className={styles.usersTable}><thead><tr><th>Image</th><th>Restaurant Name</th><th>Cuisine</th><th>Location</th><th>Availability</th><th>Actions</th></tr></thead><tbody>
+            {loading ? <tr><td colSpan={6}><div className={styles.emptyState}>Loading restaurants…</div></td></tr> : error ? <tr><td colSpan={6}><div className={styles.emptyState}>Unable to display restaurants.</div></td></tr> : restaurants.length === 0 ? <tr><td colSpan={6}><div className={styles.emptyState}>No restaurants found.</div></td></tr> : restaurants.map((restaurant) => <tr key={restaurant._id}>
               <td><Image unoptimized src={getRestaurantImage(restaurant.image)} alt={restaurant.name} width={58} height={44} className={styles.restaurantThumbnail} /></td>
               <td><strong>{restaurant.name}</strong></td><td>{restaurant.cuisine}</td><td>{restaurant.location}</td>
               <td><span className={`${styles.pill} ${restaurant.isOpen ? styles.pillUser : styles.pillAdmin}`}>{restaurant.isOpen ? "Available" : "Unavailable"}</span></td>
-              <td>{restaurant.createdAt ? new Date(restaurant.createdAt).toLocaleDateString() : "N/A"}</td>
               <td><div className={styles.actions}>
                 <button className={styles.tableAction} type="button" aria-label={`View restaurant ${restaurant.name}`} title="View restaurant" onClick={() => void openDetails(restaurant)}><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
                 <button className={styles.tableAction} type="button" aria-label={`Edit restaurant ${restaurant.name}`} title="Edit restaurant" onClick={() => openEdit(restaurant)}>✎</button>

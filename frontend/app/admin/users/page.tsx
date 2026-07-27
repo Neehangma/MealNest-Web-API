@@ -194,14 +194,6 @@ function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
   );
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
 function initials(name: string) {
   return name
     .split(" ")
@@ -554,26 +546,25 @@ export default function AdminUsersPage() {
                     <th>Name</th>
                     <th>Email</th>
                     <th>Role</th>
-                    <th>Created Date</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={6}>
+                      <td colSpan={5}>
                         <div className={styles.emptyState}>Loading users...</div>
                       </td>
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan={6}>
+                      <td colSpan={5}>
                         <div className={styles.emptyState}>Unable to display users.</div>
                       </td>
                     </tr>
                   ) : users.length === 0 ? (
                     <tr>
-                      <td colSpan={6}>
+                      <td colSpan={5}>
                         <div className={styles.emptyState}>No users found.</div>
                       </td>
                     </tr>
@@ -598,7 +589,6 @@ export default function AdminUsersPage() {
                               {user.role === "admin" ? "Admin" : "User"}
                             </span>
                           </td>
-                          <td>{formatDate(user.createdAt)}</td>
                           <td>
                             <div className={styles.actions}>
                               <button className={styles.tableAction} type="button" aria-label={`View user ${displayName}`} title="View user" onClick={() => void openUserDetails(user)}>
