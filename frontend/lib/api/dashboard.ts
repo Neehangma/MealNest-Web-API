@@ -51,11 +51,40 @@ export type ReservationItem = {
   transactionId?: string;
   createdAt?: string;
   restaurantPhone?: string;
+  review?: ReviewItem;
   restaurant?: {
     _id: string; name: string; cuisine: string; image: string; location: string;
     address?: string; phone?: string; description?: string; priceRange?: string; hours?: string;
     availableTimeSlots?: string[];
   };
+};
+
+export type ReviewItem = {
+  _id: string;
+  id: string;
+  restaurantId: string;
+  reservationId: string;
+  userId: string;
+  userName: string;
+  userProfileImage?: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ReviewsResponse = {
+  success: boolean;
+  count: number;
+  data: ReviewItem[];
+  reviews: ReviewItem[];
+};
+
+export type ReviewMutationResponse = {
+  success: boolean;
+  message: string;
+  data: ReviewItem;
+  review: ReviewItem;
 };
 
 export type ConfirmedBooking = ReservationItem & {
@@ -199,6 +228,10 @@ export async function getRestaurants() {
 
 export async function getRestaurantById(id: string) {
   return request<RestaurantResponse>(API.RESTAURANTS.BY_ID(id));
+}
+
+export async function getRestaurantReviews(restaurantId: string) {
+  return request<ReviewsResponse>(API.REVIEWS.BY_RESTAURANT(restaurantId));
 }
 
 export async function toggleFavorite(restaurantId: string) {

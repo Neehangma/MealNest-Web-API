@@ -1,15 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import RestaurantDetailPage from "@/app/restaurants/[id]/page";
-import { getRestaurantById } from "@/lib/api/dashboard";
+import { getRestaurantById, getRestaurantReviews } from "@/lib/api/dashboard";
 import { getFavoritesAction } from "@/lib/actions/dashboard-action";
 import { navigationMocks } from "@/jest.setup";
 
-jest.mock("@/lib/api/dashboard", () => ({ getRestaurantById: jest.fn() }));
+jest.mock("@/lib/api/dashboard", () => ({ getRestaurantById: jest.fn(), getRestaurantReviews: jest.fn() }));
 jest.mock("@/lib/actions/dashboard-action", () => ({ getFavoritesAction: jest.fn(), toggleFavoriteAction: jest.fn() }));
 
 beforeEach(() => {
   jest.mocked(getRestaurantById).mockResolvedValue({ success: true, data: { _id: "restaurant-1", name: "Tavola", cuisine: "Italian", location: "Kathmandu", address: "Thamel", phone: "123", hours: "10-10", description: "Italian dining", rating: 4, reviewCount: 1, priceRange: "$$", image: "", isOpen: true, featured: false, price: 450, features: [], availableTimeSlots: ["7:00 PM"] } });
+  jest.mocked(getRestaurantReviews).mockResolvedValue({ success: true, count: 0, data: [], reviews: [] });
   jest.mocked(getFavoritesAction).mockResolvedValue([]);
 });
 

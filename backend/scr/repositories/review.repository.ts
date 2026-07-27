@@ -1,27 +1,46 @@
 const Review = require("../models/review.model");
 
 function listByRestaurant(restaurantId) {
-  return Review.find({ restaurantId }).sort({ updatedAt: -1 });
+  return Review.find({ restaurantId }).sort({ createdAt: -1 });
 }
 
-function upsertForUser(restaurantId, userId, payload) {
+function findByReservation(reservationId) {
+  return Review.findOne({ reservationId });
+}
+
+function findByReservationIds(reservationIds, userId) {
+  return Review.find({ reservationId: { $in: reservationIds }, userId });
+}
+
+function create(payload) {
+  return Review.create(payload);
+}
+
+function findOwnedById(reviewId, userId) {
+  return Review.findOne({ _id: reviewId, userId });
+}
+
+async function updateOwned(reviewId, userId, payload) {
   return Review.findOneAndUpdate(
-    { restaurantId, userId },
-    {
-      $set: {
-        userName: payload.userName,
-        userProfileImage: payload.userProfileImage,
-        rating: payload.rating,
-        comment: payload.comment,
-      },
-    },
-    {
-      returnDocument: "after",
-      upsert: true,
-      runValidators: true,
-      setDefaultsOnInsert: true,
-    },
+    { _id: reviewId, userId },
+    { $set: payload },
+    { returnDocument: "after", runValidators: true },
   );
 }
 
-module.exports = { listByRestaurant, upsertForUser };
+function ratingSummary(restaurantId) {
+  return Review.aggregate([
+    { $match: { restaurantId } },
+    { $group: { _id: "$restaurantId", rating: { $avg: "$rating" }, reviewCount: { $sum: 1 } } },
+  ]);
+}
+
+module.exports = {
+  create,
+  findByReservation,
+  findByReservationIds,
+  findOwnedById,
+  listByRestaurant,
+  ratingSummary,
+  updateOwned,
+};

@@ -3248,6 +3248,20 @@ font-size:30px;
   font-size: 16px;
 }
 
+.restaurant-reviews-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.restaurant-reviews-heading h2 { margin: 0; }
+.restaurant-reviews-heading > span { color: #6c5b50; font-size: 14px; }
+.restaurant-review-list { display: grid; gap: 14px; }
+.restaurant-review-item { padding: 20px; border: 1px solid #ead5c8; border-radius: 12px; background: #fffaf6; }
+.restaurant-review-item > div { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.restaurant-review-item strong { color: #281a14; }
+.restaurant-review-item p { margin: 12px 0 10px; color: #5c6678; white-space: pre-wrap; }
+.restaurant-review-item time { color: #8a7567; font-size: 12px; }
+.restaurant-review-stars { display: inline-flex; gap: 2px; color: #d8c9bf; font-size: 18px; }
+.restaurant-review-stars .selected { color: #f2b705; }
+.restaurant-reviews-error { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px; border: 1px solid #edc4bd; border-radius: 10px; background: #fff2ef; }
+.restaurant-reviews-error button { border: 1px solid #b75900; border-radius: 8px; padding: 8px 14px; color: #a44f00; background: #fff; font-weight: 700; cursor: pointer; }
+
 .info-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -7017,6 +7031,29 @@ font-size:30px;
 .booking-modify-form label { margin-top: 5px; color: #5a473a; font-size: 13px; font-weight: 800; }
 .booking-modify-form input, .booking-modify-form select { width: 100%; height: 48px; margin: 0 0 8px; border: 1px solid #dfbda9; border-radius: 10px; background: #fffdfb; padding: 0 13px; color: #2e211b; }
 .user-booking-actions .action-button { display: inline-flex; align-items: center; justify-content: center; text-align: center; }
+.reservation-review-card { margin-top: 22px; padding-top: 22px; border-top: 1px solid #efded3; }
+.reservation-review-card h3 { margin: 18px 0 12px; color: #281a14; font: 700 21px Georgia, serif; }
+.review-note { padding: 12px 14px; border: 1px solid #ead79b; border-radius: 10px; color: #765719; background: #fff8d9; font-size: 13px; line-height: 1.5; }
+.reservation-review-card form { display: grid; gap: 12px; }
+.reservation-review-card label { color: #5a473a; font-size: 13px; font-weight: 800; }
+.reservation-review-card textarea { width: 100%; resize: vertical; min-height: 100px; padding: 13px 14px; border: 1px solid #dfbda9; border-radius: 10px; color: #2e211b; background: #fffdfb; font: inherit; }
+.reservation-review-card textarea:focus { outline: 2px solid rgba(183, 89, 0, .18); border-color: #b75900; }
+.review-stars { display: flex; gap: 5px; }
+.review-stars button { width: 34px; height: 34px; padding: 0; border: 0; color: #d8c9bf; background: transparent; font-size: 29px; line-height: 1; cursor: pointer; }
+.review-stars button.selected { color: #f2b705; }
+.review-stars button:disabled { cursor: default; opacity: 1; }
+.review-stars button:focus-visible { border-radius: 5px; outline: 2px solid #b75900; outline-offset: 2px; }
+.review-submit-button { width: 100%; min-height: 48px; border: 0; border-radius: 10px; color: #fff; background: #b75900; font-weight: 800; cursor: pointer; }
+.review-submit-button:disabled { cursor: not-allowed; opacity: .7; }
+.review-cancel-edit, .review-edit-button { border: 0; color: #a44f00; background: transparent; font-weight: 800; cursor: pointer; }
+.review-cancel-edit { justify-self: center; }
+.review-message { margin: 0; font-size: 13px; font-weight: 700; }
+.review-message.error { color: #a72a2a; }
+.review-message.success { margin-top: 10px; color: #17653a; }
+.review-submitted { color: #5c4a40; }
+.review-submitted > p { margin: 12px 0 0; line-height: 1.6; white-space: pre-wrap; }
+.review-submitted-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.review-submitted-heading h3 { margin: 0 0 8px; }
 
 @media (max-width: 760px) {
   .user-booking-card { grid-template-columns: 1fr; }

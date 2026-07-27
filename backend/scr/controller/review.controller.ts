@@ -23,4 +23,18 @@ async function submitRestaurantReview(req, res) {
   });
 }
 
-module.exports = { getRestaurantReviews, submitRestaurantReview };
+async function updateRestaurantReview(req, res) {
+  const review = await reviewService.updateReview(
+    req.params.restaurantId,
+    req.params.reviewId,
+    req.user._id,
+    req.body,
+  );
+  return sendSuccess(res, 200, {
+    message: "Review updated successfully",
+    data: review,
+    review,
+  });
+}
+
+module.exports = { getRestaurantReviews, submitRestaurantReview, updateRestaurantReview };

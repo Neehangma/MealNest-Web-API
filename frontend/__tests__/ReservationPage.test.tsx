@@ -3,6 +3,10 @@ import userEvent from "@testing-library/user-event";
 import ReservationsPage from "@/app/reservations/page";
 import { cancelReservationAction, getReservationsAction, updateReservationAction } from "@/lib/actions/reservation-action";
 
+jest.mock("@/lib/actions/review-action", () => ({
+  createReviewAction: jest.fn(),
+  updateReviewAction: jest.fn(),
+}));
 jest.mock("@/lib/actions/reservation-action", () => ({
   getReservationsAction: jest.fn(),
   cancelReservationAction: jest.fn(),
@@ -74,4 +78,15 @@ test("modifies only date, time, and guest count", async () => {
     time: "8:30 PM",
     guests: 4,
   });
+});
+
+test("shows the review form only for eligible reservations", async () => {
+  getReservations.mockResolvedValue([
+    { _id: "past-booking", restaurantId: "restaurant-1", restaurantName: "Past Bistro", cuisine: "Thai", image: "", reservationDate: "2020-07-25", date: "2020-07-25", time: "7:00 PM", guests: 2, status: "confirmed" },
+    { _id: "cancelled-booking", restaurantId: "restaurant-2", restaurantName: "Cancelled Bistro", cuisine: "Nepali", image: "", reservationDate: "2020-07-25", date: "2020-07-25", time: "7:00 PM", guests: 2, status: "cancelled" },
+    { _id: "upcoming-booking", restaurantId: "restaurant-3", restaurantName: "Upcoming Bistro", cuisine: "Chinese", image: "", reservationDate: "2099-07-25", date: "2099-07-25", time: "7:00 PM", guests: 2, status: "confirmed" },
+  ]);
+  render(<ReservationsPage />);
+  expect(await screen.findByRole("heading", { name: "Rate Your Experience" })).toBeVisible();
+  expect(screen.getAllByText("Note: Reviews can only be submitted after your reservation has been completed.")).toHaveLength(1);
 });

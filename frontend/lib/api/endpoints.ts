@@ -18,6 +18,10 @@ export const API = {
         LIST: "/api/v1/restaurants",
         BY_ID: (id: string) => `/api/v1/restaurants/${id}`,
     },
+    REVIEWS: {
+        BY_RESTAURANT: (restaurantId: string) => `/api/v1/restaurants/${restaurantId}/reviews`,
+        BY_ID: (restaurantId: string, reviewId: string) => `/api/v1/restaurants/${restaurantId}/reviews/${reviewId}`,
+    },
     FAVORITES: {
         TOGGLE: (restaurantId: string) => `/api/v1/favorites/${restaurantId}`,
     },
