@@ -23,6 +23,19 @@ function formatReview(review) {
   };
 }
 
+function formatPublicReview(review) {
+  return {
+    _id: review._id.toString(),
+    id: review._id.toString(),
+    restaurantId: review.restaurantId.toString(),
+    userName: review.userName || "MealNest User",
+    rating: review.rating,
+    comment: review.comment,
+    createdAt: review.createdAt,
+    updatedAt: review.updatedAt,
+  };
+}
+
 function formatAdminReview(review) {
   return {
     _id: review._id.toString(),
@@ -104,7 +117,7 @@ async function requireRestaurant(restaurantId) {
 async function listReviews(restaurantId) {
   await requireRestaurant(restaurantId);
   const reviews = await reviewRepository.listByRestaurant(restaurantId);
-  return reviews.map(formatReview);
+  return reviews.map(formatPublicReview);
 }
 
 async function submitReview(restaurantId, userId, input) {

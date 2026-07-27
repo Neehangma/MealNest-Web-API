@@ -28,7 +28,6 @@ async function createReservation(user, restaurant, overrides = {}) {
 describe("restaurant review API", () => {
   test("stores a completed reservation review and exposes it to other users", async () => {
     const user = await createTestUser({ fullName: "Review User", email: "review-user@example.com" });
-    const otherUser = await createTestUser({ fullName: "Other User", email: "other-review-user@example.com" });
     const restaurant = await createTestRestaurant({ name: "Review Bistro" });
     const reservation = await createReservation(user, restaurant);
 
@@ -49,10 +48,13 @@ describe("restaurant review API", () => {
     expect(await Review.countDocuments({ reservationId: reservation._id })).toBe(1);
 
     const listed = await request(app)
-      .get(`/api/v1/restaurants/${restaurant._id}/reviews`)
-      .set("Authorization", `Bearer ${tokenFor(otherUser)}`);
+      .get(`/api/v1/restaurants/${restaurant._id}/reviews`);
     expect(listed.status).toBe(200);
     expect(listed.body.reviews[0]._id).toBe(created.body.review._id);
+    expect(listed.body.reviews[0].userName).toBe("Review User");
+    expect(listed.body.reviews[0].userId).toBeUndefined();
+    expect(listed.body.reviews[0].reservationId).toBeUndefined();
+    expect(JSON.stringify(listed.body)).not.toContain("review-user@example.com");
 
     const refreshedRestaurant = await request(app).get(`/api/v1/restaurants/${restaurant._id}`);
     expect(refreshedRestaurant.body.data).toMatchObject({ rating: 5, reviewCount: 1 });
@@ -72,6 +74,31 @@ describe("restaurant review API", () => {
 
     expect(duplicate.status).toBe(409);
     expect(duplicate.body.message).toBe("A review has already been submitted for this reservation");
+  });
+
+  test("publicly returns only published reviews for the requested restaurant", async () => {
+    const user = await createTestUser({ fullName: "Public Reviewer" });
+    const firstRestaurant = await createTestRestaurant({ name: "Public Review A" });
+    const secondRestaurant = await createTestRestaurant({ name: "Public Review B" });
+    const firstReservation = await createReservation(user, firstRestaurant);
+    const hiddenReservation = await createReservation(user, firstRestaurant);
+    const secondReservation = await createReservation(user, secondRestaurant);
+    await Review.create([
+      { restaurantId: firstRestaurant._id, userId: user._id, reservationId: firstReservation._id, userName: user.fullName, rating: 5, comment: "Published for restaurant A.", status: "published" },
+      { restaurantId: firstRestaurant._id, userId: user._id, reservationId: hiddenReservation._id, userName: user.fullName, rating: 1, comment: "Hidden for restaurant A.", status: "hidden" },
+      { restaurantId: secondRestaurant._id, userId: user._id, reservationId: secondReservation._id, userName: user.fullName, rating: 4, comment: "Published for restaurant B.", status: "published" },
+    ]);
+
+    const response = await request(app).get(`/api/v1/restaurants/${firstRestaurant._id}/reviews`);
+    expect(response.status).toBe(200);
+    expect(response.body.reviews).toHaveLength(1);
+    expect(response.body.reviews[0]).toMatchObject({
+      restaurantId: firstRestaurant._id.toString(),
+      userName: "Public Reviewer",
+      comment: "Published for restaurant A.",
+    });
+    expect(JSON.stringify(response.body)).not.toContain("Hidden for restaurant A.");
+    expect(JSON.stringify(response.body)).not.toContain("Published for restaurant B.");
   });
 
   test("allows the owner to edit a review without creating another review", async () => {
@@ -181,8 +208,7 @@ describe("restaurant review API", () => {
     expect((await Review.findById(reviewId)).status).toBe("hidden");
 
     const publicWhileHidden = await request(app)
-      .get(`/api/v1/restaurants/${restaurant._id}/reviews`)
-      .set("Authorization", `Bearer ${tokenFor(user)}`);
+      .get(`/api/v1/restaurants/${restaurant._id}/reviews`);
     expect(publicWhileHidden.body.reviews).toEqual([]);
     const hiddenRestaurant = await request(app).get(`/api/v1/restaurants/${restaurant._id}`);
     expect(hiddenRestaurant.body.data).toMatchObject({ rating: 0, reviewCount: 0 });
@@ -193,8 +219,7 @@ describe("restaurant review API", () => {
       .send({ status: "published" });
     expect(republished.body.data.status).toBe("published");
     const publicAfterPublish = await request(app)
-      .get(`/api/v1/restaurants/${restaurant._id}/reviews`)
-      .set("Authorization", `Bearer ${tokenFor(user)}`);
+      .get(`/api/v1/restaurants/${restaurant._id}/reviews`);
     expect(publicAfterPublish.body.reviews).toHaveLength(1);
 
     const removed = await request(app)
