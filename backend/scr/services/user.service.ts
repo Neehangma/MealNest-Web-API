@@ -889,6 +889,66 @@ async function listAdminReservationsByRestaurant(restaurantId) {
   };
 }
 
+async function getAdminRestaurantDetails(restaurantId) {
+  if (!isValidObjectId(restaurantId)) throw new HttpException(400, "Invalid restaurant id");
+  const result = await userRepository.getAdminRestaurantDetails(restaurantId);
+  if (!result) throw new HttpException(404, "Restaurant not found");
+
+  const restaurant = result.restaurant;
+  const restaurantData = restaurant.toObject();
+  const hoursMatch = String(restaurant.hours || "").match(/:\s*(.+?)\s*-\s*(.+)$/);
+  const ratingTotal = result.reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0);
+  const statusCount = (status) => result.bookings.filter((booking) => booking.status === status).length;
+  const explicitMenu = Array.isArray(restaurantData.menu) ? restaurantData.menu : [];
+  const menu = explicitMenu.length ? explicitMenu : (restaurant.features || []).map((name) => ({
+    category: "Featured items",
+    name,
+    description: "",
+    price: null,
+    isAvailable: true,
+    type: "food",
+  }));
+
+  return {
+    restaurant: {
+      ...restaurantData,
+      _id: restaurant._id.toString(),
+      email: restaurantData.email || "",
+      openingTime: hoursMatch?.[1] || "",
+      closingTime: hoursMatch?.[2] || "",
+      totalTables: Array.isArray(restaurant.tables) ? restaurant.tables.length : 0,
+      capacity: (restaurant.tables || []).reduce((sum, table) => sum + Number(table.capacity || 0), 0),
+      menu,
+    },
+    activity: {
+      totalBookings: result.bookings.length,
+      pendingBookings: statusCount("pending"),
+      confirmedBookings: statusCount("confirmed"),
+      completedBookings: statusCount("completed"),
+      cancelledBookings: statusCount("cancelled"),
+      totalReviews: result.reviews.length,
+      averageRating: result.reviews.length ? Number((ratingTotal / result.reviews.length).toFixed(1)) : 0,
+      totalFavorites: result.favoriteCount,
+    },
+    bookings: result.bookings.slice(0, 10).map((booking) => ({
+      ...formatReservationItem(booking),
+      customer: booking.user ? {
+        id: booking.user._id?.toString(),
+        name: booking.user.fullName,
+        email: booking.user.email,
+      } : null,
+    })),
+    reviews: result.reviews.slice(0, 10).map((review) => ({
+      id: review._id.toString(),
+      customerName: review.userId?.fullName || review.userName || "MealNest user",
+      rating: review.rating,
+      comment: review.comment,
+      status: review.status || "published",
+      createdAt: review.createdAt,
+    })),
+  };
+}
+
 async function getAdminDashboardStats() {
   const result = await userRepository.getAdminDashboardStats();
   const activities = [
@@ -917,6 +977,7 @@ module.exports = {
   getAdminDashboardStats,
   getAdminAnalytics,
   getAdminUserDetails,
+  getAdminRestaurantDetails,
   completeAdminReservation,
   getDashboard,
   getRestaurant,

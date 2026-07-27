@@ -192,6 +192,11 @@ async function listAdminReservationsByRestaurant(req, res) {
   return sendSuccess(res, 200, result);
 }
 
+async function getAdminRestaurantDetails(req, res) {
+  const result = await userService.getAdminRestaurantDetails(req.params.restaurantId);
+  return sendSuccess(res, 200, { data: result });
+}
+
 async function getAdminProfile(req, res) {
   const admin = await userService.getCurrentUser(req.user._id);
   return sendSuccess(res, 200, { admin });
@@ -233,6 +238,7 @@ module.exports = {
   forgotPassword,
   getDashboard,
   getAdminProfile,
+  getAdminRestaurantDetails,
   getAdminDashboardStats,
   getAdminAnalytics,
   getRestaurant,

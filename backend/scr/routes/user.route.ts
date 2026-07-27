@@ -50,6 +50,7 @@ router.get("/admin/users", authenticate, requireAdmin, asyncHandler(userControll
 router.get("/admin/bookings", authenticate, requireAdmin, asyncHandler(userController.listAdminReservations));
 router.get("/admin/bookings/grouped-by-restaurant", authenticate, requireAdmin, asyncHandler(userController.listGroupedAdminReservations));
 router.get("/admin/restaurants/:restaurantId/bookings", authenticate, requireAdmin, asyncHandler(userController.listAdminReservationsByRestaurant));
+router.get("/admin/restaurants/:restaurantId", authenticate, requireAdmin, asyncHandler(userController.getAdminRestaurantDetails));
 router.patch("/admin/bookings/:reservationId/complete", authenticate, requireAdmin, asyncHandler(userController.completeAdminReservation));
 router.get("/admin/dashboard/stats", authenticate, requireAdmin, asyncHandler(userController.getAdminDashboardStats));
 router.get("/admin/analytics", authenticate, requireAdmin, asyncHandler(userController.getAdminAnalytics));

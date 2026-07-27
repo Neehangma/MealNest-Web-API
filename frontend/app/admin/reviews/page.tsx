@@ -45,13 +45,16 @@ export default function AdminReviewsPage() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      setLoading(true);
-      setError("");
-      setPage(1);
-      setSearchQuery(search.trim());
+      const nextSearch = search.trim();
+      if (nextSearch !== searchQuery) {
+        setLoading(true);
+        setError("");
+        setPage(1);
+        setSearchQuery(nextSearch);
+      }
     }, 300);
     return () => window.clearTimeout(timer);
-  }, [search]);
+  }, [search, searchQuery]);
 
   useEffect(() => {
     let active = true;

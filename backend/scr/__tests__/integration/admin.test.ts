@@ -237,6 +237,86 @@ describe("admin API", () => {
     expect(missing.status).toBe(404);
   });
 
+  test("returns complete restaurant details and activity only to admins", async () => {
+    const admin = await createTestUser({ role: "admin", email: "restaurant-details-admin@example.com" });
+    const user = await createTestUser({ fullName: "Restaurant Customer", email: "restaurant-customer@example.com" });
+    const restaurant = await createTestRestaurant({ name: "Detailed Restaurant", cuisine: "Thai" });
+    restaurant.features = ["Pad Thai", "Tom Yum"];
+    restaurant.tables = [
+      { tableNumber: 1, capacity: 2, isAvailable: true },
+      { tableNumber: 2, capacity: 4, isAvailable: true },
+    ];
+    restaurant.availableTimeSlots = ["6:00 PM", "7:30 PM"];
+    restaurant.hours = "Mon-Sun: 11:00 AM - 10:00 PM";
+    await restaurant.save();
+    user.favorites.push(restaurant._id);
+    await user.save();
+    const reservation = await Reservation.create({
+      user: user._id,
+      restaurant: restaurant._id,
+      restaurantName: restaurant.name,
+      reservationDate: new Date("2030-01-01"),
+      date: "2030-01-01",
+      time: "7:00 PM",
+      guests: 2,
+      status: "confirmed",
+      paymentMethod: "esewa",
+      paymentStatus: "simulated_success",
+      totalPaid: 700,
+      bookingReference: "RESTAURANT-DETAIL-1",
+    });
+    await Review.create({
+      userId: user._id,
+      restaurantId: restaurant._id,
+      reservationId: reservation._id,
+      userName: user.fullName,
+      rating: 5,
+      comment: "Excellent restaurant details review.",
+      status: "hidden",
+    });
+
+    const denied = await request(app)
+      .get(`/api/admin/restaurants/${restaurant._id}`)
+      .set("Authorization", `Bearer ${tokenFor(user)}`);
+    expect(denied.status).toBe(403);
+
+    const response = await request(app)
+      .get(`/api/admin/restaurants/${restaurant._id}`)
+      .set("Authorization", `Bearer ${tokenFor(admin)}`);
+    expect(response.status).toBe(200);
+    expect(response.body.data.restaurant).toMatchObject({
+      _id: restaurant._id.toString(),
+      name: "Detailed Restaurant",
+      totalTables: 2,
+      capacity: 6,
+      openingTime: "11:00 AM",
+      closingTime: "10:00 PM",
+    });
+    expect(response.body.data.restaurant.menu).toEqual(expect.arrayContaining([
+      expect.objectContaining({ category: "Featured items", name: "Pad Thai", isAvailable: true }),
+    ]));
+    expect(response.body.data.activity).toMatchObject({
+      totalBookings: 1,
+      confirmedBookings: 1,
+      totalReviews: 1,
+      averageRating: 5,
+      totalFavorites: 1,
+    });
+    expect(response.body.data.bookings[0].customer).toMatchObject({ name: "Restaurant Customer", email: "restaurant-customer@example.com" });
+    expect(response.body.data.reviews[0]).toMatchObject({ customerName: "Restaurant Customer", rating: 5, status: "hidden" });
+    expect(JSON.stringify(response.body)).not.toContain("password");
+    expect(JSON.stringify(response.body)).not.toContain("token");
+
+    const invalid = await request(app)
+      .get("/api/admin/restaurants/not-an-id")
+      .set("Authorization", `Bearer ${tokenFor(admin)}`);
+    expect(invalid.status).toBe(400);
+    const missing = await request(app)
+      .get("/api/admin/restaurants/507f1f77bcf86cd799439011")
+      .set("Authorization", `Bearer ${tokenFor(admin)}`);
+    expect(missing.status).toBe(404);
+  });
+
   test("returns live dashboard counts and successful-payment revenue", async () => {
     const admin = await createTestUser({ role: "admin" });
     const user = await createTestUser();

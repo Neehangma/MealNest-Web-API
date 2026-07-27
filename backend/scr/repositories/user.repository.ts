@@ -452,6 +452,21 @@ async function listAdminReservationsByRestaurant(restaurantId) {
   return { restaurant, reservations };
 }
 
+async function getAdminRestaurantDetails(restaurantId) {
+  const restaurant = await Restaurant.findById(restaurantId);
+  if (!restaurant) return null;
+  const [bookings, reviews, favoriteCount] = await Promise.all([
+    Reservation.find({ restaurant: restaurantId })
+      .populate("user", "fullName email")
+      .sort({ createdAt: -1 }),
+    Review.find({ restaurantId })
+      .populate("userId", "fullName")
+      .sort({ createdAt: -1 }),
+    User.countDocuments({ favorites: restaurantId }),
+  ]);
+  return { restaurant, bookings, reviews, favoriteCount };
+}
+
 async function getAdminDashboardStats() {
   const usersWithLegacyReservations = await User.find({ "reservations.0": { $exists: true } });
   await Promise.all(usersWithLegacyReservations.map(migrateLegacyReservations));
@@ -616,6 +631,7 @@ module.exports = {
   findReservationByTransactionId,
   getDashboardData,
   getAdminUserDetails,
+  getAdminRestaurantDetails,
   getAdminDashboardStats,
   getAdminAnalytics,
   getRestaurantById,
