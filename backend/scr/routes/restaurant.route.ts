@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.get("/", asyncHandler(restaurantController.getRestaurants));
 router.get("/cuisine/:cuisine", asyncHandler(restaurantController.getRestaurantsByCuisine));
-router.get("/:restaurantId/reviews", authenticate, asyncHandler(reviewController.getRestaurantReviews));
+router.get("/:restaurantId/reviews", asyncHandler(reviewController.getRestaurantReviews));
 router.post("/:restaurantId/reviews", authenticate, asyncHandler(reviewController.submitRestaurantReview));
 router.patch("/:restaurantId/reviews/:reviewId", authenticate, asyncHandler(reviewController.updateRestaurantReview));
 router.get("/:id", asyncHandler(restaurantController.getRestaurantById));

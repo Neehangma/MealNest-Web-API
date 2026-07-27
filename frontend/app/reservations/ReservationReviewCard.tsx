@@ -72,6 +72,7 @@ export default function ReservationReviewCard({ reservationId, restaurantId, ini
       setEditing(false);
       setMessage(review ? "Review updated successfully." : "Review submitted successfully.");
       onSaved(response.review);
+      window.dispatchEvent(new CustomEvent("mealnest-review-saved", { detail: { restaurantId } }));
     } catch (reason) {
       setConfirmationOpen(false);
       setError(reason instanceof Error ? reason.message : "Unable to submit your review.");

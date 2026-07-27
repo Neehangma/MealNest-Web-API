@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import ReservationReviewCard from "@/app/reservations/ReservationReviewCard";
 import RestaurantReviews from "@/app/restaurants/[id]/RestaurantReviews";
@@ -113,4 +113,29 @@ test("displays persisted restaurant reviews to any visitor", async () => {
   expect(await screen.findByText("Review User")).toBeVisible();
   expect(screen.getByText("Wonderful dinner.")).toBeVisible();
   expect(screen.getByText("4.0")).toBeVisible();
+});
+
+test("shows the public empty state without exposing authentication errors", async () => {
+  jest.mocked(getRestaurantReviews).mockResolvedValue({ success: true, count: 0, data: [], reviews: [] });
+  render(<RestaurantReviews restaurantId="restaurant-empty" />);
+  expect(await screen.findByText("No reviews yet. Be the first to review this restaurant after completing a reservation.")).toBeVisible();
+  expect(screen.queryByText(/Authorization token is required/i)).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Retry" })).not.toBeInTheDocument();
+});
+
+test("uses a neutral message for public review failures and refetches a saved restaurant review", async () => {
+  const consoleError = jest.spyOn(console, "error").mockImplementation(() => undefined);
+  jest.mocked(getRestaurantReviews)
+    .mockRejectedValueOnce(new Error("Authorization token is required"))
+    .mockResolvedValueOnce({ success: true, count: 1, data: [review], reviews: [review] });
+  render(<RestaurantReviews restaurantId="restaurant-1" />);
+  expect(await screen.findByText("Reviews are temporarily unavailable.")).toBeVisible();
+  expect(screen.queryByText("Authorization token is required")).not.toBeInTheDocument();
+
+  act(() => {
+    window.dispatchEvent(new CustomEvent("mealnest-review-saved", { detail: { restaurantId: "restaurant-1" } }));
+  });
+  await waitFor(() => expect(getRestaurantReviews).toHaveBeenCalledTimes(2));
+  expect(await screen.findByText("Wonderful dinner.")).toBeVisible();
+  consoleError.mockRestore();
 });

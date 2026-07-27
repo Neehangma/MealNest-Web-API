@@ -74,11 +74,22 @@ export type ReviewItem = {
   updatedAt: string;
 };
 
+export type PublicReviewItem = {
+  _id: string;
+  id: string;
+  restaurantId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ReviewsResponse = {
   success: boolean;
   count: number;
-  data: ReviewItem[];
-  reviews: ReviewItem[];
+  data: PublicReviewItem[];
+  reviews: PublicReviewItem[];
 };
 
 export type ReviewMutationResponse = {
@@ -231,8 +242,15 @@ export async function getRestaurantById(id: string) {
   return request<RestaurantResponse>(API.RESTAURANTS.BY_ID(id));
 }
 
+async function publicRequest<T>(path: string): Promise<T> {
+  const response = await fetch(`${BASE_URL}${path}`, { cache: "no-store" });
+  const body = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(body?.message || "Request failed");
+  return body as T;
+}
+
 export async function getRestaurantReviews(restaurantId: string) {
-  return request<ReviewsResponse>(API.REVIEWS.BY_RESTAURANT(restaurantId));
+  return publicRequest<ReviewsResponse>(API.REVIEWS.BY_RESTAURANT(restaurantId));
 }
 
 export async function toggleFavorite(restaurantId: string) {
