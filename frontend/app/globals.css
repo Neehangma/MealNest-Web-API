@@ -7054,6 +7054,11 @@ font-size:30px;
 .review-submitted > p { margin: 12px 0 0; line-height: 1.6; white-space: pre-wrap; }
 .review-submitted-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .review-submitted-heading h3 { margin: 0 0 8px; }
+.review-confirmation-modal { width: min(460px, 100%); padding: 32px; border: 1px solid #ead5c8; border-radius: 20px; background: #fffaf6; box-shadow: 0 24px 70px rgba(35, 24, 20, .3); }
+.review-confirmation-modal h2 { margin: 0 0 10px; color: #281a14; font: 700 28px Georgia, serif; }
+.review-confirmation-modal > p { margin: 0 0 20px; color: #68564c; line-height: 1.6; }
+.review-confirmation-summary { padding: 16px; border: 1px solid #ead5c8; border-radius: 12px; background: #fffdfb; }
+.review-confirmation-summary p { margin: 10px 0 0; color: #5c4a40; line-height: 1.6; white-space: pre-wrap; }
 
 @media (max-width: 760px) {
   .user-booking-card { grid-template-columns: 1fr; }

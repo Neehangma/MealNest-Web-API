@@ -63,6 +63,9 @@ test("submits once and replaces the form with the saved review state", async () 
   await user.type(screen.getByLabelText("Your review"), "Wonderful dinner.");
   await user.click(screen.getByRole("button", { name: "Submit Review" }));
 
+  expect(screen.getByRole("dialog", { name: "Submit Review?" })).toBeVisible();
+  expect(createReviewAction).not.toHaveBeenCalled();
+  await user.click(screen.getByRole("button", { name: "Yes, Submit Review" }));
   expect(createReviewAction).toHaveBeenCalledWith("restaurant-1", {
     reservationId: "reservation-1",
     rating: 4,
@@ -82,10 +85,26 @@ test("edits an existing review through the protected update action", async () =>
   await user.clear(screen.getByLabelText("Your review"));
   await user.type(screen.getByLabelText("Your review"), "Even better on reflection.");
   await user.click(screen.getByRole("button", { name: "Update Review" }));
+  expect(screen.getByRole("dialog", { name: "Update Review?" })).toBeVisible();
+  await user.click(screen.getByRole("button", { name: "Yes, Update Review" }));
   expect(updateReviewAction).toHaveBeenCalledWith("restaurant-1", "review-1", {
     rating: 5,
     comment: "Even better on reflection.",
   });
+});
+
+test("keeps the review form unchanged when confirmation is declined", async () => {
+  const user = userEvent.setup();
+  render(<ReservationReviewCard reservationId="reservation-1" restaurantId="restaurant-1" onSaved={jest.fn()} />);
+  await user.click(screen.getByRole("button", { name: "Rate 3 stars" }));
+  await user.type(screen.getByLabelText("Your review"), "A good experience.");
+  await user.click(screen.getByRole("button", { name: "Submit Review" }));
+  await user.click(screen.getByRole("button", { name: "No" }));
+
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  expect(screen.getByLabelText("Your review")).toHaveValue("A good experience.");
+  expect(screen.getByRole("button", { name: "Rate 3 stars" })).toHaveClass("selected");
+  expect(createReviewAction).not.toHaveBeenCalled();
 });
 
 test("displays persisted restaurant reviews to any visitor", async () => {

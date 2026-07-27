@@ -38,8 +38,9 @@ export default function ReservationReviewCard({ reservationId, restaurantId, ini
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  function requestConfirmation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmedComment = comment.trim();
     setError("");
@@ -52,19 +53,27 @@ export default function ReservationReviewCard({ reservationId, restaurantId, ini
       setError("Please write a review.");
       return;
     }
+    setComment(trimmedComment);
+    setConfirmationOpen(true);
+  }
 
+  async function saveReview() {
+    if (submitting || !rating || !comment.trim()) return;
     try {
       setSubmitting(true);
+      setError("");
       const response = review
-        ? await updateReviewAction(restaurantId, review._id, { rating, comment: trimmedComment })
-        : await createReviewAction(restaurantId, { reservationId, rating, comment: trimmedComment });
+        ? await updateReviewAction(restaurantId, review._id, { rating, comment: comment.trim() })
+        : await createReviewAction(restaurantId, { reservationId, rating, comment: comment.trim() });
       setReview(response.review);
       setRating(response.review.rating);
       setComment(response.review.comment);
+      setConfirmationOpen(false);
       setEditing(false);
       setMessage(review ? "Review updated successfully." : "Review submitted successfully.");
       onSaved(response.review);
     } catch (reason) {
+      setConfirmationOpen(false);
       setError(reason instanceof Error ? reason.message : "Unable to submit your review.");
     } finally {
       setSubmitting(false);
@@ -91,7 +100,7 @@ export default function ReservationReviewCard({ reservationId, restaurantId, ini
     <section className="reservation-review-card">
       <div className="review-note">Note: Reviews can only be submitted after your reservation has been completed.</div>
       <h3>Rate Your Experience</h3>
-      <form onSubmit={submit} noValidate>
+      <form onSubmit={requestConfirmation} noValidate>
         <Stars rating={rating} interactive onSelect={(value) => { setRating(value); setError(""); }} />
         <label htmlFor={`review-comment-${reservationId}`}>Your review</label>
         <textarea
@@ -108,6 +117,24 @@ export default function ReservationReviewCard({ reservationId, restaurantId, ini
         </button>
         {review && <button type="button" className="review-cancel-edit" disabled={submitting} onClick={() => { setEditing(false); setRating(review.rating); setComment(review.comment); setError(""); }}>Cancel</button>}
       </form>
+      {confirmationOpen && (
+        <div className="booking-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby={`review-confirmation-${reservationId}`}>
+          <section className="review-confirmation-modal">
+            <h2 id={`review-confirmation-${reservationId}`}>{review ? "Update Review?" : "Submit Review?"}</h2>
+            <p>Do you want to {review ? "update" : "submit"} this review?</p>
+            <div className="review-confirmation-summary">
+              <Stars rating={rating} />
+              <p>{comment}</p>
+            </div>
+            <div className="booking-cancel-actions">
+              <button type="button" className="action-button secondary" disabled={submitting} onClick={() => setConfirmationOpen(false)}>No</button>
+              <button type="button" className="action-button primary" disabled={submitting} onClick={() => void saveReview()}>
+                {submitting ? "Submitting..." : review ? "Yes, Update Review" : "Yes, Submit Review"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </section>
   );
 }
