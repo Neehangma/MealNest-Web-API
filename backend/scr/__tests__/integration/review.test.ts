@@ -1,4 +1,5 @@
 const request = require("supertest");
+const mongoose = require("mongoose");
 const app = require("../../server");
 const Review = require("../../models/review.model");
 const {
@@ -21,7 +22,7 @@ describe("restaurant review API", () => {
       .post(`/api/v1/restaurants/${restaurant._id}/reviews`)
       .set("Authorization", `Bearer ${token}`)
       .send({ rating: 5, comment: "Excellent food and service." });
-    expect(created.status).toBe(200);
+    expect(created.status).toBe(201);
     expect(created.body.review).toMatchObject({
       restaurantId: restaurant._id.toString(),
       userId: user._id.toString(),
@@ -29,6 +30,9 @@ describe("restaurant review API", () => {
       rating: 5,
       comment: "Excellent food and service.",
     });
+
+    await mongoose.disconnect();
+    await mongoose.connect(process.env.MONGO_URI);
 
     const listed = await request(app).get(
       `/api/v1/restaurants/${restaurant._id}/reviews`,
@@ -47,7 +51,7 @@ describe("restaurant review API", () => {
       .post(`/api/v1/restaurants/${restaurant._id}/reviews`)
       .set("Authorization", `Bearer ${token}`)
       .send({ rating: 4, comment: "Updated after another visit." });
-    expect(updated.status).toBe(200);
+    expect(updated.status).toBe(201);
     expect(updated.body.review._id).toBe(created.body.review._id);
     expect(await Review.countDocuments({ restaurantId: restaurant._id })).toBe(1);
   });

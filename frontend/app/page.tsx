@@ -16,7 +16,6 @@ const popularCuisines = [
   { name: "French", image: "/images/Golden.jpg" },
   { name: "Japanese", image: "/images/sakura.jpg" },
   { name: "Thai", image: "/images/tanrak.jpg" },
-  { name: "Spanish", image: "/images/Patio.jpg" },
   { name: "Chinese", image: "/images/jade.jpg" },
   { name: "Indian", image: "/images/mahal.jpg" },
 ];

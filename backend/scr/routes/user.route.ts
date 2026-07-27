@@ -30,7 +30,7 @@ router.patch(
 );
 
 router.get("/dashboard", authenticate, asyncHandler(userController.getDashboard));
-router.get("/restaurants", authenticate, asyncHandler(userController.listRestaurants));
+router.get("/restaurants", authenticate, asyncHandler(userController.getRestaurants));
 router.get("/restaurants/:id", authenticate, asyncHandler(userController.getRestaurant));
 router.get("/favorites", authenticate, asyncHandler(userController.getDashboard));
 router.post("/favorites/:restaurantId", authenticate, asyncHandler(userController.toggleFavorite));

@@ -16,7 +16,7 @@ async function submitRestaurantReview(req, res) {
     req.user._id,
     req.body,
   );
-  return sendSuccess(res, 200, {
+  return sendSuccess(res, 201, {
     message: "Review saved successfully",
     data: review,
     review,

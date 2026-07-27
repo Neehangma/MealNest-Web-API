@@ -14,21 +14,6 @@ const {
   sendReservationUpdatedEmail,
 } = require("./emailService");
 
-const BOOKING_EMAIL_TIMEOUT_MS = 5000;
-const BOOKING_NOTIFICATION_EMAIL =
-  String(process.env.BOOKING_NOTIFICATION_EMAIL || "mealnest67@gmail.com")
-    .trim()
-    .toLowerCase();
-
-function withTimeout(promise, timeoutMs, message) {
-  let timeout;
-  const timeoutPromise = new Promise((_, reject) => {
-    timeout = setTimeout(() => reject(new Error(message)), timeoutMs);
-  });
-  return Promise.race([promise, timeoutPromise]).finally(() => {
-    clearTimeout(timeout);
-  });
-}
 const { isValidObjectId, toSafeUser } = require("../utils/apihelper.utils");
 const { isPhoneNumberValid, isOptionalPhoneNumberValid, PHONE_VALIDATION_MESSAGE } = require("../utils/phone-validation");
 
@@ -79,6 +64,13 @@ function formatReservationItem(reservation) {
     transactionId: reservation.transactionId || reservation.bookingReference,
     createdAt: reservation.createdAt,
   };
+}
+
+function maskEmail(value) {
+  const email = String(value || "").trim().toLowerCase();
+  const [local, domain] = email.split("@");
+  if (!local || !domain) return "invalid";
+  return `${local.slice(0, 2)}***@${domain}`;
 }
 
 function createToken(user) {
@@ -481,11 +473,22 @@ async function createReservation(userId, payload) {
     throw new HttpException(400, "Invalid payment amount");
   }
 
+  const existingReservation = await userRepository.findReservationByTransactionId(
+    userId,
+    payload.transactionId,
+  );
+  if (existingReservation) {
+    return {
+      booking: formatReservationItem(existingReservation),
+      emailSent: null,
+    };
+  }
+
   const restaurant = await userRepository.getRestaurantById(payload.restaurantId);
   if (!restaurant) throw new HttpException(404, "Restaurant not found");
   const date = String(payload.date || payload.reservationDate || "").slice(0, 10);
   const guests = Number(payload.guests);
-  const tableNumber = await validateReservationAvailability({
+  const allocatedTableNumber = await validateReservationAvailability({
     restaurant,
     date,
     time: String(payload.time || ""),
@@ -495,6 +498,12 @@ async function createReservation(userId, payload) {
     // when an existing reservation is modified.
     enforceConfiguredTime: false,
   });
+  const requestedTableNumber = Number(payload.tableNumber);
+  const tableNumber = allocatedTableNumber ?? (
+    Number.isInteger(requestedTableNumber) && requestedTableNumber > 0
+      ? requestedTableNumber
+      : undefined
+  );
   const reservationPayload = {
     ...payload,
     date,
@@ -516,37 +525,58 @@ async function createReservation(userId, payload) {
   booking.customerName = String(payload.customerName || "").trim() || booking.customerName || user?.fullName?.trim() || user?.name?.trim() || "Guest";
   booking.customerEmail = user?.email || "";
   booking.customerPhone = user?.phoneNumber?.trim() || String(payload.customerPhone || "").trim();
-  let emailSent = false;
+  let emailSent = null;
+  let emailError;
 
   const authenticatedEmail = String(user?.email || "").trim().toLowerCase();
-  const validNotificationEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-    BOOKING_NOTIFICATION_EMAIL,
+  const validAuthenticatedEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+    authenticatedEmail,
   );
-  if (!validNotificationEmail) {
-    console.warn(`Booking ${reservation.bookingReference} saved; notification email is not configured.`);
+  if (!validAuthenticatedEmail) {
+    emailSent = false;
+    emailError = "Confirmation email could not be sent";
+    console.warn(`Booking ${reservation.bookingReference} saved; authenticated user email is invalid.`);
   } else if (booking.status === "confirmed" && booking.paymentStatus === "simulated_success") {
     try {
-      await withTimeout(
-        sendBookingConfirmationEmail({
-          recipientEmail: BOOKING_NOTIFICATION_EMAIL,
+      if (process.env.NODE_ENV !== "production") {
+        console.log("Booking confirmation email requested", {
+          bookingId: reservation._id.toString(),
+          userId: userId.toString(),
+          recipient: maskEmail(authenticatedEmail),
+        });
+      }
+      const emailResult = await sendBookingConfirmationEmail({
+        recipientEmail: authenticatedEmail,
+        customerName: booking.customerName,
+        booking: {
+          ...booking,
           customerName: booking.customerName,
-          booking: {
-            ...booking,
-            customerName: booking.customerName,
-            customerEmail: authenticatedEmail,
-            customerPhone: booking.customerPhone || "",
-          },
-        }),
-        BOOKING_EMAIL_TIMEOUT_MS,
-        "Confirmation email timed out",
-      );
+          customerEmail: authenticatedEmail,
+          customerPhone: booking.customerPhone || "",
+        },
+      });
       emailSent = true;
+      if (process.env.NODE_ENV !== "production") {
+        console.log("Booking confirmation email sent", {
+          bookingId: reservation._id.toString(),
+          recipient: maskEmail(authenticatedEmail),
+          messageId: emailResult?.messageId || "available",
+        });
+      }
     } catch (error) {
-      console.error(`Booking confirmation email failed for ${reservation.bookingReference}: ${error.message}`);
+      emailSent = false;
+      emailError = "Confirmation email could not be sent";
+      console.warn("Booking remains confirmed although its email could not be sent", {
+        bookingId: reservation._id.toString(),
+        userId: userId.toString(),
+        recipient: maskEmail(authenticatedEmail),
+        code: error?.code || "UNKNOWN",
+        message: error?.message || "Email delivery failed",
+      });
     }
   }
 
-  return { booking, emailSent };
+  return { booking, emailSent, emailError };
 }
 
 async function updateReservation(userId, reservationId, payload) {

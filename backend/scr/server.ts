@@ -1,5 +1,6 @@
-import chatbotRoutes from "./routes/chatbotRoutes";
 require("dotenv").config({ quiet: true });
+const chatbotRoutesModule = require("./routes/chatbotRoutes");
+const chatbotRoutes = chatbotRoutesModule.default || chatbotRoutesModule;
 
 const cors = require("cors");
 const express = require("express");

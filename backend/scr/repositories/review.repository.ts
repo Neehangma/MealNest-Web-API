@@ -16,7 +16,7 @@ function upsertForUser(restaurantId, userId, payload) {
       },
     },
     {
-      new: true,
+      returnDocument: "after",
       upsert: true,
       runValidators: true,
       setDefaultsOnInsert: true,

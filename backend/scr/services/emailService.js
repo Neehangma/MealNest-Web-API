@@ -1,20 +1,78 @@
 const nodemailer = require("nodemailer");
 
+function envValue(name, fallback = "") {
+  return String(process.env[name] ?? fallback).trim();
+}
+
+const emailConfig = {
+  host: envValue("EMAIL_HOST", "smtp.gmail.com"),
+  port: Number(envValue("EMAIL_PORT", "465")),
+  secure: envValue("EMAIL_SECURE", "true").toLowerCase() === "true",
+  user: envValue("EMAIL_USER"),
+  pass: envValue("EMAIL_PASS"),
+  from: envValue("EMAIL_FROM"),
+};
+const deliveryTimeoutMs = Math.max(
+  1000,
+  Number(envValue("EMAIL_DELIVERY_TIMEOUT_MS", "8000")) || 8000,
+);
+
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || "smtp.gmail.com",
-  port: Number(process.env.EMAIL_PORT || 587),
-  secure: process.env.EMAIL_SECURE === "true",
-  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+  host: emailConfig.host,
+  port: emailConfig.port,
+  secure: emailConfig.secure,
+  auth: { user: emailConfig.user, pass: emailConfig.pass },
   connectionTimeout: 5000,
   greetingTimeout: 5000,
   socketTimeout: 10000,
 });
 
+if (process.env.NODE_ENV !== "test") {
+  console.log("Email configuration", {
+    userConfigured: Boolean(emailConfig.user),
+    passwordConfigured: Boolean(emailConfig.pass),
+    fromConfigured: Boolean(emailConfig.from),
+    host: emailConfig.host,
+    port: emailConfig.port,
+    secure: emailConfig.secure,
+  });
+}
+
+function logEmailError(context, error, recipientEmail) {
+  console.error(`${context} failed`, {
+    recipient: String(recipientEmail || "").trim().toLowerCase(),
+    code: error?.code || "UNKNOWN",
+    command: error?.command || "unknown",
+    response: error?.response || error?.message || "Unknown email error",
+  });
+}
+
+async function deliverEmail(message, context) {
+  let timeout;
+  try {
+    return await Promise.race([
+      transporter.sendMail(message),
+      new Promise((_, reject) => {
+        timeout = setTimeout(() => {
+          const error = new Error("Email delivery timed out");
+          error.code = "EMAIL_TIMEOUT";
+          reject(error);
+        }, deliveryTimeoutMs);
+      }),
+    ]);
+  } catch (error) {
+    logEmailError(context, error, message.to);
+    throw error;
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
+
 if (process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test" && typeof transporter.verify === "function") {
   transporter.verify()
-    .then(() => console.log("Email service is ready"))
+    .then(() => console.log("Email transporter verification succeeded"))
     .catch((error) => {
-      console.error("Email service configuration failed:", error instanceof Error ? error.message : "Unknown error");
+      logEmailError("Email service verification", error);
     });
 }
 
@@ -75,7 +133,7 @@ function detailRow(leftLabel, leftValue, rightLabel, rightValue, rightFallback) 
 }
 
 async function sendBookingConfirmationEmail({ recipientEmail, customerName, booking }) {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || !process.env.EMAIL_FROM) throw new Error("Booking email is not configured");
+  if (!emailConfig.user || !emailConfig.pass || !emailConfig.from) throw new Error("Booking email is not configured");
 
   const confirmed = booking || {};
   const displayName = valueOrFallback(customerName || confirmed.customerName, "Guest");
@@ -91,16 +149,17 @@ async function sendBookingConfirmationEmail({ recipientEmail, customerName, book
   const rows = [
     detailRow("Address", confirmed.restaurantAddress || confirmed.restaurant?.address, "Restaurant Phone", confirmed.restaurantPhone || confirmed.restaurant?.phone),
     detailRow("Reservation Date", formatDate(confirmed.reservationDate || confirmed.date), "Reservation Time", confirmed.time),
-    detailRow("Guests", guests, "Customer", displayName),
-    detailRow("Customer Email", confirmed.customerEmail, "Customer Phone", confirmed.customerPhone),
+    detailRow("Table", confirmed.tableNumber, "Guests", guests),
+    detailRow("Customer", displayName, "Customer Email", confirmed.customerEmail),
+    detailRow("Customer Phone", confirmed.customerPhone, "Cuisine", confirmed.cuisine || confirmed.restaurant?.cuisine),
     detailRow("Payment Method", formatPaymentMethod(confirmed.paymentMethod), "Payment Status", formatStatus(confirmed.paymentStatus)),
     detailRow("Booking Reference", reference, "Transaction ID", confirmed.transactionId || reference),
     detailRow("Special Request", confirmed.specialRequests || "None", "Booking Status", formatStatus(confirmed.status)),
     detailRow("Booked On", formatDate(confirmed.createdAt, true), "Total Paid", total),
   ].join("");
 
-  return transporter.sendMail({
-    from: process.env.EMAIL_FROM,
+  return deliverEmail({
+    from: emailConfig.from,
     to: String(recipientEmail || "").trim().toLowerCase(),
     subject: `Booking Confirmed – ${restaurantName.replace(/[\r\n]/g, " ")} – ${reference.replace(/[\r\n]/g, " ")}`,
     html: `<!doctype html><html><body style="margin:0;padding:0;background:#eee6df;font-family:Arial,sans-serif;color:#2b1d17;">
@@ -114,11 +173,11 @@ async function sendBookingConfirmationEmail({ recipientEmail, customerName, book
         </table>
       </td></tr></table>
     </body></html>`,
-  });
+  }, "Booking confirmation email");
 }
 
 async function sendPasswordResetEmail({ recipientEmail, customerName, resetToken }) {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || !process.env.EMAIL_FROM) {
+  if (!emailConfig.user || !emailConfig.pass || !emailConfig.from) {
     throw new Error("Password reset email is not configured");
   }
 
@@ -126,8 +185,8 @@ async function sendPasswordResetEmail({ recipientEmail, customerName, resetToken
   const resetUrl = `${frontendUrl}/reset-password/${encodeURIComponent(resetToken)}`;
   const displayName = valueOrFallback(customerName, "MealNest user");
 
-  return transporter.sendMail({
-    from: process.env.EMAIL_FROM,
+  return deliverEmail({
+    from: emailConfig.from,
     to: String(recipientEmail || "").trim().toLowerCase(),
     subject: "Reset your MealNest password",
     html: `<!doctype html><html><body style="margin:0;padding:0;background:#f7f2ed;font-family:Arial,sans-serif;color:#2b211b;">
@@ -144,7 +203,7 @@ async function sendPasswordResetEmail({ recipientEmail, customerName, resetToken
         </table>
       </td></tr></table>
     </body></html>`,
-  });
+  }, "Password reset email");
 }
 
 async function sendReservationChangeEmail({
@@ -156,7 +215,7 @@ async function sendReservationChangeEmail({
   subject,
   accent,
 }) {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS || !process.env.EMAIL_FROM) {
+  if (!emailConfig.user || !emailConfig.pass || !emailConfig.from) {
     throw new Error("Reservation email is not configured");
   }
 
@@ -165,8 +224,8 @@ async function sendReservationChangeEmail({
   const displayName = valueOrFallback(customerName, "MealNest user");
   const guests = hasValue(reservation.guests) ? `${reservation.guests} Guest${Number(reservation.guests) === 1 ? "" : "s"}` : "Not available";
 
-  return transporter.sendMail({
-    from: process.env.EMAIL_FROM,
+  return deliverEmail({
+    from: emailConfig.from,
     to: String(recipientEmail || "").trim().toLowerCase(),
     subject: `${subject} – ${restaurantName.replace(/[\r\n]/g, " ")}`,
     html: `<!doctype html><html><body style="margin:0;padding:0;background:#f7f2ed;font-family:Arial,sans-serif;color:#2b211b;">
@@ -186,7 +245,7 @@ async function sendReservationChangeEmail({
         </table>
       </td></tr></table>
     </body></html>`,
-  });
+  }, "Reservation email");
 }
 
 function sendBookingCancellationEmail(payload) {

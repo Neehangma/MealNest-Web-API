@@ -233,6 +233,15 @@ async function createReservation(userId, payload) {
   });
 }
 
+function findReservationByTransactionId(userId, transactionId) {
+  const normalizedTransactionId = String(transactionId || "").trim();
+  if (!normalizedTransactionId) return null;
+  return Reservation.findOne({
+    user: userId,
+    transactionId: normalizedTransactionId,
+  }).populate("restaurant");
+}
+
 function getReservationWithDetails(reservationId, userId) {
   return Reservation.findOne({ _id: reservationId, user: userId }).populate("restaurant");
 }
@@ -468,6 +477,7 @@ module.exports = {
   findByEmail,
   findById,
   findByValidPasswordResetToken,
+  findReservationByTransactionId,
   getDashboardData,
   getAdminDashboardStats,
   getAdminAnalytics,

@@ -14,6 +14,7 @@ function bookingPayload(restaurant, overrides = {}) {
     reservationDate: "2030-07-26T13:15:00.000Z",
     time: "7:00 PM",
     guests: 2,
+    tableNumber: 2,
     paymentMethod: "esewa",
     paymentStatus: "simulated_success",
     totalPaid: 500,
@@ -29,9 +30,44 @@ describe("booking API", () => {
     const response = await request(app).post("/api/bookings").set("Authorization", `Bearer ${tokenFor(user)}`).send(bookingPayload(restaurant));
 
     expect(response.status).toBe(201);
-    expect(response.body.booking).toMatchObject({ restaurantName: restaurant.name, paymentStatus: "simulated_success", totalPaid: 500 });
+    expect(response.body.booking).toMatchObject({
+      restaurantName: restaurant.name,
+      paymentStatus: "simulated_success",
+      tableNumber: 2,
+      totalPaid: 500,
+    });
     expect(response.body.booking._id).toBeDefined();
     expect(await Reservation.findById(response.body.booking._id)).not.toBeNull();
+  });
+
+  test("reuses a booking when the same payment transaction is retried", async () => {
+    const user = await createTestUser({ email: "retry-booking@example.com" });
+    const restaurant = await createTestRestaurant();
+    const token = tokenFor(user);
+    const payload = bookingPayload(restaurant, {
+      transactionId: "CW2-IDEMPOTENT-BOOKING",
+    });
+
+    const first = await request(app)
+      .post("/api/bookings")
+      .set("Authorization", `Bearer ${token}`)
+      .send(payload);
+    const retry = await request(app)
+      .post("/api/bookings")
+      .set("Authorization", `Bearer ${token}`)
+      .send(payload);
+
+    expect(first.status).toBe(201);
+    expect(retry.status).toBe(201);
+    expect(retry.body.booking._id).toBe(first.body.booking._id);
+    expect(retry.body.emailSent).toBeNull();
+    expect(retry.body.emailError).toBeUndefined();
+    expect(
+      await Reservation.countDocuments({
+        user: user._id,
+        transactionId: payload.transactionId,
+      }),
+    ).toBe(1);
   });
 
   test("rejects booking creation without authentication", async () => {

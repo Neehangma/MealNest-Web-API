@@ -134,6 +134,7 @@ async function createReservation(req, res) {
     message: "Reservation created successfully",
     booking: result.booking,
     emailSent: result.emailSent,
+    ...(result.emailError ? { emailError: result.emailError } : {}),
   });
 }
 
