@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAdminDashboardStatsAction } from "@/lib/actions/admin/dashboard-action";
+import { getAdminReviewAnalyticsAction } from "@/lib/actions/admin/review-action";
 import type { AdminActivity } from "@/lib/api/admin/dashboard";
 import AnalyticsSection from "./_components/analytics/AnalyticsSection";
 import styles from "./admin.module.css";
@@ -80,8 +81,15 @@ function relativeTime(value: string) {
 
 export default async function AdminDashboardPage() {
   let dashboard: Awaited<ReturnType<typeof getAdminDashboardStatsAction>> | null = null;
+  let reviewAnalytics: Awaited<ReturnType<typeof getAdminReviewAnalyticsAction>> | null = null;
   let loadError = false;
-  try { dashboard = await getAdminDashboardStatsAction(); } catch { loadError = true; }
+  const [dashboardResult, reviewResult] = await Promise.allSettled([
+    getAdminDashboardStatsAction(),
+    getAdminReviewAnalyticsAction("7d"),
+  ]);
+  if (dashboardResult.status === "fulfilled") dashboard = dashboardResult.value;
+  else loadError = true;
+  if (reviewResult.status === "fulfilled") reviewAnalytics = reviewResult.value;
   const stats = [
     { label: "Total Users", value: dashboard?.stats.totalUsers ?? "—", trend: "Accounts stored in MongoDB", icon: "users" as const, tone: styles.orange },
     { label: "Restaurants", value: dashboard?.stats.totalRestaurants ?? "—", trend: "Restaurants stored in MongoDB", icon: "store" as const, tone: styles.blue },
@@ -122,6 +130,36 @@ export default async function AdminDashboardPage() {
           </div>
 
           <AnalyticsSection />
+
+          <section className={styles.adminReviewDashboardGrid}>
+            <article className={`${styles.card} ${styles.adminReviewSummaryCard}`}>
+              <div className={styles.panelHeader}>
+                <div><h2 className={styles.panelTitle}>Review Summary</h2><p className={styles.tableMeta}>Live customer feedback totals</p></div>
+              </div>
+              <div className={styles.adminReviewSummaryStats}>
+                <div><span>Total Reviews</span><strong>{reviewAnalytics?.summary.totalReviews ?? "—"}</strong></div>
+                <div><span>Average Rating</span><strong>{reviewAnalytics ? reviewAnalytics.summary.averageRating.toFixed(1) : "—"}</strong></div>
+                <div><span>This Week</span><strong>{reviewAnalytics?.summary.reviewsThisWeek ?? "—"}</strong></div>
+                <div><span>1-Star Reviews</span><strong>{reviewAnalytics?.summary.oneStarReviews ?? "—"}</strong></div>
+              </div>
+            </article>
+            <article className={`${styles.card} ${styles.adminRecentReviewsCard}`}>
+              <div className={styles.panelHeader}>
+                <div><h2 className={styles.panelTitle}>Recent Reviews</h2><p className={styles.tableMeta}>Latest five submissions</p></div>
+                <Link className={styles.adminViewReviewsLink} href="/admin/reviews">View All Reviews</Link>
+              </div>
+              <div className={styles.adminRecentReviewList}>
+                {!reviewAnalytics?.recentReviews.length
+                  ? <div className={styles.emptyState}>No reviews submitted yet.</div>
+                  : reviewAnalytics.recentReviews.map((review) => <article key={review._id}>
+                    <div><strong>{review.customerName}</strong><span>{review.restaurantName}</span></div>
+                    <b aria-label={`${review.rating} out of 5 stars`}>{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</b>
+                    <p>{review.comment}</p>
+                    <time dateTime={review.createdAt}>{new Date(review.createdAt).toLocaleDateString()}</time>
+                  </article>)}
+              </div>
+            </article>
+          </section>
 
           <section className={`${styles.card} ${styles.panel}`}>
             <div className={styles.panelHeader}>

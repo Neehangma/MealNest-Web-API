@@ -10,6 +10,7 @@ import { getStableRestaurantPrice } from "@/lib/restaurant-price";
 import { getRestaurantImage, RESTAURANT_FALLBACK_IMAGE } from "@/lib/restaurant-image";
 import { RESERVATION_TIME_SLOTS } from "@/lib/reservation-time";
 import RestaurantMenu from "./RestaurantMenu";
+import RestaurantReviews from "./RestaurantReviews";
 
 export default function RestaurantDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -130,6 +131,7 @@ export default function RestaurantDetailPage() {
             <span className="cuisine">{restaurant.cuisine}</span>
             <span className="location">{restaurant.location}</span>
             <span className="price">Rs. {getStableRestaurantPrice(restaurant)}</span>
+            <span className="rating">&#9733; {Number(restaurant.rating || 0).toFixed(1)} ({restaurant.reviewCount || 0} reviews)</span>
           </div>
         </div>
       </div>
@@ -167,6 +169,7 @@ export default function RestaurantDetailPage() {
             </div>
           </section>
           <RestaurantMenu key={restaurant.cuisine.trim().toLowerCase()} cuisine={restaurant.cuisine} />
+          <RestaurantReviews restaurantId={restaurant._id} />
         </div>
         <aside className="booking-sidebar">
           <div className="booking-card">

@@ -6,6 +6,7 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { ALLOWED_ROLES, BCRYPT_SALT_ROUNDS, JWT_EXPIRES_IN, JWT_SECRET } = require("../config/constant");
 const { HttpException } = require("../exceptions/http-exception");
+const reviewRepository = require("../repositories/review.repository");
 const userRepository = require("../repositories/user.repository");
 const {
   sendBookingCancellationEmail,
@@ -461,8 +462,8 @@ async function createReservation(userId, payload) {
 
   if (payload.paymentMethod === "esewa") {
     const esewaId = String(payload.esewaId || "").trim();
-    const validEsewaId = /^\d{10}$/.test(esewaId) || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(esewaId);
-    if (!validEsewaId) throw new HttpException(400, "Please enter your eSewa ID.");
+    const validEsewaId = /^\d{10}$/.test(esewaId);
+    if (!validEsewaId) throw new HttpException(400, "eSewa ID must contain exactly 10 digits.");
   }
 
   if (payload.paymentMethod === "mobile_banking" && !/^\d{10,16}$/.test(String(payload.bankAccountNumber || ""))) {
@@ -677,7 +678,31 @@ async function completeAdminReservation(reservationId) {
 async function listMyReservations(userId) {
   const reservations = await userRepository.listUserReservations(userId);
   if (!reservations) throw new HttpException(404, "User not found");
-  return reservations.map(formatReservationItem);
+  const reviews = await reviewRepository.findByReservationIds(
+    reservations.map((reservation) => reservation._id),
+    userId,
+  );
+  const reviewsByReservation = new Map(reviews.map((review) => [
+    review.reservationId.toString(),
+    {
+      _id: review._id.toString(),
+      id: review._id.toString(),
+      restaurantId: review.restaurantId.toString(),
+      reservationId: review.reservationId.toString(),
+      userId: review.userId.toString(),
+      userName: review.userName,
+      userProfileImage: review.userProfileImage || "",
+      rating: review.rating,
+      comment: review.comment,
+      status: review.status || "published",
+      createdAt: review.createdAt,
+      updatedAt: review.updatedAt,
+    },
+  ]));
+  return reservations.map((reservation) => ({
+    ...formatReservationItem(reservation),
+    review: reviewsByReservation.get(reservation._id.toString()),
+  }));
 }
 
 async function getReservation(userId, reservationId) {

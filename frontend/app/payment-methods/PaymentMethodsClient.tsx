@@ -3,7 +3,7 @@
 import { FormEvent, useRef, useState } from "react";
 import Link from "next/link";
 import { isPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
-import { BANK_ACCOUNT_NUMBER_MESSAGE, ESEWA_ID_REQUIRED_MESSAGE, isBankAccountNumberValid, isEsewaIdValid, maskBankAccountNumber, sanitizeBankAccountNumber } from "@/lib/payment-validation";
+import { BANK_ACCOUNT_NUMBER_MESSAGE, ESEWA_ID_REQUIRED_MESSAGE, isBankAccountNumberValid, isEsewaIdValid, maskBankAccountNumber, sanitizeBankAccountNumber, sanitizeEsewaId } from "@/lib/payment-validation";
 
 type AddPaymentMethodType = "esewa" | "mobile_banking";
 type AddedPaymentMethod = {
@@ -147,7 +147,7 @@ export default function PaymentMethodsClient() {
           <form ref={formRef} className="payment-methods-form" onSubmit={handleSubmit}>
             {selectedType === "esewa" ? <>
               <label><span>eSewa Mobile Number</span><input name="mobileNumber" type="tel" inputMode="numeric" maxLength={10} className={mobileNumber && !isPhoneNumberValid(mobileNumber) ? "phone-input-invalid" : ""} value={mobileNumber} onChange={(event) => { const phone = sanitizePhoneNumber(event.target.value); setMobileNumber(phone); if (isPhoneNumberValid(phone)) setFormMessage(""); }} placeholder="98XXXXXXXX" required/>{mobileNumber && !isPhoneNumberValid(mobileNumber) && <small className="phone-validation-error">{PHONE_VALIDATION_MESSAGE}</small>}</label>
-              <label><span>ESEWA ID</span><input name="esewaId" type="text" value={esewaId} onChange={(event) => { setEsewaId(event.target.value); if (isEsewaIdValid(event.target.value)) setFormMessage(""); }} placeholder="Enter eSewa ID" required/></label>
+              <label><span>ESEWA ID</span><input name="esewaId" type="text" inputMode="numeric" minLength={10} maxLength={10} pattern="\d{10}" className={esewaId && !isEsewaIdValid(esewaId) ? "phone-input-invalid" : ""} value={esewaId} onChange={(event) => { const value = sanitizeEsewaId(event.target.value); setEsewaId(value); if (isEsewaIdValid(value)) setFormMessage(""); }} placeholder="Enter 10-digit eSewa ID" required/>{esewaId && !isEsewaIdValid(esewaId) && <small className="phone-validation-error">{ESEWA_ID_REQUIRED_MESSAGE}</small>}</label>
               <button type="submit" className="payment-methods-submit-button" disabled={!isPhoneNumberValid(mobileNumber)}>Add eSewa Account</button>
             </> : <>
               <label><span>Bank Name</span><select name="bankName" required><option value="">Select Bank</option>{NEPAL_BANKS.map((bank) => <option key={bank} value={bank}>{bank}</option>)}</select></label>

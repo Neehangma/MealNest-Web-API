@@ -3,3 +3,4 @@ export * from "./restaurant";
 export * from "./booking";
 export * from "./profile";
 export * from "./dashboard";
+export * from "./review";

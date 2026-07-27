@@ -1,5 +1,6 @@
 const express = require("express");
 const userController = require("../controller/user.controller");
+const reviewController = require("../controller/review.controller");
 const { authenticate, requireAdmin } = require("../middleware/authorized.middleware");
 const {
   validateAdminCreateUser,
@@ -50,6 +51,10 @@ router.get("/admin/bookings", authenticate, requireAdmin, asyncHandler(userContr
 router.patch("/admin/bookings/:reservationId/complete", authenticate, requireAdmin, asyncHandler(userController.completeAdminReservation));
 router.get("/admin/dashboard/stats", authenticate, requireAdmin, asyncHandler(userController.getAdminDashboardStats));
 router.get("/admin/analytics", authenticate, requireAdmin, asyncHandler(userController.getAdminAnalytics));
+router.get("/admin/reviews", authenticate, requireAdmin, asyncHandler(reviewController.getAdminReviews));
+router.get("/admin/reviews/analytics", authenticate, requireAdmin, asyncHandler(reviewController.getAdminReviewAnalytics));
+router.patch("/admin/reviews/:reviewId/status", authenticate, requireAdmin, asyncHandler(reviewController.updateAdminReviewStatus));
+router.delete("/admin/reviews/:reviewId", authenticate, requireAdmin, asyncHandler(reviewController.deleteAdminReview));
 router.get("/admin/profile", authenticate, requireAdmin, asyncHandler(userController.getAdminProfile));
 router.put("/admin/profile", authenticate, requireAdmin, uploadProfileImage.single("profileImage"), asyncHandler(userController.updateAdminProfile));
 router.get("/admin/users/:id", authenticate, requireAdmin, asyncHandler(userController.getUser));

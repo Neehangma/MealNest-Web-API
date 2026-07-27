@@ -669,6 +669,263 @@
   to { background-position: -200% 0; }
 }
 
+.adminReviewFilters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.adminReviewFilters select {
+  height: 44px;
+  border: 1px solid #e5c9bb;
+  border-radius: 7px;
+  background: #fff;
+  padding: 0 12px;
+  color: #283950;
+  font-weight: 700;
+}
+
+.adminReviewStars {
+  display: inline-flex;
+  gap: 2px;
+  color: #d8c9bf;
+  font-size: 18px;
+  white-space: nowrap;
+}
+
+.adminReviewStarFilled {
+  color: #f2b705;
+}
+
+.adminReviewExcerpt {
+  display: -webkit-box;
+  max-width: 280px;
+  margin: 0;
+  overflow: hidden;
+  color: #4f5663;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.reviewStatusBadge {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.reviewStatusPublished {
+  color: #17653a;
+  background: #e5f6eb;
+}
+
+.reviewStatusHidden {
+  color: #8c5700;
+  background: #fff2cf;
+}
+
+.adminReviewActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.adminReviewActions button,
+.adminReviewPagination button {
+  width: auto;
+  height: 34px;
+  border: 1px solid #e3c3b2;
+  border-radius: 6px;
+  background: #fff;
+  padding: 0 10px;
+  color: #9b430c;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.adminReviewActions .adminReviewDelete {
+  color: #b42318;
+  border-color: #edc4bd;
+  background: #fff5f2;
+}
+
+.adminReviewPagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 20px;
+  color: #657184;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.adminReviewPagination button:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}
+
+.adminReviewModal {
+  width: min(680px, calc(100vw - 32px));
+}
+
+.adminReviewDetails {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px 22px;
+}
+
+.adminReviewDetails div {
+  padding-bottom: 11px;
+  border-bottom: 1px solid #f0dfd5;
+}
+
+.adminReviewDetails dt {
+  margin-bottom: 5px;
+  color: #7b6c63;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.adminReviewDetails dd {
+  margin: 0;
+  color: #283950;
+  line-height: 1.55;
+}
+
+.adminReviewDetails .adminReviewComment {
+  grid-column: 1 / -1;
+}
+
+.adminReviewDashboardGrid {
+  display: grid;
+  grid-template-columns: minmax(360px, .85fr) minmax(0, 1.6fr);
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.adminReviewSummaryCard,
+.adminRecentReviewsCard {
+  padding: 24px;
+}
+
+.adminReviewSummaryStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.adminReviewSummaryStats div {
+  display: grid;
+  gap: 7px;
+  padding: 16px;
+  border: 1px solid #f0dfd5;
+  border-radius: 8px;
+  background: #fffaf6;
+}
+
+.adminReviewSummaryStats span {
+  color: #74685f;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.adminReviewSummaryStats strong {
+  color: #283950;
+  font: 900 24px Georgia, serif;
+}
+
+.adminViewReviewsLink {
+  color: #c9470d;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.adminRecentReviewList {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.adminRecentReviewList article {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid #f0dfd5;
+  border-radius: 8px;
+  background: #fffaf6;
+}
+
+.adminRecentReviewList article > div {
+  display: grid;
+  gap: 3px;
+}
+
+.adminRecentReviewList strong,
+.adminRecentReviewList span,
+.adminRecentReviewList p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adminRecentReviewList strong {
+  color: #283950;
+  font-size: 12px;
+}
+
+.adminRecentReviewList span,
+.adminRecentReviewList time {
+  color: #7b6c63;
+  font-size: 10px;
+}
+
+.adminRecentReviewList b {
+  display: block;
+  margin-top: 8px;
+  color: #f2b705;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.adminRecentReviewList p {
+  margin: 7px 0;
+  color: #5f554f;
+  font-size: 11px;
+}
+
+@media (max-width: 1100px) {
+  .adminReviewDashboardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .adminRecentReviewList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .adminReviewFilters {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .adminReviewFilters,
+  .adminReviewSummaryStats,
+  .adminRecentReviewList,
+  .adminReviewDetails {
+    grid-template-columns: 1fr;
+  }
+
+  .adminReviewDetails .adminReviewComment {
+    grid-column: auto;
+  }
+}
+
 .sharedAdminLayout { min-height: 100vh; background: #fffaf6; }
 .sharedAdminSidebar { position: fixed; inset: 0 auto 0 0; z-index: 80; width: 260px; height: 100vh; display: flex; flex-direction: column; background: #fffdf9; border-right: 1px solid #ead8ca; }
 .sharedAdminBrand { display: flex; align-items: center; gap: 12px; height: 78px; min-height: 78px; padding: 0 24px; border-bottom: 1px solid #f1e2d8; }

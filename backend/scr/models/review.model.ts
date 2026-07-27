@@ -14,6 +14,11 @@ const reviewSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    reservationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Reservation",
+      required: true,
+    },
     userName: {
       type: String,
       required: true,
@@ -36,11 +41,18 @@ const reviewSchema = new mongoose.Schema(
       trim: true,
       maxlength: 500,
     },
+    status: {
+      type: String,
+      enum: ["published", "hidden"],
+      default: "published",
+      index: true,
+    },
   },
   { timestamps: true },
 );
 
-reviewSchema.index({ restaurantId: 1, userId: 1 }, { unique: true });
+// Sparse preserves any legacy restaurant-level reviews that predate reservationId.
+reviewSchema.index({ reservationId: 1 }, { unique: true, sparse: true });
 
 module.exports =
   mongoose.models.Review || mongoose.model("Review", reviewSchema);

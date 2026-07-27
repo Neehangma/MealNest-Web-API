@@ -10,6 +10,7 @@ import {
 } from "@/lib/actions/reservation-action";
 import { getRestaurantImage } from "@/lib/restaurant-image";
 import { RESERVATION_TIME_SLOTS } from "@/lib/reservation-time";
+import ReservationReviewCard from "./ReservationReviewCard";
 
 type Filter = "all" | "upcoming" | "past" | "cancelled";
 
@@ -52,6 +53,12 @@ function canModify(booking: ReservationItem, now: number) {
 function canBookAgain(booking: ReservationItem, now: number) {
   return ["completed", "cancelled"].includes(booking.status.toLowerCase())
     || bookingMoment(booking).getTime() <= now;
+}
+
+function canReview(booking: ReservationItem, now: number) {
+  const status = booking.status.toLowerCase();
+  return status !== "cancelled"
+    && (status === "completed" || bookingMoment(booking).getTime() <= now);
 }
 
 function paymentLabel(value?: string) {
@@ -222,6 +229,16 @@ export default function ReservationsPage() {
                       {canCancel(booking, now) && <button type="button" className="action-button danger" onClick={() => setCancelTarget(booking)}>Cancel Booking</button>}
                       {canBookAgain(booking, now) && booking.restaurantId && <Link className="action-button secondary" href={`/dashboard/user/restaurants/${booking.restaurantId}/book`}>Book Again</Link>}
                     </div>
+                    {canReview(booking, now) && booking.restaurantId && (
+                      <ReservationReviewCard
+                        reservationId={booking._id}
+                        restaurantId={booking.restaurantId}
+                        initialReview={booking.review}
+                        onSaved={(review) => setBookings((current) => current.map((item) => (
+                          item._id === booking._id ? { ...item, review } : item
+                        )))}
+                      />
+                    )}
                   </div>
                 </article>
               );
