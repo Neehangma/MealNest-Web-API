@@ -182,6 +182,16 @@ async function listAdminReservations(_req, res) {
   return sendSuccess(res, 200, { data: bookings, total: bookings.length });
 }
 
+async function listGroupedAdminReservations(req, res) {
+  const result = await userService.listGroupedAdminReservations(req.query);
+  return sendSuccess(res, 200, result);
+}
+
+async function listAdminReservationsByRestaurant(req, res) {
+  const result = await userService.listAdminReservationsByRestaurant(req.params.restaurantId);
+  return sendSuccess(res, 200, result);
+}
+
 async function getAdminProfile(req, res) {
   const admin = await userService.getCurrentUser(req.user._id);
   return sendSuccess(res, 200, { admin });
@@ -231,6 +241,8 @@ module.exports = {
   getRestaurants,
   listMyReservations,
   listAdminReservations,
+  listAdminReservationsByRestaurant,
+  listGroupedAdminReservations,
   listUsers,
   login,
   register,

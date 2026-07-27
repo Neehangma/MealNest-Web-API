@@ -166,6 +166,77 @@ describe("admin API", () => {
     expect(response.body.data[0].customer.email).toBe("second@example.com");
   });
 
+  test("groups bookings by restaurant id and returns restaurant booking details", async () => {
+    const admin = await createTestUser({ role: "admin", email: "group-admin@example.com" });
+    const user = await createTestUser({ email: "group-user@example.com" });
+    const firstRestaurant = await createTestRestaurant({ name: "Shared Restaurant Name", cuisine: "Thai" });
+    const secondRestaurant = await createTestRestaurant({ name: "Shared Restaurant Name", cuisine: "Korean" });
+    const createBooking = (restaurant, reference, status, date) => Reservation.create({
+      user: user._id,
+      restaurant: restaurant._id,
+      restaurantName: restaurant.name,
+      reservationDate: new Date(date),
+      date,
+      time: "7:00 PM",
+      guests: 2,
+      tableNumber: 2,
+      status,
+      paymentMethod: "esewa",
+      paymentStatus: "simulated_success",
+      totalPaid: 500,
+      bookingReference: reference,
+    });
+    await createBooking(firstRestaurant, "GROUP-A1", "confirmed", "2030-01-01");
+    await createBooking(firstRestaurant, "GROUP-A2", "completed", "2030-01-02");
+    await createBooking(firstRestaurant, "GROUP-A3", "cancelled", "2030-01-03");
+    await createBooking(secondRestaurant, "GROUP-B1", "confirmed", "2030-01-04");
+
+    const grouped = await request(app)
+      .get("/api/admin/bookings/grouped-by-restaurant?sort=highest&page=1&limit=10")
+      .set("Authorization", `Bearer ${tokenFor(admin)}`);
+    expect(grouped.status).toBe(200);
+    expect(grouped.body.data).toHaveLength(2);
+    expect(grouped.body.data[0]).toMatchObject({
+      restaurantId: firstRestaurant._id.toString(),
+      totalBookings: 3,
+      statusCounts: { pending: 0, confirmed: 1, completed: 1, cancelled: 1 },
+    });
+    expect(grouped.body.data[1]).toMatchObject({
+      restaurantId: secondRestaurant._id.toString(),
+      totalBookings: 1,
+    });
+    expect(grouped.body.meta).toMatchObject({ total: 2, totalPages: 1 });
+
+    const completedOnly = await request(app)
+      .get("/api/admin/bookings/grouped-by-restaurant?status=completed")
+      .set("Authorization", `Bearer ${tokenFor(admin)}`);
+    expect(completedOnly.body.data).toHaveLength(1);
+    expect(completedOnly.body.data[0]).toMatchObject({
+      restaurantId: firstRestaurant._id.toString(),
+      totalBookings: 1,
+      statusCounts: { completed: 1, confirmed: 0, cancelled: 0 },
+    });
+
+    const details = await request(app)
+      .get(`/api/admin/restaurants/${firstRestaurant._id}/bookings`)
+      .set("Authorization", `Bearer ${tokenFor(admin)}`);
+    expect(details.status).toBe(200);
+    expect(details.body.restaurant).toMatchObject({ id: firstRestaurant._id.toString(), name: "Shared Restaurant Name", cuisine: "Thai" });
+    expect(details.body.totalBookings).toBe(3);
+    expect(details.body.bookings).toHaveLength(3);
+    expect(details.body.bookings[0].customer).toMatchObject({ fullName: user.fullName, email: user.email });
+
+    const denied = await request(app)
+      .get("/api/admin/bookings/grouped-by-restaurant")
+      .set("Authorization", `Bearer ${tokenFor(user)}`);
+    expect(denied.status).toBe(403);
+
+    const missing = await request(app)
+      .get("/api/admin/restaurants/507f1f77bcf86cd799439011/bookings")
+      .set("Authorization", `Bearer ${tokenFor(admin)}`);
+    expect(missing.status).toBe(404);
+  });
+
   test("returns live dashboard counts and successful-payment revenue", async () => {
     const admin = await createTestUser({ role: "admin" });
     const user = await createTestUser();

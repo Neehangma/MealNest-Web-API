@@ -818,6 +818,77 @@ async function listAdminReservations() {
   });
 }
 
+async function listGroupedAdminReservations(query) {
+  const status = String(query.status || "").toLowerCase();
+  const sort = String(query.sort || "newest").toLowerCase();
+  const allowedStatuses = ["pending", "confirmed", "completed", "cancelled"];
+  const allowedSorts = ["highest", "lowest", "newest", "oldest"];
+  if (status && !allowedStatuses.includes(status)) {
+    throw new HttpException(400, "Booking status filter is invalid.");
+  }
+  if (!allowedSorts.includes(sort)) {
+    throw new HttpException(400, "Booking sort option is invalid.");
+  }
+
+  const page = Math.max(Number.parseInt(query.page, 10) || 1, 1);
+  const limit = Math.min(Math.max(Number.parseInt(query.limit, 10) || 10, 1), 100);
+  const search = String(query.search || "").trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const cuisine = String(query.cuisine || "").trim();
+  const { result, cuisines } = await userRepository.listGroupedAdminReservations({
+    status,
+    sort,
+    search,
+    cuisine,
+    skip: (page - 1) * limit,
+    limit,
+  });
+  const totals = result.totals[0] || {
+    totalRestaurants: 0,
+    totalBookings: 0,
+    pending: 0,
+    confirmed: 0,
+    completed: 0,
+    cancelled: 0,
+    usersBooked: 0,
+  };
+
+  return {
+    data: result.data,
+    meta: {
+      page,
+      limit,
+      total: totals.totalRestaurants,
+      totalPages: Math.ceil(totals.totalRestaurants / limit),
+    },
+    summary: totals,
+    cuisines,
+  };
+}
+
+async function listAdminReservationsByRestaurant(restaurantId) {
+  if (!isValidObjectId(restaurantId)) throw new HttpException(400, "Invalid restaurant id");
+  const result = await userRepository.listAdminReservationsByRestaurant(restaurantId);
+  if (!result) throw new HttpException(404, "Restaurant not found");
+  return {
+    restaurant: {
+      id: result.restaurant._id.toString(),
+      name: result.restaurant.name,
+      cuisine: result.restaurant.cuisine || "",
+      image: result.restaurant.image || "",
+    },
+    totalBookings: result.reservations.length,
+    bookings: result.reservations.map((reservation) => ({
+      ...formatReservationItem(reservation),
+      customer: reservation.user ? {
+        _id: reservation.user._id?.toString(),
+        fullName: reservation.user.fullName,
+        email: reservation.user.email,
+        phoneNumber: reservation.user.phoneNumber,
+      } : null,
+    })),
+  };
+}
+
 async function getAdminDashboardStats() {
   const result = await userRepository.getAdminDashboardStats();
   const activities = [
@@ -853,6 +924,8 @@ module.exports = {
   getUserByIdOrThrow,
   listAdminUsers,
   listAdminReservations,
+  listAdminReservationsByRestaurant,
+  listGroupedAdminReservations,
   listMyReservations,
   listRestaurants,
   login,

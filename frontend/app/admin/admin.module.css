@@ -1464,6 +1464,181 @@
   border-bottom: 1px solid #f0ded2;
 }
 
+.groupedBookingFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.groupedBookingFilters select {
+  min-width: 180px;
+  padding: 10px 36px 10px 12px;
+  border: 1px solid #e8cdbc;
+  border-radius: 9px;
+  background: #fff;
+  color: #172b45;
+  font: inherit;
+}
+
+.compactViewBookingsButton,
+.compactBookingAction {
+  width: auto;
+  min-width: 0;
+  padding: 9px 14px;
+  border: 1px solid #e5793d;
+  border-radius: 8px;
+  background: #fff3e9;
+  color: #a83f05;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.restaurantBookingsBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(17, 28, 44, 0.55);
+}
+
+.restaurantBookingsModal {
+  width: min(1500px, 100%);
+  max-height: calc(100vh - 44px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #efd4c3;
+  border-radius: 18px;
+  background: #fffdfb;
+  box-shadow: 0 24px 70px rgba(49, 28, 16, 0.28);
+}
+
+.restaurantBookingsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 22px;
+  border-bottom: 1px solid #f0ded2;
+}
+
+.restaurantBookingsIdentity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.restaurantBookingsIdentity img {
+  border-radius: 9px;
+  object-fit: cover;
+}
+
+.restaurantBookingsIdentity h2,
+.restaurantBookingsIdentity p {
+  margin: 0;
+}
+
+.restaurantBookingsIdentity h2 {
+  color: #142944;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.restaurantBookingsIdentity p {
+  margin-top: 4px;
+  color: #66758a;
+}
+
+.restaurantBookingsBody {
+  flex: 1;
+  min-height: 260px;
+  overflow: auto;
+  padding: 20px 22px;
+}
+
+.restaurantBookingsTable {
+  width: 100%;
+  min-width: 1380px;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.restaurantBookingsTable th,
+.restaurantBookingsTable td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #f0ded2;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.restaurantBookingsTable th {
+  background: #fff7f2;
+  color: #5c493e;
+  font-size: 0.75rem;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.restaurantBookingsTable td small {
+  display: block;
+  margin-top: 3px;
+  color: #748094;
+}
+
+.modalBookingActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bookingRecordOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(17, 28, 44, 0.62);
+}
+
+.bookingRecordModal {
+  width: min(760px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding: 24px;
+  border: 1px solid #efd4c3;
+  border-radius: 16px;
+  background: #fffdfb;
+  box-shadow: 0 24px 70px rgba(49, 28, 16, 0.3);
+}
+
+@media (max-width: 780px) {
+  .groupedBookingFilters {
+    display: grid;
+  }
+
+  .groupedBookingFilters select {
+    width: 100%;
+  }
+
+  .restaurantBookingsBackdrop {
+    padding: 8px;
+  }
+
+  .restaurantBookingsModal {
+    max-height: calc(100vh - 16px);
+  }
+
+  .restaurantBookingsHeader,
+  .restaurantBookingsBody {
+    padding: 14px;
+  }
+}
+
 .userDetailsHeader h2 {
   margin: 0;
   color: #142944;
