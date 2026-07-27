@@ -461,8 +461,8 @@ async function createReservation(userId, payload) {
 
   if (payload.paymentMethod === "esewa") {
     const esewaId = String(payload.esewaId || "").trim();
-    const validEsewaId = /^\d{10}$/.test(esewaId) || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(esewaId);
-    if (!validEsewaId) throw new HttpException(400, "Please enter your eSewa ID.");
+    const validEsewaId = /^\d{10}$/.test(esewaId);
+    if (!validEsewaId) throw new HttpException(400, "eSewa ID must contain exactly 10 digits.");
   }
 
   if (payload.paymentMethod === "mobile_banking" && !/^\d{10,16}$/.test(String(payload.bankAccountNumber || ""))) {

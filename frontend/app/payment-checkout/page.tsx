@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { createPaidReservationAction } from "@/lib/actions/reservation-action";
 import { isPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
 import PasswordInput from "@/app/_components/PasswordInput";
-import { BANK_ACCOUNT_NUMBER_MESSAGE, ESEWA_ID_REQUIRED_MESSAGE, isBankAccountNumberValid, isEsewaIdValid, sanitizeBankAccountNumber } from "@/lib/payment-validation";
+import { BANK_ACCOUNT_NUMBER_MESSAGE, ESEWA_ID_REQUIRED_MESSAGE, isBankAccountNumberValid, isEsewaIdValid, sanitizeBankAccountNumber, sanitizeEsewaId } from "@/lib/payment-validation";
 
 type PaymentMethod = "esewa" | "mobile_banking";
 type IconName = "chevron" | "check" | "bank";
@@ -202,7 +202,7 @@ export default function PaymentCheckoutPage() {
           <div className="payment-details-form">
             {paymentMethod === "esewa" ? <>
               <div className="form-group"><label htmlFor="esewa-mobile">eSewa Mobile Number</label><input id="esewa-mobile" type="tel" inputMode="numeric" maxLength={10} className={mobileNumber && !isPhoneNumberValid(mobileNumber) ? "phone-input-invalid" : ""} value={mobileNumber} onChange={(event) => { const phone = sanitizePhoneNumber(event.target.value); setMobileNumber(phone); if (isPhoneNumberValid(phone)) setError(""); }} placeholder="98XXXXXXXX" required/>{mobileNumber && !isPhoneNumberValid(mobileNumber) && <small className="phone-validation-error">{PHONE_VALIDATION_MESSAGE}</small>}</div>
-              <div className="form-group"><label htmlFor="esewa-id">ESEWA ID</label><input id="esewa-id" type="text" value={esewaId} onChange={(event) => { setEsewaId(event.target.value); if (isEsewaIdValid(event.target.value)) setError(""); }} placeholder="Enter eSewa ID" required/></div>
+              <div className="form-group"><label htmlFor="esewa-id">ESEWA ID</label><input id="esewa-id" type="text" inputMode="numeric" maxLength={10} value={esewaId} onChange={(event) => { const value = sanitizeEsewaId(event.target.value); setEsewaId(value); if (isEsewaIdValid(value)) setError(""); }} placeholder="Enter 10-digit eSewa ID" required/></div>
             </> : <>
               <div className="form-group"><label htmlFor="bank-name">Bank Name</label><select id="bank-name" value={bankName} onChange={(event) => setBankName(event.target.value)} required><option value="">Select Bank</option>{NEPAL_BANKS.map((bank) => <option key={bank} value={bank}>{bank}</option>)}</select></div>
               <div className="form-group"><label htmlFor="bank-account-number">ACCOUNT NUMBER</label><input id="bank-account-number" type="text" inputMode="numeric" maxLength={16} value={bankAccountNumber} onChange={(event) => { const value = sanitizeBankAccountNumber(event.target.value); setBankAccountNumber(value); if (isBankAccountNumberValid(value)) setError(""); }} placeholder="Enter bank account number" required/></div>
