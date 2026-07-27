@@ -10,13 +10,13 @@ describe("booking email service", () => {
   beforeEach(() => {
     jest.resetModules();
     jest.doMock("nodemailer", () => ({ createTransport }));
-    process.env.EMAIL_USER = "mailer@example.com";
-    process.env.EMAIL_PASS = "test-only-password";
+    process.env.EMAIL_USER = " mailer@example.com ";
+    process.env.EMAIL_PASS = " test-only-password ";
     process.env.EMAIL_FROM_NAME = "MealNest Tests";
-    process.env.EMAIL_FROM = "MealNest Tests <mailer@example.com>";
-    process.env.EMAIL_HOST = "smtp.gmail.com";
-    process.env.EMAIL_PORT = "587";
-    process.env.EMAIL_SECURE = "false";
+    process.env.EMAIL_FROM = " MealNest Tests <mailer@example.com> ";
+    process.env.EMAIL_HOST = " smtp.gmail.com ";
+    process.env.EMAIL_PORT = " 465 ";
+    process.env.EMAIL_SECURE = " true ";
     process.env.FRONTEND_URL = "http://localhost:3000";
     sendMail.mockReset();
     createTransport.mockClear();
@@ -37,9 +37,12 @@ describe("booking email service", () => {
   test("creates the configured SMTP transporter without exposing credentials in output", () => {
     expect(createTransport).toHaveBeenCalledWith({
       host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
+      port: 465,
+      secure: true,
       auth: { user: "mailer@example.com", pass: "test-only-password" },
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 10000,
     });
   });
 
@@ -54,6 +57,9 @@ describe("booking email service", () => {
 
   test("rejects missing mail configuration before sending", async () => {
     delete process.env.EMAIL_USER;
+    jest.resetModules();
+    jest.doMock("nodemailer", () => ({ createTransport }));
+    emailService = require("../../services/emailService");
     await expect(emailService.sendBookingConfirmationEmail({ recipientEmail: "user@example.com", booking: {} })).rejects.toThrow("Booking email is not configured");
     expect(sendMail).not.toHaveBeenCalled();
   });
@@ -77,6 +83,7 @@ describe("booking email service", () => {
     expect(message.html).toContain("Bistro &lt;One&gt;");
     expect(message.html).toContain("Mobile Banking");
     expect(message.html).toContain("4 Guests");
+    expect(message.html).toContain("Table");
     expect(message.html).toContain("https://images.example.com/table.jpg");
     expect(message.html).not.toContain("test-only-password");
   });
