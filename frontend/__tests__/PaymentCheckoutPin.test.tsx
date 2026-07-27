@@ -29,6 +29,23 @@ beforeEach(() => {
   sessionStorage.setItem("mealnest_booking", JSON.stringify(booking));
 });
 
+test("accepts exactly 10 eSewa ID digits and never stores more", async () => {
+  const user = userEvent.setup();
+  render(<PaymentCheckoutPage />);
+  await user.type(screen.getByLabelText("eSewa Mobile Number"), "9845698712");
+  const esewaId = screen.getByLabelText("ESEWA ID");
+  const payButton = screen.getByRole("button", { name: /^Pay via eSewa$/ });
+
+  await user.type(esewaId, "123456789");
+  expect(esewaId).toHaveValue("123456789");
+  expect(payButton).toBeDisabled();
+  expect(screen.getByText("eSewa ID must contain exactly 10 digits.")).toBeVisible();
+
+  await user.type(esewaId, "01abc");
+  expect(esewaId).toHaveValue("1234567890");
+  expect(payButton).toBeEnabled();
+});
+
 test("requires a four-digit PIN before showing eSewa confirmation", async () => {
   render(<PaymentCheckoutPage />);
   await userEvent.type(screen.getByLabelText("eSewa Mobile Number"), "9845698712");
