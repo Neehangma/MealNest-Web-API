@@ -249,6 +249,69 @@ async function listAdminUsers(query) {
   };
 }
 
+async function getAdminUserDetails(id) {
+  if (!isValidObjectId(id)) {
+    throw new HttpException(400, "Invalid user id");
+  }
+
+  const { user, reservations, reviews } = await userRepository.getAdminUserDetails(id);
+  if (!user) {
+    throw new HttpException(404, "User not found");
+  }
+
+  const now = new Date();
+  const ratingTotal = reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0);
+
+  return {
+    user: {
+      ...toSafeUser(user),
+      authenticationProvider: user.authenticationProvider || user.provider || null,
+      emailVerified: typeof user.emailVerified === "boolean" ? user.emailVerified : null,
+      isActive: typeof user.isActive === "boolean" ? user.isActive : true,
+      accountStatus: user.isActive === false ? "inactive" : "active",
+    },
+    activity: {
+      totalReservations: reservations.length,
+      upcomingReservations: reservations.filter((reservation) =>
+        ["confirmed", "pending"].includes(reservation.status) &&
+        new Date(reservation.reservationDate) >= now
+      ).length,
+      completedReservations: reservations.filter((reservation) => reservation.status === "completed").length,
+      cancelledReservations: reservations.filter((reservation) => reservation.status === "cancelled").length,
+      totalReviews: reviews.length,
+      averageReviewRating: reviews.length ? Number((ratingTotal / reviews.length).toFixed(1)) : 0,
+      totalFavorites: Array.isArray(user.favorites) ? user.favorites.length : 0,
+    },
+    favorites: (user.favorites || []).map((restaurant) => ({
+      id: restaurant._id?.toString(),
+      name: restaurant.name,
+      cuisine: restaurant.cuisine || "",
+      image: restaurant.image || "",
+    })),
+    reservations: reservations.map((reservation) => ({
+      id: reservation._id.toString(),
+      restaurantName: reservation.restaurant?.name || reservation.restaurantName || "Restaurant",
+      reservationDate: reservation.reservationDate,
+      date: reservation.date,
+      time: reservation.time,
+      guests: reservation.guests,
+      tableNumber: reservation.tableNumber ?? null,
+      paymentStatus: reservation.paymentStatus || "",
+      status: reservation.status,
+      totalAmount: Number(reservation.totalPaid || 0),
+      createdAt: reservation.createdAt,
+    })),
+    reviews: reviews.map((review) => ({
+      id: review._id.toString(),
+      restaurantName: review.restaurantId?.name || "Restaurant",
+      rating: review.rating,
+      comment: review.comment,
+      status: review.status || "published",
+      createdAt: review.createdAt,
+    })),
+  };
+}
+
 async function createAdminUser(payload) {
   if (!ALLOWED_ROLES.includes(payload.role)) {
     throw new HttpException(400, "Role must be either 'user' or 'admin'");
@@ -755,6 +818,137 @@ async function listAdminReservations() {
   });
 }
 
+async function listGroupedAdminReservations(query) {
+  const status = String(query.status || "").toLowerCase();
+  const sort = String(query.sort || "newest").toLowerCase();
+  const allowedStatuses = ["pending", "confirmed", "completed", "cancelled"];
+  const allowedSorts = ["highest", "lowest", "newest", "oldest"];
+  if (status && !allowedStatuses.includes(status)) {
+    throw new HttpException(400, "Booking status filter is invalid.");
+  }
+  if (!allowedSorts.includes(sort)) {
+    throw new HttpException(400, "Booking sort option is invalid.");
+  }
+
+  const page = Math.max(Number.parseInt(query.page, 10) || 1, 1);
+  const limit = Math.min(Math.max(Number.parseInt(query.limit, 10) || 10, 1), 100);
+  const search = String(query.search || "").trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const cuisine = String(query.cuisine || "").trim();
+  const { result, cuisines } = await userRepository.listGroupedAdminReservations({
+    status,
+    sort,
+    search,
+    cuisine,
+    skip: (page - 1) * limit,
+    limit,
+  });
+  const totals = result.totals[0] || {
+    totalRestaurants: 0,
+    totalBookings: 0,
+    pending: 0,
+    confirmed: 0,
+    completed: 0,
+    cancelled: 0,
+    usersBooked: 0,
+  };
+
+  return {
+    data: result.data,
+    meta: {
+      page,
+      limit,
+      total: totals.totalRestaurants,
+      totalPages: Math.ceil(totals.totalRestaurants / limit),
+    },
+    summary: totals,
+    cuisines,
+  };
+}
+
+async function listAdminReservationsByRestaurant(restaurantId) {
+  if (!isValidObjectId(restaurantId)) throw new HttpException(400, "Invalid restaurant id");
+  const result = await userRepository.listAdminReservationsByRestaurant(restaurantId);
+  if (!result) throw new HttpException(404, "Restaurant not found");
+  return {
+    restaurant: {
+      id: result.restaurant._id.toString(),
+      name: result.restaurant.name,
+      cuisine: result.restaurant.cuisine || "",
+      image: result.restaurant.image || "",
+    },
+    totalBookings: result.reservations.length,
+    bookings: result.reservations.map((reservation) => ({
+      ...formatReservationItem(reservation),
+      customer: reservation.user ? {
+        _id: reservation.user._id?.toString(),
+        fullName: reservation.user.fullName,
+        email: reservation.user.email,
+        phoneNumber: reservation.user.phoneNumber,
+      } : null,
+    })),
+  };
+}
+
+async function getAdminRestaurantDetails(restaurantId) {
+  if (!isValidObjectId(restaurantId)) throw new HttpException(400, "Invalid restaurant id");
+  const result = await userRepository.getAdminRestaurantDetails(restaurantId);
+  if (!result) throw new HttpException(404, "Restaurant not found");
+
+  const restaurant = result.restaurant;
+  const restaurantData = restaurant.toObject();
+  const hoursMatch = String(restaurant.hours || "").match(/:\s*(.+?)\s*-\s*(.+)$/);
+  const ratingTotal = result.reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0);
+  const statusCount = (status) => result.bookings.filter((booking) => booking.status === status).length;
+  const explicitMenu = Array.isArray(restaurantData.menu) ? restaurantData.menu : [];
+  const menu = explicitMenu.length ? explicitMenu : (restaurant.features || []).map((name) => ({
+    category: "Featured items",
+    name,
+    description: "",
+    price: null,
+    isAvailable: true,
+    type: "food",
+  }));
+
+  return {
+    restaurant: {
+      ...restaurantData,
+      _id: restaurant._id.toString(),
+      email: restaurantData.email || "",
+      openingTime: hoursMatch?.[1] || "",
+      closingTime: hoursMatch?.[2] || "",
+      totalTables: Array.isArray(restaurant.tables) ? restaurant.tables.length : 0,
+      capacity: (restaurant.tables || []).reduce((sum, table) => sum + Number(table.capacity || 0), 0),
+      menu,
+    },
+    activity: {
+      totalBookings: result.bookings.length,
+      pendingBookings: statusCount("pending"),
+      confirmedBookings: statusCount("confirmed"),
+      completedBookings: statusCount("completed"),
+      cancelledBookings: statusCount("cancelled"),
+      totalReviews: result.reviews.length,
+      averageRating: result.reviews.length ? Number((ratingTotal / result.reviews.length).toFixed(1)) : 0,
+      totalFavorites: result.favoriteCount,
+    },
+    bookings: result.bookings.slice(0, 10).map((booking) => ({
+      ...formatReservationItem(booking),
+      customer: booking.user ? {
+        id: booking.user._id?.toString(),
+        name: booking.user.fullName,
+        email: booking.user.email,
+      } : null,
+    })),
+    reviews: result.reviews.slice(0, 10).map((review) => ({
+      id: review._id.toString(),
+      customerName: review.userId?.fullName || review.userName || "MealNest user",
+      rating: review.rating,
+      comment: review.comment,
+      status: review.status || "published",
+      createdAt: review.createdAt,
+    })),
+  };
+}
+
 async function getAdminDashboardStats() {
   const result = await userRepository.getAdminDashboardStats();
   const activities = [
@@ -782,6 +976,8 @@ module.exports = {
   getCurrentUser,
   getAdminDashboardStats,
   getAdminAnalytics,
+  getAdminUserDetails,
+  getAdminRestaurantDetails,
   completeAdminReservation,
   getDashboard,
   getRestaurant,
@@ -789,6 +985,8 @@ module.exports = {
   getUserByIdOrThrow,
   listAdminUsers,
   listAdminReservations,
+  listAdminReservationsByRestaurant,
+  listGroupedAdminReservations,
   listMyReservations,
   listRestaurants,
   login,

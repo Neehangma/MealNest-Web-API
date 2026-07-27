@@ -54,6 +54,17 @@ test("shows the submitted user, restaurant, review details, filters, and sorting
   await waitFor(() => expect(getAdminReviewsAction).toHaveBeenLastCalledWith(expect.objectContaining({ sort: "highest" })));
 });
 
+test("does not return to a permanent loading state after the initial reviews load", async () => {
+  render(<AdminReviewsPage />);
+  expect(await screen.findByText("MealNest User")).toBeVisible();
+
+  await new Promise((resolve) => window.setTimeout(resolve, 400));
+
+  expect(screen.getByText("MealNest User")).toBeVisible();
+  expect(screen.queryByText("Loading user reviews...")).not.toBeInTheDocument();
+  expect(getAdminReviewsAction).toHaveBeenCalledTimes(1);
+});
+
 test("requires confirmation before hiding and deleting a review", async () => {
   jest.mocked(updateAdminReviewStatusAction).mockResolvedValue({ success: true, message: "hidden", data: { ...review, status: "hidden" } });
   jest.mocked(deleteAdminReviewAction).mockResolvedValue({ success: true, message: "deleted" });

@@ -26,10 +26,61 @@ export type RestaurantPayload = Omit<AdminRestaurant, "_id" | "createdAt" | "upd
 export type RestaurantListParams = { page?: number; limit?: number; search?: string; cuisine?: string; available?: "true" | "false" };
 export type RestaurantsResponse = { success: boolean; data: AdminRestaurant[]; meta: { page: number; limit: number; total: number; totalPages: number; availableTotal: number; cuisineTypes: number } };
 
+export type AdminRestaurantDetails = {
+  restaurant: AdminRestaurant & {
+    email: string;
+    openingTime: string;
+    closingTime: string;
+    totalTables: number;
+    capacity: number;
+    tables: Array<{ _id?: string; tableNumber: number; capacity: number; isAvailable: boolean }>;
+    menu: Array<{
+      category: string;
+      name: string;
+      description?: string;
+      price?: number | null;
+      isAvailable?: boolean;
+      type?: string;
+    }>;
+  };
+  activity: {
+    totalBookings: number;
+    pendingBookings: number;
+    confirmedBookings: number;
+    completedBookings: number;
+    cancelledBookings: number;
+    totalReviews: number;
+    averageRating: number;
+    totalFavorites: number;
+  };
+  bookings: Array<{
+    _id: string;
+    customer: { id: string; name: string; email: string } | null;
+    reservationDate: string;
+    date: string;
+    time: string;
+    guests: number;
+    paymentMethod?: string;
+    status: string;
+  }>;
+  reviews: Array<{
+    id: string;
+    customerName: string;
+    rating: number;
+    comment: string;
+    status: "published" | "hidden";
+    createdAt: string;
+  }>;
+};
+
 export function getAdminRestaurants(params: RestaurantListParams = {}, token?: string) {
   const query = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => { if (value !== undefined && value !== "") query.set(key, String(value)); });
   return adminRequest<RestaurantsResponse>(`${API.RESTAURANTS.LIST}?${query}`, {}, token);
+}
+
+export function getAdminRestaurantDetails(id: string, token?: string) {
+  return adminRequest<{ success: boolean; data: AdminRestaurantDetails }>(API.ADMIN.RESTAURANT_DETAILS(id), {}, token);
 }
 
 export function createRestaurant(data: FormData, token?: string) {

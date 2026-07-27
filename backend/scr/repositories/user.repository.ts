@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const User = require("../models/user.model");
 const Restaurant = require("../models/restaurant.model");
 const Reservation = require("../models/reservation.model");
+const Review = require("../models/review.model");
 const { ensureRestaurantPrices } = require("./restaurant.repository");
 const { parsePagination } = require("../utils/apihelper.utils");
 
@@ -134,6 +135,20 @@ async function listUsers(queryParams) {
 
 function deleteUser(id) {
   return User.findByIdAndDelete(id);
+}
+
+async function getAdminUserDetails(userId) {
+  const [user, reservations, reviews] = await Promise.all([
+    User.findById(userId).populate("favorites", "name cuisine image"),
+    Reservation.find({ user: userId })
+      .populate("restaurant", "name cuisine")
+      .sort({ createdAt: -1 }),
+    Review.find({ userId })
+      .populate("restaurantId", "name cuisine")
+      .sort({ createdAt: -1 }),
+  ]);
+
+  return { user, reservations, reviews };
 }
 
 async function getDashboardData(userId) {
@@ -316,6 +331,142 @@ async function listAdminReservations() {
     .sort({ createdAt: -1 });
 }
 
+async function listGroupedAdminReservations(filters) {
+  const usersWithLegacyReservations = await User.find({ "reservations.0": { $exists: true } });
+  await Promise.all(usersWithLegacyReservations.map(migrateLegacyReservations));
+
+  const reservationMatch: any = { restaurant: { $type: "objectId" } };
+  if (filters.status) reservationMatch.status = filters.status;
+
+  const restaurantMatch: any = {};
+  if (filters.search) restaurantMatch["restaurant.name"] = { $regex: filters.search, $options: "i" };
+  if (filters.cuisine) restaurantMatch["restaurant.cuisine"] = filters.cuisine;
+
+  const sortMap = {
+    highest: { totalBookings: -1, latestBookingDate: -1 },
+    lowest: { totalBookings: 1, latestBookingDate: -1 },
+    newest: { latestBookingDate: -1 },
+    oldest: { latestBookingDate: 1 },
+  };
+
+  const pipeline: any[] = [
+    { $match: reservationMatch },
+    {
+      $lookup: {
+        from: Restaurant.collection.name,
+        localField: "restaurant",
+        foreignField: "_id",
+        as: "restaurant",
+      },
+    },
+    { $unwind: "$restaurant" },
+    ...(Object.keys(restaurantMatch).length ? [{ $match: restaurantMatch }] : []),
+    {
+      $group: {
+        _id: "$restaurant._id",
+        restaurantName: { $first: "$restaurant.name" },
+        restaurantImage: { $first: "$restaurant.image" },
+        cuisine: { $first: "$restaurant.cuisine" },
+        totalBookings: { $sum: 1 },
+        pending: { $sum: { $cond: [{ $eq: ["$status", "pending"] }, 1, 0] } },
+        confirmed: { $sum: { $cond: [{ $eq: ["$status", "confirmed"] }, 1, 0] } },
+        completed: { $sum: { $cond: [{ $eq: ["$status", "completed"] }, 1, 0] } },
+        cancelled: { $sum: { $cond: [{ $eq: ["$status", "cancelled"] }, 1, 0] } },
+        latestBookingDate: { $max: "$reservationDate" },
+        userIds: { $addToSet: "$user" },
+      },
+    },
+    { $sort: sortMap[filters.sort] || sortMap.newest },
+    {
+      $facet: {
+        data: [
+          { $skip: filters.skip },
+          { $limit: filters.limit },
+          {
+            $project: {
+              _id: 0,
+              restaurantId: { $toString: "$_id" },
+              restaurantName: 1,
+              restaurantImage: 1,
+              cuisine: 1,
+              totalBookings: 1,
+              statusCounts: {
+                pending: "$pending",
+                confirmed: "$confirmed",
+                completed: "$completed",
+                cancelled: "$cancelled",
+              },
+              latestBookingDate: 1,
+            },
+          },
+        ],
+        totals: [{
+          $group: {
+            _id: null,
+            totalRestaurants: { $sum: 1 },
+            totalBookings: { $sum: "$totalBookings" },
+            pending: { $sum: "$pending" },
+            confirmed: { $sum: "$confirmed" },
+            completed: { $sum: "$completed" },
+            cancelled: { $sum: "$cancelled" },
+            userSets: { $push: "$userIds" },
+          },
+        }, {
+          $project: {
+            _id: 0,
+            totalRestaurants: 1,
+            totalBookings: 1,
+            pending: 1,
+            confirmed: 1,
+            completed: 1,
+            cancelled: 1,
+            usersBooked: {
+              $size: {
+                $reduce: {
+                  input: "$userSets",
+                  initialValue: [],
+                  in: { $setUnion: ["$$value", "$$this"] },
+                },
+              },
+            },
+          },
+        }],
+      },
+    },
+  ];
+
+  const [result, cuisines] = await Promise.all([
+    Reservation.aggregate(pipeline),
+    Restaurant.distinct("cuisine", { cuisine: { $nin: [null, ""] } }),
+  ]);
+  return { result: result[0] || { data: [], totals: [] }, cuisines: cuisines.sort() };
+}
+
+async function listAdminReservationsByRestaurant(restaurantId) {
+  const restaurant = await Restaurant.findById(restaurantId);
+  if (!restaurant) return null;
+  const reservations = await Reservation.find({ restaurant: restaurantId })
+    .populate("user", "fullName email phoneNumber")
+    .populate("restaurant")
+    .sort({ createdAt: -1 });
+  return { restaurant, reservations };
+}
+
+async function getAdminRestaurantDetails(restaurantId) {
+  const restaurant = await Restaurant.findById(restaurantId);
+  if (!restaurant) return null;
+  const [bookings, reviews, favoriteCount] = await Promise.all([
+    Reservation.find({ restaurant: restaurantId })
+      .populate("user", "fullName email")
+      .sort({ createdAt: -1 }),
+    Review.find({ restaurantId })
+      .populate("userId", "fullName")
+      .sort({ createdAt: -1 }),
+    User.countDocuments({ favorites: restaurantId }),
+  ]);
+  return { restaurant, bookings, reviews, favoriteCount };
+}
+
 async function getAdminDashboardStats() {
   const usersWithLegacyReservations = await User.find({ "reservations.0": { $exists: true } });
   await Promise.all(usersWithLegacyReservations.map(migrateLegacyReservations));
@@ -479,12 +630,16 @@ module.exports = {
   findByValidPasswordResetToken,
   findReservationByTransactionId,
   getDashboardData,
+  getAdminUserDetails,
+  getAdminRestaurantDetails,
   getAdminDashboardStats,
   getAdminAnalytics,
   getRestaurantById,
   getReservationWithDetails,
   listRestaurants,
   listAdminReservations,
+  listAdminReservationsByRestaurant,
+  listGroupedAdminReservations,
   listUserReservations,
   listUsers,
   toggleFavorite,

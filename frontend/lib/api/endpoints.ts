@@ -34,6 +34,9 @@ export const API = {
     ADMIN: {
         USERS: "/api/v1/admin/users",
         BOOKINGS: "/api/v1/admin/bookings",
+        GROUPED_BOOKINGS: "/api/v1/admin/bookings/grouped-by-restaurant",
+        RESTAURANT_BOOKINGS: (restaurantId: string) => `/api/v1/admin/restaurants/${restaurantId}/bookings`,
+        RESTAURANT_DETAILS: (restaurantId: string) => `/api/v1/admin/restaurants/${restaurantId}`,
         PROFILE: "/api/v1/admin/profile",
         DASHBOARD_STATS: "/api/v1/admin/dashboard/stats",
         ANALYTICS: "/api/v1/admin/analytics",

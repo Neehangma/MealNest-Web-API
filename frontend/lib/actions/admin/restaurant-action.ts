@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { clearAuthCookies, getTokenCookie } from "@/lib/cookies";
-import { AdminApiError, createRestaurant, deleteRestaurant, getAdminRestaurants, updateRestaurant, type RestaurantListParams } from "@/lib/api/admin";
+import { AdminApiError, createRestaurant, deleteRestaurant, getAdminRestaurantDetails, getAdminRestaurants, updateRestaurant, type RestaurantListParams } from "@/lib/api/admin";
 import { isPhoneNumberValid, PHONE_VALIDATION_MESSAGE } from "@/lib/phone-validation";
 
 async function withAdminToken<T>(request: (token: string) => Promise<T>) {
@@ -22,6 +22,9 @@ async function withAdminToken<T>(request: (token: string) => Promise<T>) {
 
 export async function getAdminRestaurantsAction(params: RestaurantListParams = {}) {
   return withAdminToken((token) => getAdminRestaurants(params, token));
+}
+export async function getAdminRestaurantDetailsAction(id: string) {
+  return withAdminToken((token) => getAdminRestaurantDetails(id, token));
 }
 export async function createRestaurantAction(data: FormData) {
   if (!isPhoneNumberValid(String(data.get("phone") || ""))) {

@@ -1,15 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import styles from "../admin.module.css";
-import { createRestaurantAction, deleteRestaurantAction, getAdminRestaurantsAction, updateRestaurantAction } from "@/lib/actions/admin/restaurant-action";
-import type { AdminRestaurant, RestaurantsResponse } from "@/lib/api/admin";
-import { getRestaurantImage, RESTAURANT_FALLBACK_IMAGE } from "@/lib/restaurant-image";
+import { createRestaurantAction, deleteRestaurantAction, getAdminRestaurantDetailsAction, getAdminRestaurantsAction, updateRestaurantAction } from "@/lib/actions/admin/restaurant-action";
+import type { AdminRestaurant, AdminRestaurantDetails, RestaurantsResponse } from "@/lib/api/admin";
+import { getRestaurantImage } from "@/lib/restaurant-image";
 import DeleteConfirmationModal from "../_components/DeleteConfirmationModal";
 import ConfirmationModal from "../_components/ConfirmationModal";
 import { isPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
 import { RESERVATION_TIME_SLOTS } from "@/lib/reservation-time";
+import RestaurantDetailsModal from "../_components/RestaurantDetailsModal";
 
 const CUISINES = ["Italian", "Japanese", "Indian", "Chinese", "Thai", "Korean", "Nepali"];
 const PRICE_RANGES = ["Rs. 150–300", "Rs. 300–500", "Rs. 500–800"];
@@ -67,6 +68,11 @@ export default function AdminRestaurantsPage() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
+  const [viewTarget, setViewTarget] = useState<AdminRestaurant | null>(null);
+  const [restaurantDetails, setRestaurantDetails] = useState<AdminRestaurantDetails | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailsError, setDetailsError] = useState("");
+  const detailsRequestId = useRef(0);
 
   useEffect(() => { const timer = window.setTimeout(() => { setDebouncedSearch(search.trim()); setPage(1); }, 350); return () => window.clearTimeout(timer); }, [search]);
 
@@ -80,7 +86,27 @@ export default function AdminRestaurantsPage() {
     } finally { setLoading(false); }
   }
 
-  useEffect(() => { void load(page); }, [page, meta.limit, debouncedSearch, cuisine, available]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    let active = true;
+    getAdminRestaurantsAction({ page, limit: meta.limit, search: debouncedSearch || undefined, cuisine: cuisine || undefined, available: available || undefined })
+      .then((response) => {
+        if (!active) return;
+        setError("");
+        setRestaurants(response.data);
+        setMeta(response.meta);
+      })
+      .catch((reason) => {
+        if (!active) return;
+        setRestaurants([]);
+        setError(reason instanceof Error ? reason.message : "Unable to load restaurants");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [page, meta.limit, debouncedSearch, cuisine, available]);
 
   function clearPreview() { if (imagePreview.startsWith("blob:")) URL.revokeObjectURL(imagePreview); setImagePreview(""); setImageFile(null); }
   function openCreate() { clearPreview(); setEditing("new"); setForm(EMPTY_FORM); setFormError(""); setFieldErrors({}); setSuccessMessage(""); setConfirmingCreate(false); }
@@ -169,6 +195,30 @@ export default function AdminRestaurantsPage() {
     finally { setSubmitting(false); }
   }
 
+  async function openDetails(restaurant: AdminRestaurant) {
+    const requestId = ++detailsRequestId.current;
+    setViewTarget(restaurant);
+    setRestaurantDetails(null);
+    setDetailsError("");
+    setDetailsLoading(true);
+    try {
+      const response = await getAdminRestaurantDetailsAction(restaurant._id);
+      if (detailsRequestId.current === requestId) setRestaurantDetails(response.data);
+    } catch (reason) {
+      if (detailsRequestId.current === requestId) setDetailsError(reason instanceof Error ? reason.message : "Unable to load restaurant details");
+    } finally {
+      if (detailsRequestId.current === requestId) setDetailsLoading(false);
+    }
+  }
+
+  function closeDetails() {
+    detailsRequestId.current += 1;
+    setViewTarget(null);
+    setRestaurantDetails(null);
+    setDetailsError("");
+    setDetailsLoading(false);
+  }
+
   const from = meta.total ? (meta.page - 1) * meta.limit + 1 : 0;
   const to = meta.total ? Math.min(meta.page * meta.limit, meta.total) : 0;
 
@@ -191,13 +241,16 @@ export default function AdminRestaurantsPage() {
           </div>
           {successMessage && <div className={styles.successBanner} role="status">{successMessage}</div>}
           {error && <div className={styles.errorBanner}>{error}</div>}
-          <div className={styles.tableWrap}><table className={styles.usersTable}><thead><tr><th>Image</th><th>Restaurant Name</th><th>Cuisine</th><th>Location</th><th>Availability</th><th>Created Date</th><th>Actions</th></tr></thead><tbody>
-            {loading ? <tr><td colSpan={7}><div className={styles.emptyState}>Loading restaurants…</div></td></tr> : error ? <tr><td colSpan={7}><div className={styles.emptyState}>Unable to display restaurants.</div></td></tr> : restaurants.length === 0 ? <tr><td colSpan={7}><div className={styles.emptyState}>No restaurants found.</div></td></tr> : restaurants.map((restaurant) => <tr key={restaurant._id}>
+          <div className={styles.tableWrap}><table className={styles.usersTable}><thead><tr><th>Image</th><th>Restaurant Name</th><th>Cuisine</th><th>Location</th><th>Availability</th><th>Actions</th></tr></thead><tbody>
+            {loading ? <tr><td colSpan={6}><div className={styles.emptyState}>Loading restaurants…</div></td></tr> : error ? <tr><td colSpan={6}><div className={styles.emptyState}>Unable to display restaurants.</div></td></tr> : restaurants.length === 0 ? <tr><td colSpan={6}><div className={styles.emptyState}>No restaurants found.</div></td></tr> : restaurants.map((restaurant) => <tr key={restaurant._id}>
               <td><Image unoptimized src={getRestaurantImage(restaurant.image)} alt={restaurant.name} width={58} height={44} className={styles.restaurantThumbnail} /></td>
               <td><strong>{restaurant.name}</strong></td><td>{restaurant.cuisine}</td><td>{restaurant.location}</td>
               <td><span className={`${styles.pill} ${restaurant.isOpen ? styles.pillUser : styles.pillAdmin}`}>{restaurant.isOpen ? "Available" : "Unavailable"}</span></td>
-              <td>{restaurant.createdAt ? new Date(restaurant.createdAt).toLocaleDateString() : "N/A"}</td>
-              <td><div className={styles.actions}><button className={styles.tableAction} type="button" aria-label={`Edit ${restaurant.name}`} onClick={() => openEdit(restaurant)}>✎</button><button className={`${styles.tableAction} ${styles.dangerAction}`} type="button" aria-label={`Delete ${restaurant.name}`} title="Delete restaurant" onClick={() => setDeleteTarget(restaurant)}><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></button></div></td>
+              <td><div className={styles.actions}>
+                <button className={styles.tableAction} type="button" aria-label={`View restaurant ${restaurant.name}`} title="View restaurant" onClick={() => void openDetails(restaurant)}><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                <button className={styles.tableAction} type="button" aria-label={`Edit restaurant ${restaurant.name}`} title="Edit restaurant" onClick={() => openEdit(restaurant)}>✎</button>
+                <button className={`${styles.tableAction} ${styles.dangerAction}`} type="button" aria-label={`Delete restaurant ${restaurant.name}`} title="Delete restaurant" onClick={() => setDeleteTarget(restaurant)}><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg></button>
+              </div></td>
             </tr>)}
           </tbody></table></div>
           <div className={styles.pagination}><button className={styles.pageButton} type="button" disabled={page <= 1 || loading} onClick={() => setPage((current) => current - 1)}>Previous</button><span>Page {meta.page || 1} of {meta.totalPages || 1}</span><button className={styles.pageButton} type="button" disabled={page >= meta.totalPages || loading || meta.totalPages === 0} onClick={() => setPage((current) => current + 1)}>Next</button></div>
@@ -210,7 +263,7 @@ export default function AdminRestaurantsPage() {
       <label className={styles.field}>Cuisine<select name="cuisine" className={styles.selectControl} required aria-invalid={Boolean(fieldErrors.cuisine)} aria-describedby={fieldErrors.cuisine ? "cuisine-error" : undefined} value={form.cuisine} onChange={(e) => updateFormField("cuisine", e.target.value)}><option value="">Select cuisine</option>{CUISINES.map((item) => <option key={item} value={item}>{item}</option>)}</select>{fieldErrors.cuisine && <small id="cuisine-error" className={styles.fieldError}>{fieldErrors.cuisine}</small>}</label>
       <label className={styles.field}>Location<input name="location" className={styles.inputControl} required aria-invalid={Boolean(fieldErrors.location)} aria-describedby={fieldErrors.location ? "location-error" : undefined} value={form.location} onChange={(e) => updateFormField("location", e.target.value)} />{fieldErrors.location && <small id="location-error" className={styles.fieldError}>{fieldErrors.location}</small>}</label>
       <label className={styles.field}>Price range<select name="priceRange" className={styles.selectControl} required aria-invalid={Boolean(fieldErrors.priceRange)} aria-describedby={fieldErrors.priceRange ? "price-range-error" : undefined} value={form.priceRange} onChange={(e) => updateFormField("priceRange", e.target.value)}><option value="">Select price range</option>{PRICE_RANGES.map((range) => <option key={range} value={range}>{range}</option>)}</select>{fieldErrors.priceRange && <small id="price-range-error" className={styles.fieldError}>{fieldErrors.priceRange}</small>}</label>
-      <label className={`${styles.field} ${styles.fullField}`}>Restaurant image<input className={styles.fileControl} type="file" accept="image/png,image/jpeg,image/jpg,image/webp" onChange={handleImageChange} /><span className={styles.selectedFileName}>{imageFile?.name || (editing !== "new" && form.image ? "Current image (choose a file to replace)" : "No image selected")}</span>{imagePreview && <span className={styles.restaurantImagePreview}><img src={imagePreview} alt="Restaurant preview" /></span>}</label>
+      <label className={`${styles.field} ${styles.fullField}`}>Restaurant image<input className={styles.fileControl} type="file" accept="image/png,image/jpeg,image/jpg,image/webp" onChange={handleImageChange} /><span className={styles.selectedFileName}>{imageFile?.name || (editing !== "new" && form.image ? "Current image (choose a file to replace)" : "No image selected")}</span>{imagePreview && <span className={styles.restaurantImagePreview}><Image unoptimized src={imagePreview} alt="Restaurant preview" width={640} height={320} /></span>}</label>
       <label className={styles.field}>Opening time<input name="openingTime" className={styles.inputControl} required aria-invalid={Boolean(fieldErrors.openingTime)} aria-describedby={fieldErrors.openingTime ? "opening-time-error" : undefined} value={form.openingTime} onChange={(e) => updateFormField("openingTime", e.target.value)} />{fieldErrors.openingTime && <small id="opening-time-error" className={styles.fieldError}>{fieldErrors.openingTime}</small>}</label>
       <label className={styles.field}>Closing time<input name="closingTime" className={styles.inputControl} required aria-invalid={Boolean(fieldErrors.closingTime)} aria-describedby={fieldErrors.closingTime ? "closing-time-error" : undefined} value={form.closingTime} onChange={(e) => updateFormField("closingTime", e.target.value)} />{fieldErrors.closingTime && <small id="closing-time-error" className={styles.fieldError}>{fieldErrors.closingTime}</small>}</label>
       <label className={styles.field}>Address<input name="address" className={styles.inputControl} required aria-invalid={Boolean(fieldErrors.address)} aria-describedby={fieldErrors.address ? "address-error" : undefined} value={form.address} onChange={(e) => updateFormField("address", e.target.value)} />{fieldErrors.address && <small id="address-error" className={styles.fieldError}>{fieldErrors.address}</small>}</label>
@@ -223,5 +276,6 @@ export default function AdminRestaurantsPage() {
     <ConfirmationModal open={confirmingCreate} title="Add Restaurant" message="Do you want to add this restaurant?" confirming={submitting} onNo={() => { if (!submitting) setConfirmingCreate(false); }} onYes={() => void persistRestaurant()} />
 
     <DeleteConfirmationModal open={Boolean(deleteTarget)} title="Delete Restaurant" name={deleteTarget?.name || "this restaurant"} message="This removes it from both admin and user dashboards." confirmLabel="Delete Restaurant" deleting={submitting} onCancel={() => setDeleteTarget(null)} onConfirm={() => void remove()} />
+    <RestaurantDetailsModal open={Boolean(viewTarget)} details={restaurantDetails} loading={detailsLoading} error={detailsError} fallbackName={viewTarget?.name || ""} onClose={closeDetails} />
   </div>;
 }

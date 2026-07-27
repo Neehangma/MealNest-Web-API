@@ -12,7 +12,7 @@ const {
   createUpdateUserDto,
 } = require("../dtos/user.dtos");
 const userService = require("../services/user.service");
-const { sendSuccess, toSafeUser } = require("../utils/apihelper.utils");
+const { sendSuccess } = require("../utils/apihelper.utils");
 
 async function register(req, res) {
   const result = await userService.register(createRegisterDto(req.body));
@@ -60,9 +60,9 @@ async function listUsers(req, res) {
 }
 
 async function getUser(req, res) {
-  const user = await userService.getUserByIdOrThrow(req.params.id);
+  const details = await userService.getAdminUserDetails(req.params.id);
   return sendSuccess(res, 200, {
-    data: toSafeUser(user),
+    data: details,
   });
 }
 
@@ -182,6 +182,21 @@ async function listAdminReservations(_req, res) {
   return sendSuccess(res, 200, { data: bookings, total: bookings.length });
 }
 
+async function listGroupedAdminReservations(req, res) {
+  const result = await userService.listGroupedAdminReservations(req.query);
+  return sendSuccess(res, 200, result);
+}
+
+async function listAdminReservationsByRestaurant(req, res) {
+  const result = await userService.listAdminReservationsByRestaurant(req.params.restaurantId);
+  return sendSuccess(res, 200, result);
+}
+
+async function getAdminRestaurantDetails(req, res) {
+  const result = await userService.getAdminRestaurantDetails(req.params.restaurantId);
+  return sendSuccess(res, 200, { data: result });
+}
+
 async function getAdminProfile(req, res) {
   const admin = await userService.getCurrentUser(req.user._id);
   return sendSuccess(res, 200, { admin });
@@ -223,6 +238,7 @@ module.exports = {
   forgotPassword,
   getDashboard,
   getAdminProfile,
+  getAdminRestaurantDetails,
   getAdminDashboardStats,
   getAdminAnalytics,
   getRestaurant,
@@ -231,6 +247,8 @@ module.exports = {
   getRestaurants,
   listMyReservations,
   listAdminReservations,
+  listAdminReservationsByRestaurant,
+  listGroupedAdminReservations,
   listUsers,
   login,
   register,
