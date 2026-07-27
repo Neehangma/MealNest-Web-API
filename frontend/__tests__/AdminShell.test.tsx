@@ -13,6 +13,7 @@ test("renders admin identity, navigation, children, and logout action", async ()
   expect(navigation).toHaveTextContent("DashboardUsersRestaurantsBookingsReviewsSettings");
   expect(screen.getByRole("link", { name: "Users" })).toHaveAttribute("aria-current", "page");
   expect(screen.getByText("Site Admin")).toBeVisible();
+  expect(screen.getByRole("link", { name: "Open admin settings" })).toHaveAttribute("href", "/admin/settings");
   await userEvent.click(screen.getByRole("button", { name: "Logout" }));
   expect(requestLogout).toHaveBeenCalledTimes(1);
 });

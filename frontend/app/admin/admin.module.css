@@ -945,7 +945,7 @@
 .sharedAdminHeader > div:first-child { display: flex; height: 100%; flex-direction: column; justify-content: center; gap: 3px; padding: 0; }
 .sharedAdminHeader > div:first-child span { margin: 0; padding: 0; color: #9b7764; font-size: 11px; font-weight: 800; line-height: 1; text-transform: uppercase; letter-spacing: .08em; }
 .sharedAdminHeader > div:first-child strong { margin: 0; padding: 0; color: #283950; font: 700 17px/1 Georgia, serif; }
-.sharedAdminIdentity { display: flex; align-items: center; gap: 11px; }
+.sharedAdminIdentity { display: flex; align-items: center; gap: 11px; color: inherit; text-decoration: none; cursor: pointer; }
 .sharedAdminIdentity > img, .sharedAdminIdentity > span { width: 42px; height: 42px; border: 2px solid #ed8a43; border-radius: 50%; object-fit: cover; display: grid; place-items: center; color: #fff; background: #e9782f; font-weight: 800; }
 .sharedAdminIdentity div { display: grid; gap: 2px; }
 .sharedAdminIdentity strong { color: #283950; font-size: 14px; }
