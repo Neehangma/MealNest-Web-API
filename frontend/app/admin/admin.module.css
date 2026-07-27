@@ -1433,6 +1433,364 @@
   margin-bottom: 20px;
 }
 
+.userDetailsBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(17, 28, 44, 0.52);
+}
+
+.userDetailsModal {
+  width: min(1120px, 100%);
+  max-height: min(860px, calc(100vh - 48px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #efd4c3;
+  border-radius: 18px;
+  background: #fffdfb;
+  box-shadow: 0 24px 70px rgba(49, 28, 16, 0.25);
+}
+
+.userDetailsHeader,
+.userDetailsFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0ded2;
+}
+
+.userDetailsHeader h2 {
+  margin: 0;
+  color: #142944;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.65rem;
+}
+
+.userDetailsHeader p {
+  margin: 4px 0 0;
+  color: #66758a;
+}
+
+.userDetailsCloseIcon {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #efd4c3;
+  border-radius: 10px;
+  background: #fff;
+  color: #142944;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.userDetailsBody {
+  flex: 1;
+  min-height: 280px;
+  overflow-y: auto;
+  padding: 0 24px 24px;
+}
+
+.userDetailsState {
+  display: grid;
+  min-height: 300px;
+  place-items: center;
+  color: #66758a;
+}
+
+.userDetailsTabs {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 18px 0 12px;
+  background: #fffdfb;
+}
+
+.userDetailsTabs button {
+  padding: 11px 14px;
+  border: 1px solid #efd4c3;
+  border-radius: 10px;
+  background: #fff;
+  color: #52627a;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.userDetailsTabs button.userDetailsTabActive {
+  border-color: #d94a06;
+  background: #fff0e7;
+  color: #b94208;
+}
+
+.userDetailsSections {
+  display: grid;
+  gap: 20px;
+}
+
+.userDetailsSections > section,
+.userIdentityCard {
+  padding: 20px;
+  border: 1px solid #f0ded2;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.userIdentityCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.userIdentityCard h3,
+.userIdentityCard p {
+  margin: 0 0 5px;
+}
+
+.userIdentityCard p {
+  color: #66758a;
+}
+
+.userDetailsAvatar,
+.userDetailsAvatarImage {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 72px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.userDetailsAvatar {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, #183651, #ef8848);
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.userDetailsSectionTitle {
+  margin: 0 0 14px;
+  color: #142944;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.15rem;
+}
+
+.userDetailsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 24px;
+  margin: 0;
+}
+
+.userDetailsGrid div {
+  min-width: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f5e7df;
+}
+
+.userDetailsGrid dt {
+  margin-bottom: 4px;
+  color: #7a685e;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.userDetailsGrid dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #172b45;
+  font-weight: 650;
+}
+
+.userDatabaseId {
+  font-family: Consolas, monospace;
+  font-size: 0.84rem;
+}
+
+.userActivityGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.userActivityGrid div {
+  display: grid;
+  gap: 3px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #fff5ef;
+}
+
+.userActivityGrid strong {
+  color: #c54808;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.4rem;
+}
+
+.userActivityGrid span,
+.favoriteNames,
+.userDetailsEmpty {
+  color: #66758a;
+  font-size: 0.86rem;
+}
+
+.favoriteNames {
+  margin: 14px 0 0;
+}
+
+.userDetailsEmpty {
+  display: grid;
+  min-height: 140px;
+  place-items: center;
+  margin: 0;
+  border: 1px dashed #e9cdbd;
+  border-radius: 12px;
+  background: #fffaf7;
+}
+
+.userDetailsTableWrap {
+  overflow-x: auto;
+  border: 1px solid #f0ded2;
+  border-radius: 12px;
+}
+
+.userDetailsTable {
+  width: 100%;
+  min-width: 850px;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.userDetailsTable th,
+.userDetailsTable td {
+  padding: 12px;
+  border-bottom: 1px solid #f2e1d7;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.userDetailsTable th {
+  background: #fff7f2;
+  color: #5c493e;
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.userReviewList {
+  display: grid;
+  gap: 12px;
+}
+
+.userReviewCard {
+  padding: 16px;
+  border: 1px solid #f0ded2;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.userReviewHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.userReviewHeading > div {
+  display: grid;
+  gap: 4px;
+}
+
+.userReviewCard p {
+  margin: 12px 0;
+  color: #34445b;
+  line-height: 1.55;
+}
+
+.userReviewCard time {
+  color: #7a685e;
+  font-size: 0.8rem;
+}
+
+.detailsStars {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.detailsStarFilled {
+  color: #f2b01e;
+}
+
+.detailsStarEmpty {
+  color: #d7d7d7;
+}
+
+.detailsStatusBadge {
+  display: inline-flex;
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.detailsPublished {
+  background: #e1f5e8;
+  color: #14733c;
+}
+
+.detailsHidden {
+  background: #f1e9e5;
+  color: #745b50;
+}
+
+.userDetailsFooter {
+  justify-content: flex-end;
+  border-top: 1px solid #f0ded2;
+  border-bottom: 0;
+}
+
+@media (max-width: 780px) {
+  .userDetailsBackdrop {
+    padding: 10px;
+  }
+
+  .userDetailsModal {
+    max-height: calc(100vh - 20px);
+  }
+
+  .userDetailsHeader,
+  .userDetailsFooter {
+    padding: 16px;
+  }
+
+  .userDetailsBody {
+    padding: 0 16px 16px;
+  }
+
+  .userDetailsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .userActivityGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .userDetailsTabs button {
+    padding-inline: 8px;
+    font-size: 0.82rem;
+  }
+}
+
 .formGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

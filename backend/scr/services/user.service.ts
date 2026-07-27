@@ -249,6 +249,69 @@ async function listAdminUsers(query) {
   };
 }
 
+async function getAdminUserDetails(id) {
+  if (!isValidObjectId(id)) {
+    throw new HttpException(400, "Invalid user id");
+  }
+
+  const { user, reservations, reviews } = await userRepository.getAdminUserDetails(id);
+  if (!user) {
+    throw new HttpException(404, "User not found");
+  }
+
+  const now = new Date();
+  const ratingTotal = reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0);
+
+  return {
+    user: {
+      ...toSafeUser(user),
+      authenticationProvider: user.authenticationProvider || user.provider || null,
+      emailVerified: typeof user.emailVerified === "boolean" ? user.emailVerified : null,
+      isActive: typeof user.isActive === "boolean" ? user.isActive : true,
+      accountStatus: user.isActive === false ? "inactive" : "active",
+    },
+    activity: {
+      totalReservations: reservations.length,
+      upcomingReservations: reservations.filter((reservation) =>
+        ["confirmed", "pending"].includes(reservation.status) &&
+        new Date(reservation.reservationDate) >= now
+      ).length,
+      completedReservations: reservations.filter((reservation) => reservation.status === "completed").length,
+      cancelledReservations: reservations.filter((reservation) => reservation.status === "cancelled").length,
+      totalReviews: reviews.length,
+      averageReviewRating: reviews.length ? Number((ratingTotal / reviews.length).toFixed(1)) : 0,
+      totalFavorites: Array.isArray(user.favorites) ? user.favorites.length : 0,
+    },
+    favorites: (user.favorites || []).map((restaurant) => ({
+      id: restaurant._id?.toString(),
+      name: restaurant.name,
+      cuisine: restaurant.cuisine || "",
+      image: restaurant.image || "",
+    })),
+    reservations: reservations.map((reservation) => ({
+      id: reservation._id.toString(),
+      restaurantName: reservation.restaurant?.name || reservation.restaurantName || "Restaurant",
+      reservationDate: reservation.reservationDate,
+      date: reservation.date,
+      time: reservation.time,
+      guests: reservation.guests,
+      tableNumber: reservation.tableNumber ?? null,
+      paymentStatus: reservation.paymentStatus || "",
+      status: reservation.status,
+      totalAmount: Number(reservation.totalPaid || 0),
+      createdAt: reservation.createdAt,
+    })),
+    reviews: reviews.map((review) => ({
+      id: review._id.toString(),
+      restaurantName: review.restaurantId?.name || "Restaurant",
+      rating: review.rating,
+      comment: review.comment,
+      status: review.status || "published",
+      createdAt: review.createdAt,
+    })),
+  };
+}
+
 async function createAdminUser(payload) {
   if (!ALLOWED_ROLES.includes(payload.role)) {
     throw new HttpException(400, "Role must be either 'user' or 'admin'");
@@ -782,6 +845,7 @@ module.exports = {
   getCurrentUser,
   getAdminDashboardStats,
   getAdminAnalytics,
+  getAdminUserDetails,
   completeAdminReservation,
   getDashboard,
   getRestaurant,

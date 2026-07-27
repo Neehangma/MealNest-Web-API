@@ -12,7 +12,7 @@ const {
   createUpdateUserDto,
 } = require("../dtos/user.dtos");
 const userService = require("../services/user.service");
-const { sendSuccess, toSafeUser } = require("../utils/apihelper.utils");
+const { sendSuccess } = require("../utils/apihelper.utils");
 
 async function register(req, res) {
   const result = await userService.register(createRegisterDto(req.body));
@@ -60,9 +60,9 @@ async function listUsers(req, res) {
 }
 
 async function getUser(req, res) {
-  const user = await userService.getUserByIdOrThrow(req.params.id);
+  const details = await userService.getAdminUserDetails(req.params.id);
   return sendSuccess(res, 200, {
-    data: toSafeUser(user),
+    data: details,
   });
 }
 

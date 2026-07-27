@@ -31,6 +31,51 @@ export interface UserResponse {
   message?: string;
 }
 
+export interface AdminUserDetails {
+  user: User & {
+    authenticationProvider: string | null;
+    emailVerified: boolean | null;
+    isActive: boolean;
+    accountStatus: "active" | "inactive";
+  };
+  activity: {
+    totalReservations: number;
+    upcomingReservations: number;
+    completedReservations: number;
+    cancelledReservations: number;
+    totalReviews: number;
+    averageReviewRating: number;
+    totalFavorites: number;
+  };
+  favorites: Array<{ id: string; name: string; cuisine: string; image: string }>;
+  reservations: Array<{
+    id: string;
+    restaurantName: string;
+    reservationDate: string;
+    date: string;
+    time: string;
+    guests: number;
+    tableNumber: number | null;
+    paymentStatus: string;
+    status: string;
+    totalAmount: number;
+    createdAt: string;
+  }>;
+  reviews: Array<{
+    id: string;
+    restaurantName: string;
+    rating: number;
+    comment: string;
+    status: "published" | "hidden";
+    createdAt: string;
+  }>;
+}
+
+export interface AdminUserDetailsResponse {
+  success: boolean;
+  data: AdminUserDetails;
+}
+
 export interface UserPayload {
   fullName: string;
   email: string;
@@ -107,8 +152,8 @@ export async function getUsers(
   return adminRequest<PaginatedUsersResponse>(`${API.ADMIN.USERS}${suffix}`, {}, token);
 }
 
-export async function getUserById(id: string, token?: string): Promise<UserResponse> {
-  return adminRequest<UserResponse>(API.ADMIN.USER_BY_ID(id), {}, token);
+export async function getUserById(id: string, token?: string): Promise<AdminUserDetailsResponse> {
+  return adminRequest<AdminUserDetailsResponse>(API.ADMIN.USER_BY_ID(id), {}, token);
 }
 
 export async function createUser(

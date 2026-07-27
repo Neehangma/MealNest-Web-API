@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const User = require("../models/user.model");
 const Restaurant = require("../models/restaurant.model");
 const Reservation = require("../models/reservation.model");
+const Review = require("../models/review.model");
 const { ensureRestaurantPrices } = require("./restaurant.repository");
 const { parsePagination } = require("../utils/apihelper.utils");
 
@@ -134,6 +135,20 @@ async function listUsers(queryParams) {
 
 function deleteUser(id) {
   return User.findByIdAndDelete(id);
+}
+
+async function getAdminUserDetails(userId) {
+  const [user, reservations, reviews] = await Promise.all([
+    User.findById(userId).populate("favorites", "name cuisine image"),
+    Reservation.find({ user: userId })
+      .populate("restaurant", "name cuisine")
+      .sort({ createdAt: -1 }),
+    Review.find({ userId })
+      .populate("restaurantId", "name cuisine")
+      .sort({ createdAt: -1 }),
+  ]);
+
+  return { user, reservations, reviews };
 }
 
 async function getDashboardData(userId) {
@@ -479,6 +494,7 @@ module.exports = {
   findByValidPasswordResetToken,
   findReservationByTransactionId,
   getDashboardData,
+  getAdminUserDetails,
   getAdminDashboardStats,
   getAdminAnalytics,
   getRestaurantById,

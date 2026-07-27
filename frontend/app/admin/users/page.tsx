@@ -1,13 +1,15 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import type {
+  AdminUserDetails,
   PaginatedUsersResponse,
   User,
 } from "@/lib/api/admin";
 import {
   createAdminUserAction as createUser,
   deleteAdminUserAction as deleteUser,
+  getAdminUserByIdAction as getUserDetails,
   getAdminUsersAction as getUsers,
   updateAdminUserAction as updateUser,
 } from "@/lib/actions/admin/user-action";
@@ -17,6 +19,7 @@ import PasswordRequirements from "@/app/_components/PasswordRequirements";
 import { isPasswordValid, PASSWORD_POLICY_MESSAGE } from "@/lib/password-policy";
 import { isOptionalPhoneNumberValid, isPhoneNumberValid, PHONE_VALIDATION_MESSAGE, sanitizePhoneNumber } from "@/lib/phone-validation";
 import DeleteConfirmationModal from "../_components/DeleteConfirmationModal";
+import UserDetailsModal from "../_components/UserDetailsModal";
 
 type IconName =
   | "grid"
@@ -240,6 +243,11 @@ export default function AdminUsersPage() {
   const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
+  const [viewTargetId, setViewTargetId] = useState<string | null>(null);
+  const [userDetails, setUserDetails] = useState<AdminUserDetails | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailsError, setDetailsError] = useState("");
+  const detailsRequestId = useRef(0);
   const [form, setForm] = useState<FormState>(emptyForm);
 
   const adminCount = useMemo(
@@ -390,6 +398,33 @@ export default function AdminUsersPage() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  async function openUserDetails(user: User) {
+    const requestId = ++detailsRequestId.current;
+    setViewTargetId(user.id);
+    setUserDetails(null);
+    setDetailsError("");
+    setDetailsLoading(true);
+
+    try {
+      const response = await getUserDetails(user.id);
+      if (detailsRequestId.current !== requestId) return;
+      setUserDetails(response.data);
+    } catch (loadError) {
+      if (detailsRequestId.current !== requestId) return;
+      setDetailsError(loadError instanceof Error ? loadError.message : "User details could not be loaded.");
+    } finally {
+      if (detailsRequestId.current === requestId) setDetailsLoading(false);
+    }
+  }
+
+  function closeUserDetails() {
+    detailsRequestId.current += 1;
+    setViewTargetId(null);
+    setUserDetails(null);
+    setDetailsError("");
+    setDetailsLoading(false);
   }
 
   const showingFrom = meta.total === 0 ? 0 : (meta.page - 1) * meta.limit + 1;
@@ -566,13 +601,13 @@ export default function AdminUsersPage() {
                           <td>{formatDate(user.createdAt)}</td>
                           <td>
                             <div className={styles.actions}>
-                              <button className={styles.tableAction} type="button" aria-label={`View ${displayName}`}>
+                              <button className={styles.tableAction} type="button" aria-label={`View user ${displayName}`} title="View user" onClick={() => void openUserDetails(user)}>
                                 <Icon name="eye" size={17} />
                               </button>
-                              <button className={styles.tableAction} type="button" aria-label={`Edit ${displayName}`} onClick={() => openEditModal(user)}>
+                              <button className={styles.tableAction} type="button" aria-label={`Edit user ${displayName}`} title="Edit user" onClick={() => openEditModal(user)}>
                                 <Icon name="edit" size={17} />
                               </button>
-                              <button className={`${styles.tableAction} ${styles.dangerAction}`} type="button" aria-label={`Delete ${displayName}`} onClick={() => setDeleteTarget(user)}>
+                              <button className={`${styles.tableAction} ${styles.dangerAction}`} type="button" aria-label={`Delete user ${displayName}`} title="Delete user" onClick={() => setDeleteTarget(user)}>
                                 <Icon name="trash" size={17} />
                               </button>
                             </div>
@@ -650,6 +685,14 @@ export default function AdminUsersPage() {
       )}
 
       <DeleteConfirmationModal open={Boolean(deleteTarget)} title="Delete User" name={deleteTarget?.fullName || "this user"} message="This action cannot be undone." confirmLabel="Delete User" deleting={submitting} onCancel={() => setDeleteTarget(null)} onConfirm={() => void handleDelete()} />
+      <UserDetailsModal
+        open={Boolean(viewTargetId)}
+        loading={detailsLoading}
+        error={detailsError}
+        details={userDetails}
+        fallbackName={users.find((user) => user.id === viewTargetId)?.fullName || ""}
+        onClose={closeUserDetails}
+      />
     </div>
   );
 }
