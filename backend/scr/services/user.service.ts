@@ -694,6 +694,7 @@ async function listMyReservations(userId) {
       userProfileImage: review.userProfileImage || "",
       rating: review.rating,
       comment: review.comment,
+      status: review.status || "published",
       createdAt: review.createdAt,
       updatedAt: review.updatedAt,
     },

@@ -9,12 +9,13 @@ import type { AuthUser } from "@/lib/api/auth";
 import { getRestaurantImage } from "@/lib/restaurant-image";
 import styles from "../admin.module.css";
 
-type IconName = "dashboard" | "users" | "restaurants" | "bookings" | "settings" | "logout" | "menu";
+type IconName = "dashboard" | "users" | "restaurants" | "bookings" | "reviews" | "settings" | "logout" | "menu";
 const links: { label: string; href: string; icon: IconName }[] = [
   { label: "Dashboard", href: "/admin/dashboard", icon: "dashboard" },
   { label: "Users", href: "/admin/users", icon: "users" },
   { label: "Restaurants", href: "/admin/restaurants", icon: "restaurants" },
   { label: "Bookings", href: "/admin/bookings", icon: "bookings" },
+  { label: "Reviews", href: "/admin/reviews", icon: "reviews" },
   { label: "Settings", href: "/admin/settings", icon: "settings" },
 ];
 
@@ -24,6 +25,7 @@ function Icon({ name }: { name: IconName }) {
     {name === "users" && <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></>}
     {name === "restaurants" && <><path d="M3 9h18l-2-5H5L3 9Z"/><path d="M5 9v11h14V9M9 20v-6h6v6"/></>}
     {name === "bookings" && <><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></>}
+    {name === "reviews" && <><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z"/></>}
     {name === "settings" && <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21h-4v-.2a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H3v-4h.2a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.4 7l2.8-2.8.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V3h4v.2a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></>}
     {name === "logout" && <><path d="M10 17l5-5-5-5M15 12H3M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/></>}
     {name === "menu" && <><path d="M4 6h16M4 12h16M4 18h16"/></>}

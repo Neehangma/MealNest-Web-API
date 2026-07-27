@@ -10,7 +10,7 @@ test("renders admin identity, navigation, children, and logout action", async ()
   render(<AdminShell initialAdmin={{ id: "admin", email: "admin@example.com", fullName: "Site Admin", role: "admin" }}><p>Admin child</p></AdminShell>);
   expect(screen.getByText("Admin child")).toBeVisible();
   const navigation = screen.getByRole("navigation", { name: "Admin navigation" });
-  expect(navigation).toHaveTextContent("DashboardUsersRestaurantsBookingsSettings");
+  expect(navigation).toHaveTextContent("DashboardUsersRestaurantsBookingsReviewsSettings");
   expect(screen.getByRole("link", { name: "Users" })).toHaveAttribute("aria-current", "page");
   expect(screen.getByText("Site Admin")).toBeVisible();
   await userEvent.click(screen.getByRole("button", { name: "Logout" }));

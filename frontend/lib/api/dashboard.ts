@@ -69,6 +69,7 @@ export type ReviewItem = {
   userProfileImage?: string;
   rating: number;
   comment: string;
+  status?: "published" | "hidden";
   createdAt: string;
   updatedAt: string;
 };

@@ -146,4 +146,124 @@ describe("restaurant review API", () => {
       .send({ reservationId: "507f1f77bcf86cd799439011", rating: 5, comment: "Should not be accepted" });
     expect(response.status).toBe(401);
   });
+
+  test("lets admins list, hide, republish, and delete the same user-submitted review", async () => {
+    const admin = await createTestUser({ role: "admin", email: "review-admin@example.com" });
+    const user = await createTestUser({ fullName: "Admin Visible User", email: "admin-visible-user@example.com" });
+    const restaurant = await createTestRestaurant({ name: "Admin Review Restaurant", cuisine: "Thai" });
+    const reservation = await createReservation(user, restaurant);
+    const created = await request(app)
+      .post(`/api/v1/restaurants/${restaurant._id}/reviews`)
+      .set("Authorization", `Bearer ${tokenFor(user)}`)
+      .send({ reservationId: reservation._id.toString(), rating: 1, comment: "This review needs moderation." });
+    const reviewId = created.body.review._id;
+
+    const listed = await request(app)
+      .get("/api/v1/admin/reviews?search=moderation&rating=1&status=published&sort=newest&page=1&limit=10")
+      .set("Authorization", `Bearer ${tokenFor(admin)}`);
+    expect(listed.status).toBe(200);
+    expect(listed.body.meta).toMatchObject({ page: 1, total: 1, totalPages: 1 });
+    expect(listed.body.data[0]).toMatchObject({
+      customer: { name: "Admin Visible User", email: "admin-visible-user@example.com" },
+      restaurant: { name: "Admin Review Restaurant", cuisine: "Thai" },
+      rating: 1,
+      comment: "This review needs moderation.",
+      status: "published",
+    });
+    expect(listed.body.data[0].reservation.date).toBe(reservation.date);
+
+    const hidden = await request(app)
+      .patch(`/api/v1/admin/reviews/${reviewId}/status`)
+      .set("Authorization", `Bearer ${tokenFor(admin)}`)
+      .send({ status: "hidden" });
+    expect(hidden.status).toBe(200);
+    expect(hidden.body.data.status).toBe("hidden");
+    expect((await Review.findById(reviewId)).status).toBe("hidden");
+
+    const publicWhileHidden = await request(app)
+      .get(`/api/v1/restaurants/${restaurant._id}/reviews`)
+      .set("Authorization", `Bearer ${tokenFor(user)}`);
+    expect(publicWhileHidden.body.reviews).toEqual([]);
+    const hiddenRestaurant = await request(app).get(`/api/v1/restaurants/${restaurant._id}`);
+    expect(hiddenRestaurant.body.data).toMatchObject({ rating: 0, reviewCount: 0 });
+
+    const republished = await request(app)
+      .patch(`/api/v1/admin/reviews/${reviewId}/status`)
+      .set("Authorization", `Bearer ${tokenFor(admin)}`)
+      .send({ status: "published" });
+    expect(republished.body.data.status).toBe("published");
+    const publicAfterPublish = await request(app)
+      .get(`/api/v1/restaurants/${restaurant._id}/reviews`)
+      .set("Authorization", `Bearer ${tokenFor(user)}`);
+    expect(publicAfterPublish.body.reviews).toHaveLength(1);
+
+    const removed = await request(app)
+      .delete(`/api/v1/admin/reviews/${reviewId}`)
+      .set("Authorization", `Bearer ${tokenFor(admin)}`);
+    expect(removed.status).toBe(200);
+    expect(await Review.findById(reviewId)).toBeNull();
+  });
+
+  test("protects admin review APIs and calculates analytics from MongoDB reviews", async () => {
+    const admin = await createTestUser({ role: "admin" });
+    const user = await createTestUser();
+    const restaurant = await createTestRestaurant({ name: "Analytics Review Restaurant" });
+    const firstReservation = await createReservation(user, restaurant);
+    const secondReservation = await createReservation(user, restaurant);
+    await Review.create([
+      { restaurantId: restaurant._id, userId: user._id, reservationId: firstReservation._id, userName: user.fullName, rating: 5, comment: "Five star review.", status: "published" },
+      { restaurantId: restaurant._id, userId: user._id, reservationId: secondReservation._id, userName: user.fullName, rating: 1, comment: "One star review.", status: "hidden" },
+    ]);
+
+    const deniedRoutes = [
+      request(app).get("/api/v1/admin/reviews").set("Authorization", `Bearer ${tokenFor(user)}`),
+      request(app).get("/api/v1/admin/reviews/analytics?range=7d").set("Authorization", `Bearer ${tokenFor(user)}`),
+    ];
+    const denied = await Promise.all(deniedRoutes);
+    expect(denied.every((response) => response.status === 403)).toBe(true);
+
+    const analytics = await request(app)
+      .get("/api/v1/admin/reviews/analytics?range=7d")
+      .set("Authorization", `Bearer ${tokenFor(admin)}`);
+    expect(analytics.status).toBe(200);
+    expect(analytics.body.summary).toEqual({
+      totalReviews: 2,
+      averageRating: 3,
+      reviewsThisWeek: 2,
+      oneStarReviews: 1,
+    });
+    expect(analytics.body.reviewsInRange).toBe(2);
+    expect(analytics.body.ratingDistribution).toEqual([
+      { rating: 1, count: 1 },
+      { rating: 2, count: 0 },
+      { rating: 3, count: 0 },
+      { rating: 4, count: 0 },
+      { rating: 5, count: 1 },
+    ]);
+    expect(analytics.body.topReviewedRestaurants[0]).toMatchObject({
+      name: "Analytics Review Restaurant",
+      reviewCount: 2,
+    });
+    expect(analytics.body.recentReviews).toHaveLength(2);
+
+    const firstPage = await request(app)
+      .get("/api/v1/admin/reviews?page=1&limit=1&sort=highest")
+      .set("Authorization", `Bearer ${tokenFor(admin)}`);
+    expect(firstPage.status).toBe(200);
+    expect(firstPage.body.data).toHaveLength(1);
+    expect(firstPage.body.data[0].rating).toBe(5);
+    expect(firstPage.body.meta).toMatchObject({
+      page: 1,
+      limit: 1,
+      total: 2,
+      totalPages: 2,
+    });
+
+    const secondPage = await request(app)
+      .get("/api/v1/admin/reviews?page=2&limit=1&sort=highest")
+      .set("Authorization", `Bearer ${tokenFor(admin)}`);
+    expect(secondPage.status).toBe(200);
+    expect(secondPage.body.data).toHaveLength(1);
+    expect(secondPage.body.data[0].rating).toBe(1);
+  });
 });
