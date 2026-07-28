@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import ThemeToggle from "@/app/_components/ThemeToggle";
 
 type LandingIconName = "serving" | "star" | "calendar" | "tag";
 
@@ -67,6 +68,7 @@ export default function Home() {
           id="home-navigation-actions"
           className={`home-nav-actions ${mobileMenuOpen ? "is-open" : ""}`}
         >
+          <ThemeToggle className="home-theme-toggle" />
           <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Login</Link>
           <Link className="home-nav-button" href="/signup" onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
         </div>

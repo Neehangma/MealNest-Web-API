@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useLogout } from "@/app/_components/LogoutProvider";
+import ThemeToggle from "@/app/_components/ThemeToggle";
 import Icon from "./Icon";
 
 type HeaderUser = {
@@ -79,6 +80,8 @@ export default function DashboardHeader({
           <Icon name="search" size={18} />
           <input type="search" value={searchQuery} onChange={(event) => onSearchChange?.(event.target.value)} placeholder="Search restaurants" aria-label="Search restaurants" />
         </div>
+
+        <ThemeToggle className="dash-theme-toggle" />
 
         <div className="dash-profile" ref={menuRef}>
           <button
