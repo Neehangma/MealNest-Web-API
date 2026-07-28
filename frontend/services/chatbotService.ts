@@ -1,5 +1,10 @@
 import type { ChatbotResponse } from "@/types/chatbot";
 
+type ChatbotApiResponse = Partial<ChatbotResponse> & {
+  data?: ChatbotResponse;
+  message?: string;
+};
+
 export async function sendChatbotMessage(message: string): Promise<string> {
   const response = await fetch("/api/chatbot", {
     method: "POST",
@@ -7,12 +12,13 @@ export async function sendChatbotMessage(message: string): Promise<string> {
     body: JSON.stringify({ message }),
   });
 
-  const body = await response.json().catch(() => null) as (ChatbotResponse & { message?: string }) | null;
+  const body = await response.json().catch(() => null) as ChatbotApiResponse | null;
   if (!response.ok) {
     throw new Error(body?.message || "Unable to contact the MealNest Assistant.");
   }
-  if (!body?.reply) {
+  const reply = body?.reply || body?.data?.reply;
+  if (!reply?.trim()) {
     throw new Error("The MealNest Assistant returned an empty response.");
   }
-  return body.reply;
+  return reply.trim();
 }
