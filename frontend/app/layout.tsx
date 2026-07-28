@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import UserDashboardShell from "./_components/UserDashboardShell";
 import LogoutProvider from "./_components/LogoutProvider";
@@ -14,6 +15,19 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+const themeInitializationScript = `
+  try {
+    var savedTheme = localStorage.getItem("theme") || "system";
+    var resolvedTheme = savedTheme === "system"
+      ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+      : savedTheme;
+    var root = document.documentElement;
+    root.classList.remove("light", "dark");
+    root.classList.add(resolvedTheme);
+    root.style.colorScheme = resolvedTheme;
+  } catch (_) {}
+`;
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -31,7 +45,15 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col transition-colors duration-300 dark:bg-gray-950 dark:text-white">
+      <head>
+        <Script id="mealnest-theme-initializer" strategy="beforeInteractive">
+          {themeInitializationScript}
+        </Script>
+      </head>
+      <body
+        suppressHydrationWarning
+        className="min-h-full flex flex-col transition-colors duration-300 dark:bg-gray-950 dark:text-white"
+      >
         <ThemeProvider>
           <LogoutProvider>
             <UserDashboardShell>{children}</UserDashboardShell>

@@ -13,6 +13,10 @@ export default function ThemeProvider({
       defaultTheme="system"
       enableSystem
       disableTransitionOnChange
+      scriptProps={{
+        type: "application/json",
+        "data-next-themes-script": "inert",
+      }}
     >
       {children}
     </NextThemesProvider>
