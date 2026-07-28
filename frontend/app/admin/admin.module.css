@@ -2736,7 +2736,8 @@
 
 :global(.dark) .sidebar,
 :global(.dark) .sharedAdminSidebar,
-:global(.dark) .sharedAdminHeader {
+:global(.dark) .sharedAdminHeader,
+:global(.dark) .topbar {
   color: #fff;
   border-color: #374151;
   background: rgba(17, 24, 39, 0.96);
@@ -2865,6 +2866,8 @@
 
 :global(.dark) .adminProfileFields strong,
 :global(.dark) .profileSuccessModal > div:nth-of-type(2),
+:global(.dark) .adminReviewSummaryStats div,
+:global(.dark) .adminRecentReviewList article,
 :global(.dark) .restaurantActivityGrid div,
 :global(.dark) .restaurantMenuCategories > section,
 :global(.dark) .restaurantMenuItem,
@@ -2974,7 +2977,14 @@
 :global(.dark) .ghostButton,
 :global(.dark) .tableAction,
 :global(.dark) .menuButton,
-:global(.dark) .iconButton {
+:global(.dark) .iconButton,
+:global(.dark) .adminMobileMenu,
+:global(.dark) .adminReviewActions button,
+:global(.dark) .adminReviewPagination button,
+:global(.dark) .viewBookingButton,
+:global(.dark) .compactViewBookingsButton,
+:global(.dark) .compactBookingAction,
+:global(.dark) .userDetailsCloseIcon {
   color: #e5e7eb;
   border-color: #4b5563;
   background: #1f2937;
@@ -2985,7 +2995,14 @@
 :global(.dark) .ghostButton:hover,
 :global(.dark) .tableAction:hover,
 :global(.dark) .menuButton:hover,
-:global(.dark) .iconButton:hover {
+:global(.dark) .iconButton:hover,
+:global(.dark) .adminMobileMenu:hover,
+:global(.dark) .adminReviewActions button:hover,
+:global(.dark) .adminReviewPagination button:hover,
+:global(.dark) .viewBookingButton:hover,
+:global(.dark) .compactViewBookingsButton:hover,
+:global(.dark) .compactBookingAction:hover,
+:global(.dark) .userDetailsCloseIcon:hover {
   color: #fb923c;
   background: #374151;
 }

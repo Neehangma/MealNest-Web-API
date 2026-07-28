@@ -8202,6 +8202,19 @@ html.dark {
   --theme-border-strong: #4b5563;
 }
 
+.dark .dash-shell,
+.dark .user-dashboard-shell {
+  --dash-bg: #030712;
+  --dash-surface: #111827;
+  --dash-surface-soft: #1f2937;
+  --dash-border: #374151;
+  --dash-ink: #ffffff;
+  --dash-muted: #9ca3af;
+  --dash-brand-soft: #422006;
+  --dash-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+  --dash-shadow-sm: 0 8px 22px rgba(0, 0, 0, 0.24);
+}
+
 .theme-toggle {
   display: inline-grid;
   width: 42px;
@@ -8379,6 +8392,20 @@ html.dark {
   color: var(--theme-text);
 }
 
+.dark .dash-profile-trigger,
+.dark .dash-today,
+.dark .dash-btn-outline {
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+  background: var(--theme-surface);
+}
+
+.dark .dash-profile-trigger:hover,
+.dark .dash-btn-outline:hover {
+  color: #fb923c;
+  background: var(--theme-surface-raised);
+}
+
 .dark .dash-header-search,
 .dark .dash-profile-menu,
 .dark .dash-sidebar,
@@ -8449,6 +8476,42 @@ html.dark {
   border-color: var(--theme-border);
   background: var(--theme-surface);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.dark .dashboard-restaurants-section {
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+  background: var(--theme-surface);
+}
+
+.dark .dashboard-restaurants-header h2,
+.dark .dashboard-cuisine-filter h3,
+.dark .dashboard-restaurants-results-title,
+.dark .dashboard-cuisine-chip {
+  color: var(--theme-text);
+}
+
+.dark .dashboard-restaurants-header p {
+  color: var(--theme-text-secondary);
+}
+
+.dark .dashboard-cuisine-chip.is-active {
+  color: #fdba74;
+  border-bottom-color: #f97316;
+  background: #422006;
+}
+
+.dark .dash-favorite-heart,
+.dark .remove-favorite {
+  color: var(--theme-text-secondary);
+  border-color: var(--theme-border);
+  background: rgba(31, 41, 55, 0.94);
+}
+
+.dark .dash-favorite-heart:hover,
+.dark .remove-favorite:hover {
+  color: #fb923c;
+  background: #374151;
 }
 
 .dark :where(
@@ -8595,6 +8658,120 @@ html.dark {
   .reservation-review-card
 ) {
   border-color: var(--theme-border);
+}
+
+.dark :where(
+  .profile-details div,
+  .notification-setting-item,
+  .user-dashboard-profile > div,
+  .user-dashboard-search,
+  .customer-nav,
+  .info-grid > div,
+  .restaurant-menu-unavailable,
+  .special-requests,
+  .payment-methods-content,
+  .change-password-content,
+  .reservation-summary,
+  .error-details,
+  .summary-item,
+  .error-item,
+  .troubleshooting,
+  .payment-total,
+  .booking-details-list li,
+  .payment-method-choice,
+  .payment-methods-empty
+) {
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+  background: var(--theme-surface-raised);
+}
+
+.dark .customer-dashboard {
+  color: var(--theme-text);
+  background: var(--theme-page);
+}
+
+.dark :where(
+  .reset-password-link,
+  .profile-modal-button.secondary,
+  .profile-back,
+  .profile-photo-wrap button,
+  .favorite-image button,
+  .favorite-button,
+  .payment-method-action-button,
+  .back-to-dashboard
+) {
+  color: var(--theme-text);
+  border-color: var(--theme-border-strong);
+  background: var(--theme-surface-raised);
+}
+
+.dark :where(
+  .reset-password-link,
+  .profile-modal-button.secondary,
+  .profile-back,
+  .profile-photo-wrap button,
+  .favorite-image button,
+  .favorite-button,
+  .payment-method-action-button,
+  .back-to-dashboard
+):hover {
+  color: #fb923c;
+  background: #374151;
+}
+
+.dark :where(
+  .favorite-list span,
+  .feature-tag,
+  .restaurant-menu-category-label,
+  .payment-method-icon,
+  .bank-icon,
+  .payment-method-radio
+) {
+  color: var(--theme-text-secondary);
+  border-color: var(--theme-border);
+  background: var(--theme-surface-raised);
+}
+
+.dark :where(
+  .info-grid span,
+  .restaurant-menu-unavailable,
+  .reservation-summary,
+  .error-details,
+  .payment-methods-content,
+  .change-password-content
+) {
+  color: var(--theme-text-secondary);
+}
+
+.dark .dash-open-badge {
+  color: #bbf7d0;
+  background: rgba(20, 83, 45, 0.92);
+}
+
+.dark :where(
+  .profile-outline-button,
+  .action-button:not(.primary),
+  .cancel-button,
+  .payment-method-confirmation-no,
+  .view-reservations,
+  .restaurant-reviews-error button
+) {
+  color: var(--theme-text);
+  border-color: var(--theme-border-strong);
+  background: var(--theme-surface-raised);
+}
+
+.dark :where(
+  .profile-outline-button,
+  .action-button:not(.primary),
+  .cancel-button,
+  .payment-method-confirmation-no,
+  .view-reservations,
+  .restaurant-reviews-error button
+):hover {
+  color: #fb923c;
+  background: #374151;
 }
 
 .dark :where(
