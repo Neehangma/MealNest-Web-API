@@ -1,3 +1,7 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Reset default browser styling */
 
 * {
@@ -12,6 +16,7 @@ body {
   background: #f7f2ed;
   font-family: Arial, sans-serif;
   color: #2b211b;
+  transition: background-color 300ms ease, color 300ms ease;
 }
 
 /* Link styling */
@@ -8164,5 +8169,569 @@ svg {
 
   .review-stars button {
     width: 32px;
+  }
+}
+
+/* ==========================
+   LIGHT / DARK THEME
+=========================== */
+
+:root {
+  color-scheme: light;
+  --theme-page: #f7f2ed;
+  --theme-page-soft: #fff9f4;
+  --theme-surface: #fffaf6;
+  --theme-surface-raised: #fffdfb;
+  --theme-text: #2b211b;
+  --theme-text-secondary: #61728a;
+  --theme-text-muted: #8a7567;
+  --theme-border: #ead5c8;
+  --theme-border-strong: #dfbda9;
+}
+
+html.dark {
+  color-scheme: dark;
+  --theme-page: #030712;
+  --theme-page-soft: #111827;
+  --theme-surface: #111827;
+  --theme-surface-raised: #1f2937;
+  --theme-text: #ffffff;
+  --theme-text-secondary: #d1d5db;
+  --theme-text-muted: #9ca3af;
+  --theme-border: #374151;
+  --theme-border-strong: #4b5563;
+}
+
+.theme-toggle {
+  display: inline-grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #e6cdbd;
+  border-radius: 50%;
+  color: #8a4300;
+  background: #fffaf6;
+  box-shadow: 0 5px 16px rgba(78, 43, 23, 0.08);
+  cursor: pointer;
+  transition: color 300ms ease, background-color 300ms ease, border-color 300ms ease, transform 180ms ease;
+}
+
+.theme-toggle:hover {
+  color: #c84d08;
+  background: #fff0e7;
+  transform: translateY(-1px);
+}
+
+.theme-toggle:focus-visible {
+  outline: 3px solid rgba(232, 112, 37, 0.35);
+  outline-offset: 2px;
+}
+
+.theme-toggle-icon,
+.theme-toggle-icon svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.theme-toggle-icon svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.theme-toggle-icon svg path:first-child:last-child {
+  fill: currentColor;
+  stroke: none;
+}
+
+.dark .theme-toggle {
+  color: #fbbf24;
+  border-color: #4b5563;
+  background: #1f2937;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.3);
+}
+
+.dark .theme-toggle:hover {
+  color: #fcd34d;
+  background: #374151;
+}
+
+.dark body,
+.dark .home-page,
+.dark .user-dashboard-shell,
+.dark .user-dashboard-content,
+.dark .dash-shell,
+.dark .dash-body,
+.dark .dash-main,
+.dark .restaurant-section,
+.dark .restaurant-detail,
+.dark .reservations-page,
+.dark .favorites-page,
+.dark .profile-page,
+.dark .profile-settings-page,
+.dark .payment-methods-page,
+.dark .change-password-page,
+.dark .payment-checkout-page,
+.dark .booking-confirmation-page,
+.dark .payment-success,
+.dark .payment-failure {
+  color: var(--theme-text);
+  background-color: var(--theme-page);
+}
+
+.dark .login-wrapper,
+.dark .register-wrapper {
+  background: linear-gradient(135deg, #030712, #111827);
+}
+
+.dark .login-card,
+.dark .register-card,
+.dark .auth-form-section,
+.dark .register-right,
+.dark .auth-form-card {
+  color: var(--theme-text);
+  background: var(--theme-surface);
+}
+
+.dark .auth-form-card h1,
+.dark .auth-form-card label,
+.dark .auth-form-card .label-row,
+.dark .bottom-text {
+  color: var(--theme-text);
+}
+
+.dark .auth-form-card > p,
+.dark .password-requirements,
+.dark .checkbox-row label {
+  color: var(--theme-text-secondary);
+}
+
+.dark .home-nav {
+  border-color: var(--theme-border);
+  background: rgba(3, 7, 18, 0.94);
+}
+
+.dark .home-nav-actions {
+  background-color: transparent;
+}
+
+.dark .home-nav-actions a:not(.home-nav-button),
+.dark .home-brand {
+  color: #f9e8da;
+}
+
+.dark .landing-discovery-section,
+.dark .landing-benefits,
+.dark .landing-cuisines {
+  color: var(--theme-text);
+  background: var(--theme-page);
+  border-color: var(--theme-border);
+}
+
+.dark .landing-section-heading h2,
+.dark .landing-benefit-card h3 {
+  color: var(--theme-text);
+}
+
+.dark .landing-section-heading p,
+.dark .landing-benefit-card p {
+  color: var(--theme-text-secondary);
+}
+
+.dark .landing-benefit-card {
+  border-color: var(--theme-border);
+  background: var(--theme-surface);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+.dark .landing-benefit-icon {
+  background: #292017;
+}
+
+.dark .home-footer,
+.dark .customer-footer {
+  border-color: #374151;
+  background: #070b12;
+}
+
+.dark .dash-header,
+.dark .detail-nav,
+.dark .reservations-nav,
+.dark .favorites-nav,
+.dark .payment-methods-nav,
+.dark .change-password-nav,
+.dark .payment-checkout-nav,
+.dark .booking-confirmation-nav {
+  border-color: var(--theme-border);
+  background: rgba(17, 24, 39, 0.96);
+}
+
+.dark .dash-header-brand,
+.dark .dash-header-nav a,
+.dark .dash-profile-name,
+.dark .dash-profile-trigger {
+  color: var(--theme-text);
+}
+
+.dark .dash-header-search,
+.dark .dash-profile-menu,
+.dark .dash-sidebar,
+.dark .user-sidebar,
+.dark .user-dashboard-sidebar {
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+  background: var(--theme-surface);
+}
+
+.dark .dash-header-search input,
+.dark .dash-header-search input::placeholder,
+.dark .dash-profile-menu-head small {
+  color: var(--theme-text-muted);
+}
+
+.dark .dash-profile-menu-head,
+.dark .dash-profile-menu a,
+.dark .dash-sidebar-link,
+.dark .user-sidebar-link {
+  color: var(--theme-text-secondary);
+  border-color: var(--theme-border);
+}
+
+.dark .dash-profile-menu a:hover,
+.dark .dash-sidebar-link:hover,
+.dark .user-sidebar-link:hover {
+  color: #fb923c;
+  background: #1f2937;
+}
+
+.dark :where(
+  .dash-panel,
+  .dash-stat-card,
+  .dash-reservation-card,
+  .dash-favorite-card,
+  .dash-recommend-card,
+  .dash-quick-card,
+  .dash-history-row,
+  .dash-empty-state,
+  .user-card,
+  .user-stats article,
+  .customer-profile-card,
+  .reservation-card,
+  .favorite-card,
+  .side-card,
+  .restaurant-card,
+  .restaurant-review-item,
+  .restaurant-menu-section,
+  .restaurant-menu-item,
+  .booking-card,
+  .user-booking-card,
+  .user-bookings-state,
+  .profile-card,
+  .profile-panel,
+  .payment-methods-form-card,
+  .payment-method-card,
+  .change-password-card,
+  .payment-methods-selection,
+  .payment-details-card,
+  .payment-option-card,
+  .success-card,
+  .failure-card,
+  .booking-confirmation-container,
+  .booking-details-card
+) {
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+  background: var(--theme-surface);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.dark :where(
+  .dash-welcome h1,
+  .dash-panel-head h2,
+  .dash-stat-value,
+  .dash-reservation-heading h3,
+  .dash-favorite-title h3,
+  .dash-quick-text strong,
+  .dash-history-top h4,
+  .section-header h2,
+  .restaurant-header h3,
+  .info-section h2,
+  .restaurant-menu-header h2,
+  .restaurant-menu-item-heading h3,
+  .booking-card h3,
+  .reservations-header h1,
+  .reservation-header h3,
+  .favorites-header h1,
+  .favorite-header h3,
+  .profile-card h1,
+  .profile-settings-heading h1,
+  .profile-panel h2,
+  .profile-overview-card h3,
+  .payment-methods-heading h1,
+  .payment-methods-header h2,
+  .payment-methods-form-card h3,
+  .payment-method-header h3,
+  .change-password-heading h1,
+  .payment-checkout-heading h1,
+  .payment-methods-selection h2,
+  .payment-details-card h2,
+  .payment-option-copy h3,
+  .success-card h1,
+  .failure-card h1,
+  .booking-confirmation-container h1,
+  .confirmation-content h2,
+  .booking-details-card h3,
+  .user-booking-header h2,
+  .reservation-review-card h3
+) {
+  color: var(--theme-text);
+}
+
+.dark :where(
+  .dash-welcome p,
+  .dash-stat-label,
+  .dash-stat-desc,
+  .dash-reservation-cuisine,
+  .dash-favorite-cuisine,
+  .dash-favorite-location,
+  .dash-history-meta,
+  .dash-empty-state p,
+  .section-header p,
+  .restaurant-content .cuisine,
+  .restaurant-content .location,
+  .info-section p,
+  .restaurant-menu-header p,
+  .restaurant-menu-item-copy > p,
+  .restaurant-review-item p,
+  .restaurant-review-item time,
+  .reservations-header p,
+  .reservation-details span,
+  .favorites-header p,
+  .favorite-content .cuisine,
+  .favorite-content .location,
+  .profile-card > p,
+  .profile-settings-heading p,
+  .profile-overview-card > span,
+  .payment-methods-heading p,
+  .payment-method-info p,
+  .payment-methods-empty p,
+  .change-password-heading p,
+  .payment-checkout-heading p,
+  .payment-option-copy p,
+  .success-card > p,
+  .failure-card > p,
+  .confirmation-message p,
+  .confirmation-closing p,
+  .user-booking-header p,
+  .review-submitted
+) {
+  color: var(--theme-text-secondary);
+}
+
+.dark :where(
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea
+) {
+  color: var(--theme-text);
+  border-color: var(--theme-border-strong);
+  background-color: var(--theme-surface-raised);
+}
+
+.dark :where(
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea
+)::placeholder {
+  color: var(--theme-text-muted);
+}
+
+.dark :where(
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea
+):focus {
+  border-color: #f97316;
+}
+
+.dark .cuisine-filter,
+.dark .dashboard-cuisine-chip,
+.dark .menu-filter-button,
+.dark .filter-tab,
+.dark .payment-method-option {
+  color: var(--theme-text-secondary);
+  border-color: var(--theme-border);
+  background: var(--theme-surface);
+}
+
+.dark .cuisine-filter:hover,
+.dark .dashboard-cuisine-chip:hover,
+.dark .menu-filter-button:hover,
+.dark .filter-tab:hover,
+.dark .payment-method-option:hover {
+  color: #fb923c;
+  background: var(--theme-surface-raised);
+}
+
+.dark :where(
+  .profile-details div,
+  .profile-overview-stats,
+  .profile-actions-card a,
+  .profile-actions-card .profile-logout-link,
+  .reservation-details,
+  .special-requests,
+  .favorite-footer,
+  .payment-total,
+  .summary-item,
+  .error-item,
+  .booking-details-list li,
+  .booking-details-list div,
+  .user-booking-actions,
+  .reservation-review-card
+) {
+  border-color: var(--theme-border);
+}
+
+.dark :where(
+  .profile-details strong,
+  .profile-overview-stats strong,
+  .profile-actions-card a,
+  .detail-item strong,
+  .favorite-price,
+  .total-row,
+  .summary-item strong,
+  .error-item strong,
+  .detail-value,
+  .user-booking-grid strong,
+  .booking-details-list dd,
+  .review-submitted-heading h3,
+  .restaurant-review-item strong
+) {
+  color: var(--theme-text);
+}
+
+.dark .profile-actions-card a:hover,
+.dark .profile-actions-card .profile-logout-link:hover,
+.dark .payment-method-action-button:hover {
+  background: var(--theme-surface-raised);
+}
+
+.dark :where(
+  .profile-modal,
+  .booking-details-modal,
+  .booking-cancel-modal,
+  .booking-modify-modal,
+  .review-confirmation-modal,
+  .review-confirmation-summary,
+  .payment-method-confirmation-modal,
+  .payment-success-modal-content
+) {
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+  background: var(--theme-surface);
+}
+
+.dark :where(
+  .profile-modal h2,
+  .booking-cancel-modal h2,
+  .booking-modify-modal h2,
+  .review-confirmation-modal h2,
+  .payment-method-confirmation-modal h2,
+  .payment-success-modal-content h2
+) {
+  color: var(--theme-text);
+}
+
+.dark :where(
+  .profile-modal p,
+  .booking-cancel-modal p,
+  .booking-modify-modal > p,
+  .review-confirmation-modal > p,
+  .review-confirmation-summary p,
+  .payment-method-confirmation-modal p,
+  .payment-success-modal-content p
+) {
+  color: var(--theme-text-secondary);
+}
+
+.dark .booking-modal-close {
+  color: var(--theme-text);
+  background: rgba(31, 41, 55, 0.95);
+}
+
+.dark .review-note {
+  color: #fde68a;
+  border-color: #854d0e;
+  background: #422006;
+}
+
+.dark .restaurant-reviews-error,
+.dark .form-error,
+.dark .profile-action-message.error {
+  color: #fecaca;
+  border-color: #7f1d1d;
+  background: #450a0a;
+}
+
+.dark .form-success,
+.dark .profile-action-message.success {
+  color: #bbf7d0;
+  border-color: #166534;
+  background: #052e16;
+}
+
+.dark table {
+  color: var(--theme-text);
+  background: var(--theme-surface);
+}
+
+.dark table th,
+.dark table td {
+  color: inherit;
+  border-color: var(--theme-border);
+}
+
+.dark table th {
+  background: var(--theme-surface-raised);
+}
+
+.dark table tbody tr:hover {
+  background: #1f2937;
+}
+
+.dark .dash-skeleton,
+.dark .dash-skeleton::after {
+  background-color: #1f2937;
+}
+
+.dark .dash-skeleton::after {
+  background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+}
+
+@media (max-width: 1023px) {
+  .home-theme-toggle {
+    align-self: center;
+  }
+
+  .dark .home-nav-actions {
+    border-color: var(--theme-border);
+    background: rgba(17, 24, 39, 0.98);
+  }
+}
+
+@media (max-width: 639px) {
+  .theme-toggle {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+  }
+
+  .dash-theme-toggle {
+    order: 2;
   }
 }

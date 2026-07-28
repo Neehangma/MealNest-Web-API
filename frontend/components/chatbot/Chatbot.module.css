@@ -148,6 +148,49 @@
   }
 }
 
+:global(.dark) .window {
+  color: #fff;
+  border-color: #374151;
+  background: #111827;
+  box-shadow: 0 24px 65px rgba(0, 0, 0, .48);
+}
+
+:global(.dark) .messages,
+:global(.dark) .inputRow {
+  border-color: #374151;
+  background: #111827;
+}
+
+:global(.dark) .assistantMessage {
+  color: #e5e7eb;
+  border-color: #374151;
+  background: #1f2937;
+}
+
+:global(.dark) .userMessage {
+  color: #fff;
+  border-color: #c2410c;
+  background: #c2410c;
+}
+
+:global(.dark) .inputRow input {
+  color: #fff;
+  border-color: #4b5563;
+  background: #1f2937;
+}
+
+:global(.dark) .inputRow input::placeholder {
+  color: #9ca3af;
+}
+
+:global(.dark) .inputRow input:focus {
+  border-color: #f97316;
+}
+
+:global(.dark) .typing {
+  color: #d1d5db;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .window, .launcher { transition: none; }
   .typing i { animation: none; }

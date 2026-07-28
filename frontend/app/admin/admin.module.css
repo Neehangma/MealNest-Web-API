@@ -942,6 +942,7 @@
 .sharedAdminLogout:hover { background: #e9782f; }
 .sharedAdminMain { min-height: 100vh; margin-left: 260px; }
 .sharedAdminHeader { height: 78px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 32px; border-bottom: 1px solid #ead8ca; background: rgba(255, 253, 249, .94); }
+.sharedAdminHeaderActions { display: flex; align-items: center; gap: 14px; }
 .sharedAdminHeader > div:first-child { display: flex; height: 100%; flex-direction: column; justify-content: center; gap: 3px; padding: 0; }
 .sharedAdminHeader > div:first-child span { margin: 0; padding: 0; color: #9b7764; font-size: 11px; font-weight: 800; line-height: 1; text-transform: uppercase; letter-spacing: .08em; }
 .sharedAdminHeader > div:first-child strong { margin: 0; padding: 0; color: #283950; font: 700 17px/1 Georgia, serif; }
@@ -2716,5 +2717,314 @@
   .donutCanvas {
     max-width: 100%;
     overflow: hidden;
+  }
+}
+
+/* ==========================
+   ADMIN LIGHT / DARK THEME
+=========================== */
+
+:global(.dark) .adminShell,
+:global(.dark) .adminRoot,
+:global(.dark) .sharedAdminLayout,
+:global(.dark) .sharedAdminMain,
+:global(.dark) .sharedPage,
+:global(.dark) .main {
+  color: #fff;
+  background: #030712;
+}
+
+:global(.dark) .sidebar,
+:global(.dark) .sharedAdminSidebar,
+:global(.dark) .sharedAdminHeader {
+  color: #fff;
+  border-color: #374151;
+  background: rgba(17, 24, 39, 0.96);
+}
+
+:global(.dark) .brandSub,
+:global(.dark) .sharedAdminBrand span,
+:global(.dark) .sharedAdminHeader > div:first-child span,
+:global(.dark) .sharedAdminIdentity small,
+:global(.dark) .profileRole,
+:global(.dark) .subtitle,
+:global(.dark) .analyticsHeading p,
+:global(.dark) .analyticsCard > header p,
+:global(.dark) .tableSubtext,
+:global(.dark) .activityText,
+:global(.dark) .activityTime,
+:global(.dark) .profileLoading {
+  color: #9ca3af;
+}
+
+:global(.dark) .navItem,
+:global(.dark) .sharedAdminNavItem,
+:global(.dark) .sharedAdminHeader > div:first-child strong,
+:global(.dark) .sharedAdminIdentity strong,
+:global(.dark) .profileName {
+  color: #e5e7eb;
+}
+
+:global(.dark) .navItem:hover,
+:global(.dark) .navActive,
+:global(.dark) .sharedAdminNavItem:hover,
+:global(.dark) .sharedAdminNavActive {
+  color: #fb923c;
+  background: #1f2937;
+}
+
+:global(.dark) .sharedAdminBrand,
+:global(.dark) .sharedAdminFooter,
+:global(.dark) .sidebarFooter {
+  border-color: #374151;
+}
+
+:global(.dark) :is(
+  .card,
+  .statCard,
+  .panel,
+  .analyticsCard,
+  .adminReviewSummaryCard,
+  .adminRecentReviewsCard,
+  .adminProfileCard,
+  .modal,
+  .confirmModal,
+  .adminReviewModal,
+  .userDetailsModal,
+  .restaurantBookingsModal,
+  .bookingRecordModal,
+  .restaurantDetailsModal,
+  .restaurantDetailsSections > section,
+  .userDetailsSections > section,
+  .userIdentityCard,
+  .userReviewCard,
+  .profileSuccessModal
+) {
+  color: #fff;
+  border-color: #374151;
+  background: #111827;
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.28);
+}
+
+:global(.dark) :is(
+  .title,
+  .panelTitle,
+  .analyticsHeading h2,
+  .analyticsCard > header h3,
+  .topRestaurants div strong,
+  .adminProfileCard > header h2,
+  .adminProfileFields strong,
+  .adminProfileCard > footer strong,
+  .profileSuccessModal h2,
+  .profileSuccessModal strong,
+  .activityTitle,
+  .confirmModal h2,
+  .modalHeader h2,
+  .restaurantBookingsIdentity h2,
+  .restaurantDetailsHeader h2,
+  .restaurantDetailsHero h3,
+  .restaurantMenuCategories h4,
+  .userDetailsHeader h2,
+  .userIdentityCard h3,
+  .userDetailsSectionTitle,
+  .userDetailsGrid dd,
+  .userReviewHeading strong
+) {
+  color: #fff;
+}
+
+:global(.dark) :is(
+  .analyticsLegend,
+  .topRestaurants div span,
+  .adminReviewExcerpt,
+  .adminReviewDetails dt,
+  .adminRecentReviewList span,
+  .adminRecentReviewList time,
+  .adminProfileFields span,
+  .adminProfileCard > footer span,
+  .profileSuccessModal p,
+  .profileSuccessModal span,
+  .confirmModal p,
+  .restaurantBookingsIdentity p,
+  .restaurantDetailsHeader p,
+  .restaurantDetailsHero p,
+  .restaurantDetailsDescription,
+  .restaurantMenuItem p,
+  .restaurantMenuItem small,
+  .userDetailsHeader p,
+  .userIdentityCard p,
+  .userDetailsGrid dt,
+  .userActivityGrid span,
+  .favoriteNames,
+  .userDetailsEmpty,
+  .userReviewCard p,
+  .userReviewCard time
+) {
+  color: #d1d5db;
+}
+
+:global(.dark) .adminProfileFields strong,
+:global(.dark) .profileSuccessModal > div:nth-of-type(2),
+:global(.dark) .restaurantActivityGrid div,
+:global(.dark) .restaurantMenuCategories > section,
+:global(.dark) .restaurantMenuItem,
+:global(.dark) .userDetailsGrid div,
+:global(.dark) .userActivityGrid div {
+  border-color: #374151;
+  background: #1f2937;
+}
+
+:global(.dark) :is(
+  .search,
+  .searchInput,
+  .dateButton,
+  .analyticsRange select,
+  .adminReviewFilters select,
+  .pageSizeControl select,
+  .restaurantFilters select,
+  .groupedBookingFilters select,
+  .inputControl,
+  .selectControl,
+  .fileControl
+) {
+  color: #fff;
+  border-color: #4b5563;
+  background: #1f2937;
+}
+
+:global(.dark) :is(.searchInput, .inputControl)::placeholder {
+  color: #9ca3af;
+}
+
+:global(.dark) :is(
+  .usersTable,
+  .restaurantBookingsTable,
+  .restaurantDetailsTable,
+  .userDetailsTable
+) {
+  color: #fff;
+  background: #111827;
+}
+
+:global(.dark) :is(
+  .usersTable th,
+  .usersTable td,
+  .restaurantBookingsTable th,
+  .restaurantBookingsTable td,
+  .restaurantDetailsTable th,
+  .restaurantDetailsTable td,
+  .userDetailsTable th,
+  .userDetailsTable td
+) {
+  color: inherit;
+  border-color: #374151;
+}
+
+:global(.dark) :is(
+  .usersTable th,
+  .restaurantBookingsTable th,
+  .restaurantDetailsTable th,
+  .userDetailsTable th
+) {
+  background: #1f2937;
+}
+
+:global(.dark) :is(
+  .usersTable tbody tr,
+  .restaurantBookingsTable tbody tr,
+  .restaurantDetailsTable tbody tr,
+  .userDetailsTable tbody tr
+):hover {
+  background: #1f2937;
+}
+
+:global(.dark) .activityItem + .activityItem,
+:global(.dark) .topRestaurants li,
+:global(.dark) .adminRecentReviewList article,
+:global(.dark) .adminProfileCard > footer,
+:global(.dark) .adminBookingDetails div,
+:global(.dark) .restaurantDetailsTabs,
+:global(.dark) .userDetailsTabs,
+:global(.dark) .modalHeader,
+:global(.dark) .userDetailsHeader,
+:global(.dark) .userDetailsFooter {
+  border-color: #374151;
+}
+
+:global(.dark) .restaurantDetailsTabs,
+:global(.dark) .userDetailsTabs {
+  background: #1f2937;
+}
+
+:global(.dark) .restaurantDetailsTabs button,
+:global(.dark) .userDetailsTabs button {
+  color: #d1d5db;
+}
+
+:global(.dark) .restaurantDetailsTabs button:hover,
+:global(.dark) .userDetailsTabs button:hover,
+:global(.dark) .restaurantDetailsTabs button.restaurantDetailsTabActive,
+:global(.dark) .userDetailsTabs button.userDetailsTabActive {
+  color: #fb923c;
+  background: #111827;
+}
+
+:global(.dark) .pageButton,
+:global(.dark) .secondaryButton,
+:global(.dark) .ghostButton,
+:global(.dark) .tableAction,
+:global(.dark) .menuButton,
+:global(.dark) .iconButton {
+  color: #e5e7eb;
+  border-color: #4b5563;
+  background: #1f2937;
+}
+
+:global(.dark) .pageButton:hover,
+:global(.dark) .secondaryButton:hover,
+:global(.dark) .ghostButton:hover,
+:global(.dark) .tableAction:hover,
+:global(.dark) .menuButton:hover,
+:global(.dark) .iconButton:hover {
+  color: #fb923c;
+  background: #374151;
+}
+
+:global(.dark) .analyticsError,
+:global(.dark) .errorBanner {
+  color: #fecaca;
+  border-color: #7f1d1d;
+  background: #450a0a;
+}
+
+:global(.dark) .successBanner {
+  color: #bbf7d0;
+  border-color: #166534;
+  background: #052e16;
+}
+
+:global(.dark) .analyticsSkeleton {
+  background: #1f2937;
+}
+
+:global(.dark) .adminSidebarOverlay,
+:global(.dark) .modalBackdrop,
+:global(.dark) .userDetailsBackdrop,
+:global(.dark) .restaurantBookingsBackdrop,
+:global(.dark) .restaurantDetailsBackdrop {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+:global(.dark) :is(.recharts-cartesian-grid line) {
+  stroke: #374151;
+}
+
+:global(.dark) :is(.recharts-text) {
+  fill: #d1d5db;
+}
+
+@media (max-width: 639px) {
+  .sharedAdminHeaderActions {
+    gap: 8px;
   }
 }

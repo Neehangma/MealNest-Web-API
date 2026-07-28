@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLogout } from "@/app/_components/LogoutProvider";
+import ThemeToggle from "@/app/_components/ThemeToggle";
 import type { AuthUser } from "@/lib/api/auth";
 import { getRestaurantImage } from "@/lib/restaurant-image";
 import styles from "../admin.module.css";
@@ -54,6 +55,6 @@ export default function AdminShell({ children, initialAdmin }: { children: React
       <nav className={styles.sharedAdminNav} aria-label="Admin navigation">{links.map((link) => <Link key={link.href} href={link.href} className={`${styles.sharedAdminNavItem} ${active(link.href) ? styles.sharedAdminNavActive : ""}`} aria-current={active(link.href) ? "page" : undefined} onClick={() => setOpen(false)}><Icon name={link.icon}/><span>{link.label}</span></Link>)}</nav>
       <footer className={styles.sharedAdminFooter}><button type="button" className={styles.sharedAdminLogout} onClick={(event) => { setOpen(false); requestLogout(event.currentTarget); }}><Icon name="logout"/><span>Logout</span></button></footer>
     </aside>
-    <div className={styles.sharedAdminMain}><header className={styles.sharedAdminHeader}><div><span>Administration</span><strong>MealNest System Management</strong></div><Link href="/admin/settings" className={styles.sharedAdminIdentity} aria-label="Open admin settings">{admin.profilePicture ? <Image unoptimized src={getRestaurantImage(admin.profilePicture)} alt="" width={42} height={42}/> : <span>{(admin.fullName || admin.email || "A")[0].toUpperCase()}</span>}<div><strong>{admin.fullName || "Admin"}</strong><small>System Admin</small></div></Link></header>{children}</div>
+    <div className={styles.sharedAdminMain}><header className={styles.sharedAdminHeader}><div><span>Administration</span><strong>MealNest System Management</strong></div><div className={styles.sharedAdminHeaderActions}><ThemeToggle className="admin-theme-toggle" /><Link href="/admin/settings" className={styles.sharedAdminIdentity} aria-label="Open admin settings">{admin.profilePicture ? <Image unoptimized src={getRestaurantImage(admin.profilePicture)} alt="" width={42} height={42}/> : <span>{(admin.fullName || admin.email || "A")[0].toUpperCase()}</span>}<div><strong>{admin.fullName || "Admin"}</strong><small>System Admin</small></div></Link></div></header>{children}</div>
   </div>;
 }

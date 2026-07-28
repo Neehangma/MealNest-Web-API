@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import UserDashboardShell from "./_components/UserDashboardShell";
 import LogoutProvider from "./_components/LogoutProvider";
+import ThemeProvider from "./_components/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,12 +28,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <LogoutProvider>
-          <UserDashboardShell>{children}</UserDashboardShell>
-        </LogoutProvider>
+      <body className="min-h-full flex flex-col transition-colors duration-300 dark:bg-gray-950 dark:text-white">
+        <ThemeProvider>
+          <LogoutProvider>
+            <UserDashboardShell>{children}</UserDashboardShell>
+          </LogoutProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
