@@ -131,9 +131,12 @@ async function toggleFavorite(req, res) {
 async function createReservation(req, res) {
   const result = await userService.createReservation(req.user._id, req.body);
   return sendSuccess(res, 201, {
-    message: "Reservation created successfully",
+    message: result.emailSent === false
+      ? "Booking confirmed but email could not be sent."
+      : "Reservation created successfully",
     booking: result.booking,
     emailSent: result.emailSent,
+    emailRecipient: result.emailRecipient,
     ...(result.emailError ? { emailError: result.emailError } : {}),
   });
 }

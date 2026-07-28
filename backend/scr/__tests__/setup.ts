@@ -18,7 +18,7 @@ process.env.NODE_ENV = "test";
 process.env.MONGO_URI = uri;
 process.env.JWT_SECRET = "cw2-test-only-secret";
 delete process.env.EMAIL_USER;
-delete process.env.EMAIL_PASS;
+delete process.env.EMAIL_PASSWORD;
 
 beforeAll(async () => {
   if (mongoose.connection.readyState === 0) await mongoose.connect(uri);

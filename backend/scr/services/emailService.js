@@ -1,20 +1,21 @@
 const nodemailer = require("nodemailer");
 
-function envValue(name, fallback = "") {
-  return String(process.env[name] ?? fallback).trim();
+function envValue(name) {
+  return String(process.env[name] ?? "").trim();
 }
 
 const emailConfig = {
-  host: envValue("EMAIL_HOST", "smtp.gmail.com"),
-  port: Number(envValue("EMAIL_PORT", "465")),
-  secure: envValue("EMAIL_SECURE", "true").toLowerCase() === "true",
+  host: envValue("EMAIL_HOST"),
+  port: Number(envValue("EMAIL_PORT")),
+  secure: envValue("EMAIL_SECURE").toLowerCase() === "true",
   user: envValue("EMAIL_USER"),
-  pass: envValue("EMAIL_PASS"),
+  pass: envValue("EMAIL_PASSWORD"),
   from: envValue("EMAIL_FROM"),
+  adminEmail: envValue("ADMIN_EMAIL"),
 };
 const deliveryTimeoutMs = Math.max(
   1000,
-  Number(envValue("EMAIL_DELIVERY_TIMEOUT_MS", "8000")) || 8000,
+  Number(process.env.EMAIL_DELIVERY_TIMEOUT_MS) || 8000,
 );
 
 const transporter = nodemailer.createTransport({
@@ -32,6 +33,7 @@ if (process.env.NODE_ENV !== "test") {
     userConfigured: Boolean(emailConfig.user),
     passwordConfigured: Boolean(emailConfig.pass),
     fromConfigured: Boolean(emailConfig.from),
+    adminEmailConfigured: Boolean(emailConfig.adminEmail),
     host: emailConfig.host,
     port: emailConfig.port,
     secure: emailConfig.secure,
@@ -133,7 +135,16 @@ function detailRow(leftLabel, leftValue, rightLabel, rightValue, rightFallback) 
 }
 
 async function sendBookingConfirmationEmail({ recipientEmail, customerName, booking }) {
-  if (!emailConfig.user || !emailConfig.pass || !emailConfig.from) throw new Error("Booking email is not configured");
+  if (
+    !emailConfig.host ||
+    !emailConfig.port ||
+    !emailConfig.user ||
+    !emailConfig.pass ||
+    !emailConfig.from ||
+    !emailConfig.adminEmail
+  ) {
+    throw new Error("Booking email is not configured");
+  }
 
   const confirmed = booking || {};
   const displayName = valueOrFallback(customerName || confirmed.customerName, "Guest");
@@ -161,6 +172,7 @@ async function sendBookingConfirmationEmail({ recipientEmail, customerName, book
   return deliverEmail({
     from: emailConfig.from,
     to: String(recipientEmail || "").trim().toLowerCase(),
+    bcc: emailConfig.adminEmail.toLowerCase(),
     subject: `Booking Confirmed – ${restaurantName.replace(/[\r\n]/g, " ")} – ${reference.replace(/[\r\n]/g, " ")}`,
     html: `<!doctype html><html><body style="margin:0;padding:0;background:#eee6df;font-family:Arial,sans-serif;color:#2b1d17;">
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:#eee6df;"><tr><td align="center" style="padding:28px 12px;">

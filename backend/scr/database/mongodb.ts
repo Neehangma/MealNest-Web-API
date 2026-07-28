@@ -1,13 +1,6 @@
 const mongoose = require("mongoose");
 const { MONGO_URI } = require("../config/constant");
-const Review = require("../models/review.model");
-
-async function migrateReviewIndexes() {
-  await Review.init();
-  const indexes = await Review.collection.indexes();
-  const legacyIndex = indexes.find((index) => index.name === "restaurantId_1_userId_1" && index.unique);
-  if (legacyIndex) await Review.collection.dropIndex(legacyIndex.name);
-}
+const { migrateReviewIndexes } = require("./migrations/review-indexes");
 
 async function connectMongo() {
   if (!MONGO_URI) {
