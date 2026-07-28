@@ -2427,3 +2427,294 @@
     border-top: 0;
   }
 }
+
+/* Shared responsive hardening for the active admin shell and management pages. */
+@media (max-width: 1279px) {
+  .sharedAdminHeader {
+    padding-inline: 24px;
+  }
+
+  .content {
+    padding-inline: 28px;
+  }
+
+  .analyticsGrid,
+  .analyticsSkeletonGrid {
+    gap: 18px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .sharedAdminSidebar {
+    width: min(280px, 86vw);
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform 200ms ease;
+  }
+
+  .sharedAdminSidebarOpen {
+    transform: translateX(0);
+  }
+
+  .sharedAdminMain {
+    margin-left: 0;
+    padding-top: 58px;
+  }
+
+  .sharedAdminHeader {
+    height: 68px;
+    padding: 0 16px 0 68px;
+  }
+
+  .sharedAdminHeader > div:first-child {
+    display: none;
+  }
+
+  .adminMobileMenu {
+    position: fixed;
+    top: 10px;
+    left: 12px;
+    z-index: 75;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #ead8ca;
+    border-radius: 9px;
+    color: #9f460a;
+    background: #fffdf9;
+  }
+
+  .adminSidebarOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 79;
+    display: block;
+    border: 0;
+    background: rgba(35, 24, 20, .45);
+  }
+
+  .content {
+    padding: 26px 22px 48px;
+  }
+
+  .statsGrid,
+  .activityGrid,
+  .adminReviewDashboardGrid,
+  .adminReviewSummaryStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .analyticsGrid,
+  .analyticsSkeletonGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bookingTrendsCard,
+  .analyticsSkeleton:first-child {
+    grid-column: span 2;
+  }
+
+  .tableWrap,
+  .userDetailsTableWrap,
+  .restaurantBookingsBody,
+  .restaurantDetailsBody {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+  }
+}
+
+@media (max-width: 639px) {
+  .sharedAdminHeader {
+    padding-right: 12px;
+  }
+
+  .sharedAdminIdentity div {
+    display: none;
+  }
+
+  .content {
+    padding: 22px 14px 42px;
+  }
+
+  .pageHeading,
+  .heroRow,
+  .panelHeader,
+  .analyticsHeading,
+  .usersPanelActions,
+  .topActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .title {
+    font-size: clamp(28px, 9vw, 38px);
+    overflow-wrap: anywhere;
+  }
+
+  .statsGrid,
+  .activityGrid,
+  .analyticsGrid,
+  .analyticsSkeletonGrid,
+  .adminReviewDashboardGrid,
+  .adminReviewSummaryStats,
+  .userActivityGrid,
+  .restaurantActivityGrid,
+  .formGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .analyticsCard,
+  .bookingTrendsCard,
+  .bookingStatusCard,
+  .analyticsSkeleton,
+  .analyticsSkeleton:first-child {
+    grid-column: span 1;
+  }
+
+  .panel,
+  .card,
+  .analyticsCard,
+  .adminRecentReviewsCard {
+    padding: 18px 14px;
+  }
+
+  .adminReviewFilters,
+  .groupedBookingFilters,
+  .restaurantFilters {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .adminReviewFilters > *,
+  .groupedBookingFilters > *,
+  .restaurantFilters > *,
+  .usersPanelActions > *,
+  .topActions > *,
+  .pageSizeControl {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .tableWrap,
+  .userDetailsTableWrap,
+  .restaurantBookingsBody,
+  .restaurantDetailsBody {
+    margin-inline: 0;
+    border-radius: 10px;
+    scrollbar-width: thin;
+  }
+
+  .pagination,
+  .adminReviewPagination {
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pagination button,
+  .adminReviewPagination button {
+    flex: 1 1 auto;
+  }
+
+  .modalBackdrop,
+  .userDetailsBackdrop,
+  .restaurantDetailsBackdrop,
+  .restaurantBookingsBackdrop,
+  .bookingRecordOverlay {
+    padding: 10px;
+  }
+
+  .modal,
+  .confirmModal,
+  .userDetailsModal,
+  .restaurantDetailsModal,
+  .restaurantBookingsModal,
+  .bookingRecordModal,
+  .adminReviewModal {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 20px);
+    border-radius: 14px;
+  }
+
+  .userDetailsBody,
+  .restaurantDetailsBody,
+  .restaurantBookingsBody {
+    padding: 18px 14px;
+  }
+
+  .userDetailsHeader,
+  .restaurantDetailsHeader,
+  .restaurantBookingsHeader,
+  .modalHeader {
+    gap: 12px;
+    padding: 16px 14px;
+  }
+
+  .userDetailsTabs,
+  .restaurantDetailsTabs {
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .userDetailsTabs button,
+  .restaurantDetailsTabs button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .userDetailsGrid,
+  .restaurantDetailsSections,
+  .adminReviewDetails,
+  .adminBookingDetails {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .restaurantDetailsHero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .restaurantBookingsIdentity,
+  .userIdentityCard {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .modalActions,
+  .modalBookingActions,
+  .adminReviewActions {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .modalActions > *,
+  .modalBookingActions > *,
+  .adminReviewActions > * {
+    width: 100%;
+  }
+
+  .adminProfileCard {
+    padding: 22px 16px;
+  }
+
+  .adminProfileCard > header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .adminProfileCard > footer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .chartCanvas,
+  .smallChartCanvas,
+  .donutCanvas {
+    max-width: 100%;
+    overflow: hidden;
+  }
+}

@@ -17,6 +17,7 @@ describe("booking confirmation email integration", () => {
 
     expect(response.status).toBe(201);
     expect(response.body.emailSent).toBe(true);
+    expect(response.body.emailRecipient).toBe("email-user@example.com");
     expect(response.body.emailError).toBeUndefined();
     expect(emailService.sendBookingConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
       recipientEmail: "email-user@example.com",
@@ -62,6 +63,10 @@ describe("booking confirmation email integration", () => {
 
     expect(response.status).toBe(201);
     expect(response.body.emailSent).toBe(false);
+    expect(response.body.emailRecipient).toBe("saved-booking@example.com");
+    expect(response.body.message).toBe(
+      "Booking confirmed but email could not be sent.",
+    );
     expect(response.body.emailError).toBe(
       "Confirmation email could not be sent",
     );
@@ -105,6 +110,10 @@ describe("booking confirmation email integration", () => {
     expect(response.status).toBe(201);
     expect(response.body.booking.status).toBe("confirmed");
     expect(response.body.emailSent).toBe(false);
+    expect(response.body.emailRecipient).toBe("");
+    expect(response.body.message).toBe(
+      "Booking confirmed but email could not be sent.",
+    );
     expect(response.body.emailError).toBe(
       "Confirmation email could not be sent",
     );

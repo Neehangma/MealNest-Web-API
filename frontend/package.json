@@ -9,9 +9,14 @@
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
+    "test:unit": "jest tests/unit --runInBand",
+    "test:integration": "jest tests/integration --runInBand",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit && tsc -p cypress/tsconfig.json --noEmit",
+    "test:e2e": "cypress run",
+    "test:e2e:open": "cypress open",
+    "test:e2e:playwright": "playwright test",
     "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
@@ -32,6 +37,7 @@
     "@types/node": "^20",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19",
+    "cypress": "^15.19.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "jest": "^30.4.2",

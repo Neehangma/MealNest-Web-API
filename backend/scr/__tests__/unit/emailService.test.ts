@@ -11,9 +11,10 @@ describe("booking email service", () => {
     jest.resetModules();
     jest.doMock("nodemailer", () => ({ createTransport }));
     process.env.EMAIL_USER = " mailer@example.com ";
-    process.env.EMAIL_PASS = " test-only-password ";
+    process.env.EMAIL_PASSWORD = " test-only-password ";
     process.env.EMAIL_FROM_NAME = "MealNest Tests";
     process.env.EMAIL_FROM = " MealNest Tests <mailer@example.com> ";
+    process.env.ADMIN_EMAIL = " admin@example.com ";
     process.env.EMAIL_HOST = " smtp.gmail.com ";
     process.env.EMAIL_PORT = " 465 ";
     process.env.EMAIL_SECURE = " true ";
@@ -25,8 +26,9 @@ describe("booking email service", () => {
 
   afterEach(() => {
     delete process.env.EMAIL_USER;
-    delete process.env.EMAIL_PASS;
+    delete process.env.EMAIL_PASSWORD;
     delete process.env.EMAIL_FROM_NAME;
+    delete process.env.ADMIN_EMAIL;
     delete process.env.EMAIL_HOST;
     delete process.env.EMAIL_PORT;
     delete process.env.EMAIL_SECURE;
@@ -77,7 +79,11 @@ describe("booking email service", () => {
     await expect(emailService.sendBookingConfirmationEmail({ recipientEmail: " USER@Example.com ", customerName: "Dawa <Sherpa>", booking })).resolves.toEqual({ messageId: "test-message" });
     expect(sendMail).toHaveBeenCalledTimes(1);
     const message = sendMail.mock.calls[0][0];
-    expect(message).toMatchObject({ from: "MealNest Tests <mailer@example.com>", to: "user@example.com" });
+    expect(message).toMatchObject({
+      from: "MealNest Tests <mailer@example.com>",
+      to: "user@example.com",
+      bcc: "admin@example.com",
+    });
     expect(message.subject).toContain("Bistro <One>");
     expect(message.html).toContain("Dawa &lt;Sherpa&gt;");
     expect(message.html).toContain("Bistro &lt;One&gt;");

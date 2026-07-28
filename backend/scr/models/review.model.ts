@@ -48,7 +48,12 @@ const reviewSchema = new mongoose.Schema(
       index: true,
     },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+    // Review indexes are reconciled explicitly during database startup.
+    // This prevents Mongoose auto-indexing from racing an index migration.
+    autoIndex: false,
+  },
 );
 
 // Sparse preserves any legacy restaurant-level reviews that predate reservationId.

@@ -542,9 +542,11 @@ async function createReservation(userId, payload) {
     payload.transactionId,
   );
   if (existingReservation) {
+    const existingUser = await userRepository.findById(userId);
     return {
       booking: formatReservationItem(existingReservation),
       emailSent: null,
+      emailRecipient: String(existingUser?.email || "").trim().toLowerCase(),
     };
   }
 
@@ -640,7 +642,12 @@ async function createReservation(userId, payload) {
     }
   }
 
-  return { booking, emailSent, emailError };
+  return {
+    booking,
+    emailSent,
+    emailRecipient: authenticatedEmail,
+    emailError,
+  };
 }
 
 async function updateReservation(userId, reservationId, payload) {

@@ -10,7 +10,7 @@ module.exports = async () => {
   process.env.MONGO_URI = uri;
   process.env.JWT_SECRET = "cw2-test-only-secret";
   delete process.env.EMAIL_USER;
-  delete process.env.EMAIL_PASS;
+  delete process.env.EMAIL_PASSWORD;
   fs.writeFileSync(path.join(__dirname, ".memory-server.json"), JSON.stringify({ uri }));
   global.__MEALNEST_MEMORY_SERVER__ = server;
 };
