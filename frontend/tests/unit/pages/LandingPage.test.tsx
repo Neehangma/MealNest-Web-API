@@ -1,5 +1,6 @@
 /** @jest-environment jsdom */
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import LandingPage from "@/app/page";
 
 test("renders navigation, hero actions, and the current cuisine discovery section", () => {
@@ -21,4 +22,17 @@ test("shows only the cuisines currently promoted by MealNest", () => {
     expect(screen.getByRole("img", { name: `${cuisine} cuisine` })).toBeVisible();
   }
   expect(screen.queryByRole("img", { name: "Spanish cuisine" })).not.toBeInTheDocument();
+});
+
+test("opens and closes the accessible mobile navigation menu", async () => {
+  const user = userEvent.setup();
+  render(<LandingPage />);
+  const toggle = screen.getByRole("button", { name: "Toggle navigation" });
+
+  expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await user.click(toggle);
+  expect(toggle).toHaveAttribute("aria-expanded", "true");
+
+  await user.keyboard("{Escape}");
+  expect(toggle).toHaveAttribute("aria-expanded", "false");
 });

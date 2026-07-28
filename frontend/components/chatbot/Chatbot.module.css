@@ -114,9 +114,38 @@
 @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
 
 @media (max-width: 520px) {
-  .chatbot { right: 2.5%; bottom: 18px; }
-  .window { width: 95vw; height: min(590px, calc(100vh - 100px)); }
+  .chatbot { right: 12px; bottom: 12px; }
+  .window {
+    position: fixed;
+    right: 8px;
+    bottom: 78px;
+    left: 8px;
+    width: auto;
+    height: min(590px, calc(100dvh - 94px));
+    max-height: calc(100dvh - 94px);
+    border-radius: 16px;
+  }
   .launcher { width: 54px; height: 54px; }
+  .messages { padding-inline: 10px; }
+  .message { max-width: 84%; overflow-wrap: anywhere; }
+  .inputRow { padding: 10px; }
+}
+
+@media (max-width: 360px) {
+  .window {
+    right: 4px;
+    left: 4px;
+  }
+
+  .header {
+    min-height: 64px;
+    padding: 10px 12px;
+  }
+
+  .headerAvatar {
+    width: 38px;
+    height: 38px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 type LandingIconName = "serving" | "star" | "calendar" | "tag";
 
@@ -32,6 +33,17 @@ function LandingFeatureIcon({ name }: { name: LandingIconName }) {
 }
 
 export default function Home() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setMobileMenuOpen(false);
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, []);
+
   return (
     <main className="home-page">
       <nav className="home-nav">
@@ -39,9 +51,24 @@ export default function Home() {
           <Image src="/images/Logo.png" alt="MealNest logo" width={54} height={54} priority />
           <span>MealNest</span>
         </Link>
-        <div className="home-nav-actions">
-          <Link href="/login">Login</Link>
-          <Link className="home-nav-button" href="/signup">Sign Up</Link>
+        <button
+          type="button"
+          className="home-nav-toggle"
+          aria-label="Toggle navigation"
+          aria-controls="home-navigation-actions"
+          aria-expanded={mobileMenuOpen}
+          onClick={() => setMobileMenuOpen((open) => !open)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+        <div
+          id="home-navigation-actions"
+          className={`home-nav-actions ${mobileMenuOpen ? "is-open" : ""}`}
+        >
+          <Link href="/login" onClick={() => setMobileMenuOpen(false)}>Login</Link>
+          <Link className="home-nav-button" href="/signup" onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
         </div>
       </nav>
 
