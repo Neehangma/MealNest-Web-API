@@ -4,6 +4,13 @@ const Restaurant = require("../../models/restaurant.model");
 const { createTestRestaurant, createTestUser, tokenFor } = require("../helpers");
 
 describe("restaurant API", () => {
+  test("public /api restaurant alias is not intercepted by authenticated user routes", async () => {
+    const response = await request(app).get("/api/restaurants?limit=1");
+
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.body.data)).toBe(true);
+  });
+
   test("lists, filters, searches, and retrieves restaurants", async () => {
     const restaurant = await createTestRestaurant({ name: "CW2 Roma", cuisine: "Italian" });
     const list = await request(app).get("/api/v1/restaurants?search=CW2%20Roma&cuisine=Italian&limit=100");

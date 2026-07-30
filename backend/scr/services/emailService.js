@@ -49,7 +49,7 @@ function logEmailError(context, error, recipientEmail) {
   });
 }
 
-async function deliverEmail(message, context) {
+async function sendWithTimeout(message) {
   let timeout;
   try {
     return await Promise.race([
@@ -62,11 +62,32 @@ async function deliverEmail(message, context) {
         }, deliveryTimeoutMs);
       }),
     ]);
-  } catch (error) {
-    logEmailError(context, error, message.to);
-    throw error;
   } finally {
     if (timeout) clearTimeout(timeout);
+  }
+}
+
+function isRetryableDnsError(error) {
+  return error?.code === "EDNS" &&
+    error?.command === "CONN" &&
+    /ETIMEOUT/i.test(String(error?.response || error?.message || ""));
+}
+
+async function deliverEmail(message, context) {
+  try {
+    return await sendWithTimeout(message);
+  } catch (error) {
+    if (isRetryableDnsError(error)) {
+      console.warn(`${context} DNS lookup timed out; retrying once`);
+      try {
+        return await sendWithTimeout(message);
+      } catch (retryError) {
+        logEmailError(context, retryError, message.to);
+        throw retryError;
+      }
+    }
+    logEmailError(context, error, message.to);
+    throw error;
   }
 }
 

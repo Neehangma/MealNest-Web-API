@@ -51,8 +51,8 @@ app.get("/api/health", (_req, res) => {
 // catch-all user routes that expose the same path.
 app.use("/api/v1/restaurants", restaurantRoutes);
 app.use("/api/v1", userRoutes);
-app.use("/api", userRoutes);
 app.use("/api/restaurants", restaurantRoutes);
+app.use("/api", userRoutes);
 // MealNest AI chatbot (authenticated users only).
 app.use("/api/chatbot", chatbotRoutes);
 app.use("/api/ai-assistant", chatbotRoutes);

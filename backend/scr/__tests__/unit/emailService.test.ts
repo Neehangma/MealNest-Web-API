@@ -111,6 +111,25 @@ describe("booking email service", () => {
     await expect(emailService.sendBookingConfirmationEmail({ recipientEmail: "user@example.com", booking: { restaurantName: "Bistro", bookingReference: "REF" } })).rejects.toThrow("SMTP unavailable");
   });
 
+  test("retries one pre-connection Gmail DNS timeout", async () => {
+    const dnsError = Object.assign(new Error("queryA ETIMEOUT smtp.gmail.com"), {
+      code: "EDNS",
+      command: "CONN",
+      response: "queryA ETIMEOUT smtp.gmail.com",
+    });
+    sendMail
+      .mockRejectedValueOnce(dnsError)
+      .mockResolvedValueOnce({ messageId: "retried-message" });
+
+    await expect(
+      emailService.sendBookingConfirmationEmail({
+        recipientEmail: "user@example.com",
+        booking: { restaurantName: "Bistro", bookingReference: "REF" },
+      }),
+    ).resolves.toEqual({ messageId: "retried-message" });
+    expect(sendMail).toHaveBeenCalledTimes(2);
+  });
+
   test("sends a reset link to the requested user without exposing secrets", async () => {
     sendMail.mockResolvedValue({ messageId: "reset-message" });
     await emailService.sendPasswordResetEmail({
