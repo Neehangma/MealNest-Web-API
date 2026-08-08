@@ -38,6 +38,10 @@ app.use(cors({
 }));
 app.use(express.json({ limit: "5mb" }));
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.use(
+  "/images",
+  express.static(path.join(process.cwd(), "..", "frontend", "public", "images")),
+);
 
 app.get("/", (_req, res) => {
   res.send("MealNest Backend Running");

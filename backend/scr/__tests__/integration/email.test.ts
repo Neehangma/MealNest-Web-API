@@ -16,11 +16,11 @@ describe("booking confirmation email integration", () => {
     });
 
     expect(response.status).toBe(201);
-    expect(response.body.emailSent).toBe(true);
-    expect(response.body.emailRecipient).toBe("email-user@example.com");
+    expect(response.body.emailSent).toBeNull();
+    expect(response.body.emailRecipient).toBe("mealnest67@gmail.com");
     expect(response.body.emailError).toBeUndefined();
     expect(emailService.sendBookingConfirmationEmail).toHaveBeenCalledWith(expect.objectContaining({
-      recipientEmail: "email-user@example.com",
+      recipientEmail: "mealnest67@gmail.com",
       customerName: "CW2 Email User",
       booking: expect.objectContaining({ restaurantName: "CW2 Email Restaurant", time: "7:00 PM", guests: 2, paymentMethod: "esewa", paymentStatus: "simulated_success" }),
     }));
@@ -62,14 +62,10 @@ describe("booking confirmation email integration", () => {
     });
 
     expect(response.status).toBe(201);
-    expect(response.body.emailSent).toBe(false);
-    expect(response.body.emailRecipient).toBe("saved-booking@example.com");
-    expect(response.body.message).toBe(
-      "Booking confirmed but email could not be sent.",
-    );
-    expect(response.body.emailError).toBe(
-      "Confirmation email could not be sent",
-    );
+    expect(response.body.emailSent).toBeNull();
+    expect(response.body.emailRecipient).toBe("mealnest67@gmail.com");
+    expect(response.body.message).toBe("Reservation created successfully");
+    expect(response.body.emailError).toBeUndefined();
     expect(response.body.booking).toMatchObject({
       status: "confirmed",
       paymentStatus: "simulated_success",
@@ -79,7 +75,27 @@ describe("booking confirmation email integration", () => {
     expect(emailService.sendBookingConfirmationEmail).toHaveBeenCalledTimes(1);
   });
 
-  test("confirms the booking without calling SMTP when the user email is missing", async () => {
+  test("does not delay booking confirmation while email delivery is pending", async () => {
+    emailService.sendBookingConfirmationEmail.mockImplementationOnce(
+      () => new Promise(() => {}),
+    );
+    const user = await createTestUser({ email: "slow-email@example.com" });
+    const restaurant = await createTestRestaurant({ name: "Fast Checkout Restaurant" });
+    const startedAt = Date.now();
+
+    const response = await request(app).post("/api/bookings").set("Authorization", `Bearer ${tokenFor(user)}`).send({
+      restaurantId: restaurant._id.toString(), restaurantName: restaurant.name,
+      customerPhone: "9800000000", esewaId: "9800000000",
+      date: "2030-09-05", reservationDate: "2030-09-05T13:15:00.000Z", time: "7:00 PM", guests: 2,
+      paymentMethod: "esewa", paymentStatus: "simulated_success", totalPaid: 500,
+    });
+
+    expect(response.status).toBe(201);
+    expect(response.body.emailSent).toBeNull();
+    expect(Date.now() - startedAt).toBeLessThan(1000);
+  });
+
+  test("sends to the configured confirmation recipient when the user email is missing", async () => {
     const user = await createTestUser({ email: "legacy-email@example.com" });
     await User.collection.updateOne(
       { _id: user._id },
@@ -109,15 +125,12 @@ describe("booking confirmation email integration", () => {
 
     expect(response.status).toBe(201);
     expect(response.body.booking.status).toBe("confirmed");
-    expect(response.body.emailSent).toBe(false);
-    expect(response.body.emailRecipient).toBe("");
-    expect(response.body.message).toBe(
-      "Booking confirmed but email could not be sent.",
+    expect(response.body.emailSent).toBeNull();
+    expect(response.body.emailRecipient).toBe("mealnest67@gmail.com");
+    expect(response.body.emailError).toBeUndefined();
+    expect(emailService.sendBookingConfirmationEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ recipientEmail: "mealnest67@gmail.com" }),
     );
-    expect(response.body.emailError).toBe(
-      "Confirmation email could not be sent",
-    );
-    expect(emailService.sendBookingConfirmationEmail).not.toHaveBeenCalled();
   });
 });
 

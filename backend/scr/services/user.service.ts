@@ -595,24 +595,24 @@ async function createReservation(userId, payload) {
   let emailError;
 
   const authenticatedEmail = String(user?.email || "").trim().toLowerCase();
-  const validAuthenticatedEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-    authenticatedEmail,
+  const confirmationRecipient = String(process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+  const validConfirmationRecipient = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+    confirmationRecipient,
   );
-  if (!validAuthenticatedEmail) {
+  if (!validConfirmationRecipient) {
     emailSent = false;
     emailError = "Confirmation email could not be sent";
-    console.warn(`Booking ${reservation.bookingReference} saved; authenticated user email is invalid.`);
+    console.warn(`Booking ${reservation.bookingReference} saved; confirmation recipient is invalid.`);
   } else if (booking.status === "confirmed" && booking.paymentStatus === "simulated_success") {
-    try {
-      if (process.env.NODE_ENV !== "production") {
-        console.log("Booking confirmation email requested", {
-          bookingId: reservation._id.toString(),
-          userId: userId.toString(),
-          recipient: maskEmail(authenticatedEmail),
-        });
-      }
-      const emailResult = await sendBookingConfirmationEmail({
-        recipientEmail: authenticatedEmail,
+    if (process.env.NODE_ENV !== "production") {
+      console.log("Booking confirmation email queued", {
+        bookingId: reservation._id.toString(),
+        userId: userId.toString(),
+        recipient: maskEmail(confirmationRecipient),
+      });
+    }
+    sendBookingConfirmationEmail({
+        recipientEmail: confirmationRecipient,
         customerName: booking.customerName,
         booking: {
           ...booking,
@@ -620,32 +620,31 @@ async function createReservation(userId, payload) {
           customerEmail: authenticatedEmail,
           customerPhone: booking.customerPhone || "",
         },
-      });
-      emailSent = true;
-      if (process.env.NODE_ENV !== "production") {
-        console.log("Booking confirmation email sent", {
+      })
+      .then((emailResult) => {
+        if (process.env.NODE_ENV !== "production") {
+          console.log("Booking confirmation email sent", {
+            bookingId: reservation._id.toString(),
+            recipient: maskEmail(confirmationRecipient),
+            messageId: emailResult?.messageId || "available",
+          });
+        }
+      })
+      .catch((error) => {
+        console.warn("Booking remains confirmed although its email could not be sent", {
           bookingId: reservation._id.toString(),
-          recipient: maskEmail(authenticatedEmail),
-          messageId: emailResult?.messageId || "available",
+          userId: userId.toString(),
+          recipient: maskEmail(confirmationRecipient),
+          code: error?.code || "UNKNOWN",
+          message: error?.message || "Email delivery failed",
         });
-      }
-    } catch (error) {
-      emailSent = false;
-      emailError = "Confirmation email could not be sent";
-      console.warn("Booking remains confirmed although its email could not be sent", {
-        bookingId: reservation._id.toString(),
-        userId: userId.toString(),
-        recipient: maskEmail(authenticatedEmail),
-        code: error?.code || "UNKNOWN",
-        message: error?.message || "Email delivery failed",
       });
-    }
   }
 
   return {
     booking,
     emailSent,
-    emailRecipient: authenticatedEmail,
+    emailRecipient: confirmationRecipient,
     emailError,
   };
 }
@@ -794,15 +793,16 @@ async function sendReservationConfirmation(userId, reservationId) {
 
   const user = await userRepository.findById(userId);
   const authenticatedEmail = String(user?.email || "").trim().toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(authenticatedEmail)) {
-    throw new HttpException(400, "Authenticated user email is invalid");
+  const confirmationRecipient = String(process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(confirmationRecipient)) {
+    throw new HttpException(500, "Booking confirmation recipient is not configured");
   }
 
   booking.customerName = user?.fullName?.trim() || "Guest";
   booking.customerEmail = authenticatedEmail;
   booking.customerPhone = user?.phoneNumber?.trim() || "";
   await sendBookingConfirmationEmail({
-    recipientEmail: authenticatedEmail,
+    recipientEmail: confirmationRecipient,
     customerName: booking.customerName,
     booking,
   });

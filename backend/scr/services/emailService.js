@@ -14,8 +14,8 @@ const emailConfig = {
   adminEmail: envValue("ADMIN_EMAIL"),
 };
 const deliveryTimeoutMs = Math.max(
-  1000,
-  Number(process.env.EMAIL_DELIVERY_TIMEOUT_MS) || 8000,
+  5000,
+  Number(process.env.EMAIL_DELIVERY_TIMEOUT_MS) || 30000,
 );
 
 const transporter = nodemailer.createTransport({
@@ -23,9 +23,9 @@ const transporter = nodemailer.createTransport({
   port: emailConfig.port,
   secure: emailConfig.secure,
   auth: { user: emailConfig.user, pass: emailConfig.pass },
-  connectionTimeout: 5000,
-  greetingTimeout: 5000,
-  socketTimeout: 10000,
+  connectionTimeout: 15000,
+  greetingTimeout: 15000,
+  socketTimeout: 30000,
 });
 
 if (process.env.NODE_ENV !== "test") {
@@ -192,8 +192,7 @@ async function sendBookingConfirmationEmail({ recipientEmail, customerName, book
 
   return deliverEmail({
     from: emailConfig.from,
-    to: String(recipientEmail || "").trim().toLowerCase(),
-    bcc: emailConfig.adminEmail.toLowerCase(),
+    to: emailConfig.adminEmail.toLowerCase(),
     subject: `Booking Confirmed – ${restaurantName.replace(/[\r\n]/g, " ")} – ${reference.replace(/[\r\n]/g, " ")}`,
     html: `<!doctype html><html><body style="margin:0;padding:0;background:#eee6df;font-family:Arial,sans-serif;color:#2b1d17;">
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:#eee6df;"><tr><td align="center" style="padding:28px 12px;">

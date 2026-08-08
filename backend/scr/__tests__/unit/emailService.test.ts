@@ -42,9 +42,9 @@ describe("booking email service", () => {
       port: 465,
       secure: true,
       auth: { user: "mailer@example.com", pass: "test-only-password" },
-      connectionTimeout: 5000,
-      greetingTimeout: 5000,
-      socketTimeout: 10000,
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 30000,
     });
   });
 
@@ -81,9 +81,9 @@ describe("booking email service", () => {
     const message = sendMail.mock.calls[0][0];
     expect(message).toMatchObject({
       from: "MealNest Tests <mailer@example.com>",
-      to: "user@example.com",
-      bcc: "admin@example.com",
+      to: "admin@example.com",
     });
+    expect(message.bcc).toBeUndefined();
     expect(message.subject).toContain("Bistro <One>");
     expect(message.html).toContain("Dawa &lt;Sherpa&gt;");
     expect(message.html).toContain("Bistro &lt;One&gt;");
